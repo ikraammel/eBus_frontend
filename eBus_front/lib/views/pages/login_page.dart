@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/views/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -133,7 +134,14 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 20,),
               Center(
                 child: ElevatedButton(
-                  onPressed:() {},
+                  onPressed:() {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HomePage()
+                        )
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1A367C),
                     shape: RoundedRectangleBorder(
@@ -153,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Vous n\'avez pas de compte ?'),
+                Text('Vous n\'avez pas de compte ? '),
                 GestureDetector(
                   onTap: () {},
                   child: Text('S\'inscrire',
@@ -162,9 +170,17 @@ class _LoginPageState extends State<LoginPage> {
                         fontWeight: FontWeight.bold
                     ),
                 )
-                )
+                ),
               ]
             ),
+                SizedBox(height: 70,),
+                Center(
+                  child: Text(
+                    'Accès administrateur',
+                    style: TextStyle(
+                      color: Colors.grey
+                    ),),
+                )
               ],
             ),
           )
