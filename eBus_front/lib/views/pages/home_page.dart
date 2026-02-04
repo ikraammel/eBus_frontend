@@ -13,7 +13,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB), // Gris très clair en fond
+      backgroundColor: const Color(0xFFF8F9FB),
       body: Column(
         children: [
           _buildHeader(),
@@ -46,7 +46,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- 1. L'en-tête Bleu ---
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 25, right: 25, bottom: 30),
@@ -92,7 +91,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- 2. La Grille d'Accès Rapide ---
   Widget _buildGrid() {
     return GridView.count(
       shrinkWrap: true,
@@ -125,7 +123,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- 3. Activité Récente ---
   Widget _buildRecentActivity() {
     return Container(
       padding: const EdgeInsets.all(15),
@@ -156,11 +153,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- 4. Barre de Navigation ---
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
-<<<<<<< HEAD
       onTap: (index){
         setState(() => _selectedIndex = index);
         if(index == 0){
@@ -170,19 +165,12 @@ class _HomePageState extends State<HomePage> {
           Navigator.pushReplacementNamed(context, '/mapPage');
         }
       },
-=======
-      onTap: (index) => setState(() => _selectedIndex = index),
->>>>>>> 800a0802795f4d344de8d35ca93efbc9cb54ae05
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF1A367C),
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Accueil"),
-<<<<<<< HEAD
-        BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), label: "Carte",),
-=======
         BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), label: "Carte"),
->>>>>>> 800a0802795f4d344de8d35ca93efbc9cb54ae05
         BottomNavigationBarItem(icon: Icon(Icons.confirmation_number_outlined), label: "Tickets"),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profil"),
       ],
