@@ -160,6 +160,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
+<<<<<<< HEAD
       onTap: (index){
         setState(() => _selectedIndex = index);
         if(index == 0){
@@ -169,12 +170,19 @@ class _HomePageState extends State<HomePage> {
           Navigator.pushReplacementNamed(context, '/mapPage');
         }
       },
+=======
+      onTap: (index) => setState(() => _selectedIndex = index),
+>>>>>>> 800a0802795f4d344de8d35ca93efbc9cb54ae05
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF1A367C),
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Accueil"),
+<<<<<<< HEAD
         BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), label: "Carte",),
+=======
+        BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), label: "Carte"),
+>>>>>>> 800a0802795f4d344de8d35ca93efbc9cb54ae05
         BottomNavigationBarItem(icon: Icon(Icons.confirmation_number_outlined), label: "Tickets"),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profil"),
       ],
