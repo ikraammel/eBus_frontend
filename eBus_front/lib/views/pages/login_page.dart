@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/services/auth_service.dart';
+import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/pages/home_page.dart';
+
+import '../../models/User.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -134,14 +138,39 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 20,),
               Center(
                 child: ElevatedButton(
-                  onPressed:() {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => HomePage()
-                        )
-                    );
-                  },
+                  onPressed: () async {
+                    AuthService authService = AuthService();
+                    try {
+                      final response = await authService.login(
+                          _emailController.text,
+                          _passwordController.text
+                      );
+                      final user = User(
+                        id: response['id'],
+                        nom: response['nom'],
+                        prenom: response['prenom'],
+                        email: response['email'],
+                        role: response['role'],
+                        tel: response['tel'],
+                        adresse: response['adresse'],
+                      );
+
+                      await LocalStorageService().saveUser(user);
+
+                      if(response['role'] == 'USER'){
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => HomePage()),
+                        );
+                      }
+
+                    } catch (e) {
+                      print("ERREUR LOGIN: $e");
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(e.toString())));
+                    }
+                  }
+                  ,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1A367C),
                     shape: RoundedRectangleBorder(

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/services/local_storage_service.dart';
+
+import '../../models/User.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,6 +12,17 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  User? currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  void loadUser() async{
+    currentUser = LocalStorageService().getUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +73,15 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Bonjour,", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text("Jean Dupont", style: TextStyle(color: Colors.white70, fontSize: 18)),
+                  const Text("Bonjour,", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(
+                    currentUser != null ?
+                    '${currentUser?.nom} ${currentUser?.prenom}'
+                      : "User",
+                      style: TextStyle(color: Colors.white70, fontSize: 18)),
                 ],
               ),
               Container(
@@ -162,7 +180,10 @@ class _HomePageState extends State<HomePage> {
           Navigator.pushReplacementNamed(context, '/homePage');
         }
         if(index == 1){
-          Navigator.pushReplacementNamed(context, '/mapPage');
+          Navigator.pushNamed(context, '/mapPage');
+        }
+        if(index == 3){
+          Navigator.pushNamed(context, '/profilePage');
         }
       },
       type: BottomNavigationBarType.fixed,

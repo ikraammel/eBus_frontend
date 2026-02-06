@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/models/User.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
+import 'package:smart_bus/views/pages/profile/contact_card.dart';
+import 'package:smart_bus/views/pages/profile/header_page.dart';
+import 'package:smart_bus/views/pages/profile/parametres_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -19,74 +22,99 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void loadUser(){
-    currentUser = LocalStorageService().getUser();
+    setState(() {
+      currentUser = LocalStorageService().getUser();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.only(top: 50, bottom: 40, left: 20, right: 20),
-            decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1B3C83), Color(0xFF76BC41)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-           ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  onPressed: (){
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(Icons.arrow_back,color: Colors.white,)
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Colors.white24,
-                        child: const Text("JD", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-                      ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              currentUser != null ?
-                              '${currentUser?.nom}  ${currentUser?.prenom}'
-                                  : "User",
-                            style: TextStyle(
-                                color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold
-                            ),
-                            ),Text(
-                              currentUser != null ?
-                              '${currentUser?.email}'
-                                  : "User",
-                              style: TextStyle(color: Colors.white70, fontSize: 14)
-                            ),
-                          ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            HeaderPage(currentUser: currentUser),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+              child: Column(
+                children: [
+                  Column(
+                      children: [
+                        ContactCard(
+                            value: currentUser?.email ?? "email@exemple.com",
+                            icon: Icons.email,
+                            label: 'Email'
                         ),
+                        ContactCard(
+                            value: currentUser?.tel ?? "0600000000",
+                            icon: Icons.phone,
+                            label: 'Téléphone'
+                        ),
+                        ContactCard(
+                            value: currentUser?.adresse ?? "Adresse",
+                            icon: Icons.location_on,
+                            label: 'Adresse'
+                        ),
+                      ],
+                    ),
+                  SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerLeft, // Aligne à gauche
+                    child: Text(
+                      "PARAMÈTRES",
+                      style: TextStyle(
+                        color: Colors.blueGrey[600],
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
                       ),
-                    ],
+                    ),
                   ),
-                )
-              ],
-            ),
-          ),
-        ],
+                  const SizedBox(height: 15), // Un peu d'espace avant la liste
+                  ParametresPage(icon: Icons.person, label: 'Informations personnelles'),
+                  ParametresPage(icon: Icons.credit_card_sharp, label: 'Moyens de paiement'),
+                  ParametresPage(icon: Icons.notifications, label: 'Notifications'),
+                  ParametresPage(icon: Icons.shield_outlined, label: 'Confidentialité'),
+                  ParametresPage(icon: Icons.help, label: 'Aide & Support'),
+                  // À ajouter à la fin de votre Column de paramètres
+                  const SizedBox(height: 20),
+                  InkWell(
+                    onTap: () async {
+                      await LocalStorageService().logout();
+                      if (mounted) {
+                        Navigator.pushReplacementNamed(context, '/loginPage');
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout, color: Colors.red),
+                          SizedBox(width: 10),
+                          Text(
+                            "Se déconnecter",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

@@ -8,26 +8,53 @@ class MapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-        options: MapOptions(
-          initialCenter: LatLng(32.2994, -9.2372),
-          initialZoom: 9.2,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+            'Suivi en temps réel',
+            style: TextStyle(
+              color: Color(0xFF1A367C),
+              fontWeight: FontWeight.w600
+            ),
         ),
-        children: [
-          TileLayer( // Bring your own tiles
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
-             // Add your app identifier
-            // And many more recommended properties!
+        leading: IconButton(
+            onPressed: (){
+              Navigator.pop(context);
+        },
+            icon: Icon(Icons.arrow_back)
+        ),
+        actions: [
+          IconButton(
+              onPressed: (){
+
+              },
+              icon: Icon(Icons.send,color: Colors.green,),
+             padding: EdgeInsets.zero,
+          )
+          ,
+        ],
+      ),
+      body: FlutterMap(
+          options: MapOptions(
+            initialCenter: LatLng(32.2994, -9.2372),
+            initialZoom: 9.2,
           ),
-          RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
-            attributions: [
-              TextSourceAttribution(
-                'OpenStreetMap contributors',
-              ),
-              // Also add images...
-            ],
-          ),
-        ]
+          children: [
+            TileLayer( // Bring your own tiles
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
+               // Add your app identifier
+              // And many more recommended properties!
+            ),
+            RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
+              attributions: [
+                TextSourceAttribution(
+                  'OpenStreetMap contributors',
+                ),
+                // Also add images...
+              ],
+            ),
+          ]
+      ),
     );
   }
 
