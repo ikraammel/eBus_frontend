@@ -1,5 +1,7 @@
 package com.gestion.gestion_bus.models;
 
+import com.gestion.gestion_bus.enums.Status;
+import com.gestion.gestion_bus.enums.TypeAbonnement;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,10 +18,16 @@ public class Abonnement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String type; // mensuel, hebdomadaire
+    @Enumerated(EnumType.STRING)
+    private TypeAbonnement type;
+
     private double prix;
     private LocalDate dateDebut;
     private LocalDate dateFin;
+
+    private boolean actif;
+
+    private Status status;
 
     @ManyToOne
     private User user;

@@ -12,15 +12,32 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nom;
+
+    private String prenom;
+
+    private String tel;
+
     @NonNull
     @Column(unique = true)
     private String email;
+
+    private String adresse;
+
+    private String CIN;
+
+    private String CNE;
+
+    private String dateNaissance;
+    private String photoUrl;
+    private String carteScolaireUrl;
+    private String attestationUrl;
 
     @NonNull
     private String password;
@@ -29,15 +46,15 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<Ticket> tickets;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<Abonnement> abonnements;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<Reclamation> reclamations;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<ObjetPerdu> objetsPerdus;
 }

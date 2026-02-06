@@ -16,8 +16,8 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     // Durée du loading
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/homePage');
+    Timer(const Duration(seconds: 5), () {
+
     });
   }
 
