@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'lines_page.dart';
+import 'ticket_page.dart';
+import 'lost_objects_page.dart'; // Vérifie bien que le nom du fichier est exact
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -110,15 +113,47 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildMenuCard(String title, IconData icon, Color color) {
-    return Container(
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 35),
-          const SizedBox(height: 10),
-          Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          // --- MODIFICATION ICI ---
+          if (title == "Lignes") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LinesPage()),
+            );
+          } else if (title == "Paiement") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const TicketPage()),
+            );
+          } else if (title == "Objets perdus") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LostObjectsPage()),
+            );
+          }
+          // ------------------------
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 35),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -156,14 +191,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
-      onTap: (index){
+      onTap: (index) {
         setState(() => _selectedIndex = index);
-        if(index == 0){
-          Navigator.pushReplacementNamed(context, '/homePage');
-        }
-        if(index == 1){
-          Navigator.pushReplacementNamed(context, '/mapPage');
-        }
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF1A367C),
