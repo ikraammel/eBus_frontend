@@ -12,7 +12,17 @@ public class UserMapper {
         dto.setNom(user.getNom());
         dto.setPrenom(user.getPrenom());
         dto.setEmail(user.getEmail());
+        dto.setTel(user.getTel());
+        dto.setAdresse(user.getAdresse());
+        dto.setDateNaissance(user.getDateNaissance().toString());
         dto.setRole(user.getRole().getName());
+
+        if (user.getAbonnement() != null && user.getAbonnement().getType() != null) {
+            dto.setTypeAbonnement(user.getAbonnement().getType().name()); // .name() convertit enum -> String
+        } else {
+            dto.setTypeAbonnement(null);
+        }
+
         return dto;
     }
 }

@@ -18,6 +18,7 @@ public class UserRequestDto {
     private String CNE;
     private String password;
     private Long roleId;
+    private String abonnement;
 
     private String attestationUrl;
     private String photoUrl;

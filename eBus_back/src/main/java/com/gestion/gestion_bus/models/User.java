@@ -49,8 +49,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Ticket> tickets;
 
-    @OneToMany(mappedBy = "user")
-    private List<Abonnement> abonnements;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Abonnement abonnement;
 
     @OneToMany(mappedBy = "user")
     private List<Reclamation> reclamations;

@@ -12,5 +12,9 @@ public class UserResponseDto {
     private String nom;
     private String prenom;
     private String email;
+    private String tel;
+    private String adresse;
     private String role;
+    private String dateNaissance;
+    private String typeAbonnement;
 }

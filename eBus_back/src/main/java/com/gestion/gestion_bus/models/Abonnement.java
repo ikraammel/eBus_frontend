@@ -29,7 +29,8 @@ public class Abonnement {
 
     private Status status;
 
-    @ManyToOne
+    @OneToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToOne(mappedBy = "abonnement")
