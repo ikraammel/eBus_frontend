@@ -54,7 +54,11 @@ class _RegisterPageState extends State<RegisterPage> {
         _passwordController.text.isEmpty ||
         _phoneController.text.isEmpty ||
         _adresseController.text.isEmpty ||
-        _dateNaissanceController.text.isEmpty) {
+        _dateNaissanceController.text.isEmpty ||
+        _cinController.text.isEmpty ||
+        _carteEudiantController.text.isEmpty ||
+        _dateNaissanceController.text.isEmpty
+    ) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Veuillez remplir tous les champs obligatoires"))
       );
@@ -81,9 +85,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
       Navigator.pushReplacementNamed(context, '/homePage');
     } catch (e) {
-      print("ERREUR REGISTER: $e");
+      String errorMessage = "Une erreur est survenue";
+
+      final exception = e.toString();
+
+      if (exception.contains('403')) {
+        errorMessage = "Email déjà utilisé";
+      } else if (exception.contains('400')) {
+        errorMessage = "Requête invalide. Vérifiez vos informations";
+      } else if (exception.contains('500')) {
+        errorMessage = "Erreur serveur, veuillez réessayer plus tard";
+      } else if (exception.contains('Network')) {
+        errorMessage = "Impossible de se connecter. Vérifiez votre connexion internet";
+      }
+
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+          .showSnackBar(SnackBar(content: Text(errorMessage)));
     }
   }
   @override

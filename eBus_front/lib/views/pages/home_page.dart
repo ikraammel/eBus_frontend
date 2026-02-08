@@ -118,25 +118,38 @@ class _HomePageState extends State<HomePage> {
       crossAxisSpacing: 15,
       childAspectRatio: 1.1,
       children: [
-        _buildMenuCard("Lignes", Icons.directions_bus_filled, const Color(0xFF1A367C)),
-        _buildMenuCard("Suivi du bus", Icons.map, const Color(0xFF8DC63F)),
-        _buildMenuCard("Paiement", Icons.credit_card, const Color(0xFF1A367C)),
-        _buildMenuCard("Réclamations", Icons.chat_bubble_outline, const Color(0xFF8DC63F)),
-        _buildMenuCard("Objets perdus", Icons.inventory_2_outlined, const Color(0xFF1A367C)),
+        _buildMenuCard("Lignes", Icons.directions_bus_filled, const Color(0xFF1A367C), () {
+          Navigator.pushNamed(context, '/linesPage');
+        }),
+        _buildMenuCard("Suivi du bus", Icons.map, const Color(0xFF8DC63F), () {
+          Navigator.pushNamed(context, '/busTrackingPage');
+        }),
+        _buildMenuCard("Paiement", Icons.credit_card, const Color(0xFF1A367C), () {
+          Navigator.pushNamed(context, '/paymentPage');
+        }),
+        _buildMenuCard("Réclamations", Icons.chat_bubble_outline, const Color(0xFF8DC63F), () {
+          Navigator.pushNamed(context, '/claimsPage');
+        }),
+        _buildMenuCard("Objets perdus", Icons.inventory_2_outlined, const Color(0xFF1A367C), () {
+          Navigator.pushNamed(context, '/lostObjectsPage');
+        }),
       ],
     );
   }
 
-  Widget _buildMenuCard(String title, IconData icon, Color color) {
-    return Container(
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 35),
-          const SizedBox(height: 10),
-          Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ],
+  Widget _buildMenuCard(String title, IconData icon, Color color,VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 35),
+            const SizedBox(height: 10),
+            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }
@@ -181,6 +194,9 @@ class _HomePageState extends State<HomePage> {
         }
         if(index == 1){
           Navigator.pushNamed(context, '/mapPage');
+        }
+        if(index == 2){
+          Navigator.pushNamed(context, '/ticketsPage');
         }
         if(index == 3){
           Navigator.pushNamed(context, '/profilePage');

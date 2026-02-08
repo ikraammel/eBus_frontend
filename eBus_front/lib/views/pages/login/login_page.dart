@@ -39,9 +39,20 @@ class _LoginPageState extends State<LoginPage> {
       }
 
     } catch (e) {
-      print("ERREUR LOGIN: $e");
+      String errorMessage = "Une erreur est survenue";
+      final exception = e.toString();
+
+      if (exception.contains('403')) {
+        errorMessage = "Email ou mot de passe incorrect";
+      } else if (exception.contains('404')) {
+        errorMessage = "Utilisateur non trouvé";
+      } else if (exception.contains('500')) {
+        errorMessage = "Erreur serveur, veuillez réessayer plus tard";
+      } else if (exception.contains('Network')) {
+        errorMessage = "Impossible de se connecter. Vérifiez votre connexion internet";
+      }
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+          .showSnackBar(SnackBar(content: Text(errorMessage)));
     }
   }
 

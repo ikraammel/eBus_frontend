@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_bus/views/lines/lines_page.dart';
 import 'package:smart_bus/views/loading/splash_screen.dart';
 import 'package:smart_bus/views/pages/home_page.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
+import 'package:smart_bus/views/pages/lost_objects/lost_objects_page.dart';
 import 'package:smart_bus/views/pages/map_page.dart';
 import 'package:smart_bus/views/pages/profile/profile_page.dart';
 import 'package:smart_bus/views/pages/register/register_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
 
   final getIt = GetIt.instance;
@@ -44,6 +47,9 @@ class MyApp extends StatelessWidget {
         "/mapPage": (context) => MapPage(),
         "/profilePage": (context) => ProfilePage(),
         "/registerPage": (context) => RegisterPage(),
+        "/lostObjectsPage": (context) => LostObjectsPage(),
+        "/ticketsPage": (context) =>  TicketPage(),
+        "/linesPage": (context) =>  LinesPage(),
       },
       initialRoute: "/loginPage",
       debugShowCheckedModeBanner: false,
