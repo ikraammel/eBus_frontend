@@ -17,7 +17,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Durée du loading
     Timer(const Duration(seconds: 5), () {
-
     });
   }
 

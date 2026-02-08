@@ -13,6 +13,10 @@ class LocalStorageService {
   static const String keyIsLoggedIn = 'isLoggedIn';
   static const String keyTel = 'tel';
   static const String keyAdresse = 'adresse';
+  static const String keyDateNaissance = 'dateNaissance';
+  static const String keyTypeAbonnement = 'typeAbonnement';
+
+
 
 
   Future<void> saveUser(User user) async{
@@ -24,6 +28,11 @@ class LocalStorageService {
     await prefs.setString(keyTel,user.tel);
     await prefs.setString(keyAdresse,user.adresse);
     await prefs.setBool(keyIsLoggedIn,true);
+    await prefs.setString(keyDateNaissance,user.dateNaissance);
+    await prefs.setString(
+        keyTypeAbonnement,
+        user.typeAbonnement ?? '',
+    );
   }
 
   User? getUser(){
@@ -38,6 +47,8 @@ class LocalStorageService {
         role: prefs.getString(keyRole) ?? '',
         tel: prefs.getString(keyTel) ?? '',
         adresse: prefs.getString(keyAdresse) ?? '',
+        dateNaissance: prefs.getString(keyDateNaissance) ?? '',
+        typeAbonnement: prefs.getString(keyTypeAbonnement),
       );
     }
   }
