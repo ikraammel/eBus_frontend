@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'lines_page.dart';
-import 'ticket_page.dart';
-import 'lost_objects_page.dart'; // Vérifie bien que le nom du fichier est exact
+import 'package:smart_bus/services/local_storage_service.dart';
+
+import '../../models/User.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final User? currentUser;
+  const HomePage({super.key, this.currentUser});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -12,6 +13,24 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  User? currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    if(widget.currentUser != null){
+      currentUser = widget.currentUser;
+    }else{
+      loadUser();
+    }
+  }
+
+  void loadUser() async{
+    User? user = LocalStorageService().getUser();
+    setState(() {
+      currentUser = user;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +81,15 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Bonjour,", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text("Jean Dupont", style: TextStyle(color: Colors.white70, fontSize: 18)),
+                  const Text("Bonjour,", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(
+                    currentUser != null ?
+                    '${currentUser?.nom} ${currentUser?.prenom}'
+                      : "User",
+                      style: TextStyle(color: Colors.white70, fontSize: 18)),
                 ],
               ),
               Container(
@@ -103,56 +126,37 @@ class _HomePageState extends State<HomePage> {
       crossAxisSpacing: 15,
       childAspectRatio: 1.1,
       children: [
-        _buildMenuCard("Lignes", Icons.directions_bus_filled, const Color(0xFF1A367C)),
-        _buildMenuCard("Suivi du bus", Icons.map, const Color(0xFF8DC63F)),
-        _buildMenuCard("Paiement", Icons.credit_card, const Color(0xFF1A367C)),
-        _buildMenuCard("Réclamations", Icons.chat_bubble_outline, const Color(0xFF8DC63F)),
-        _buildMenuCard("Objets perdus", Icons.inventory_2_outlined, const Color(0xFF1A367C)),
+        _buildMenuCard("Lignes", Icons.directions_bus_filled, const Color(0xFF1A367C), () {
+          Navigator.pushNamed(context, '/linesPage');
+        }),
+        _buildMenuCard("Suivi du bus", Icons.map, const Color(0xFF8DC63F), () {
+          Navigator.pushNamed(context, '/busTrackingPage');
+        }),
+        _buildMenuCard("Paiement", Icons.credit_card, const Color(0xFF1A367C), () {
+          Navigator.pushNamed(context, '/paymentPage');
+        }),
+        _buildMenuCard("Réclamations", Icons.chat_bubble_outline, const Color(0xFF8DC63F), () {
+          Navigator.pushNamed(context, '/claimsPage');
+        }),
+        _buildMenuCard("Objets perdus", Icons.inventory_2_outlined, const Color(0xFF1A367C), () {
+          Navigator.pushNamed(context, '/lostObjectsPage');
+        }),
       ],
     );
   }
 
-  Widget _buildMenuCard(String title, IconData icon, Color color) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () {
-          // --- MODIFICATION ICI ---
-          if (title == "Lignes") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LinesPage()),
-            );
-          } else if (title == "Paiement") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const TicketPage()),
-            );
-          } else if (title == "Objets perdus") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LostObjectsPage()),
-            );
-          }
-          // ------------------------
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white, size: 35),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
-              ),
-            ],
-          ),
+  Widget _buildMenuCard(String title, IconData icon, Color color,VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 35),
+            const SizedBox(height: 10),
+            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
         ),
       ),
     );
@@ -191,8 +195,20 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
-      onTap: (index) {
+      onTap: (index){
         setState(() => _selectedIndex = index);
+        if(index == 0){
+          Navigator.pushReplacementNamed(context, '/homePage');
+        }
+        if(index == 1){
+          Navigator.pushNamed(context, '/mapPage');
+        }
+        if(index == 2){
+          Navigator.pushNamed(context, '/ticketsPage');
+        }
+        if(index == 3){
+          Navigator.pushNamed(context, '/profilePage');
+        }
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF1A367C),

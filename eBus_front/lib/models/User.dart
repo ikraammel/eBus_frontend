@@ -1,0 +1,51 @@
+class User {
+  final int id;
+  final String nom;
+  final String prenom;
+  final String email;
+  final String role;
+  final String tel;
+  final String adresse;
+
+  final String dateNaissance;
+  final String? typeAbonnement;
+  final String? photoUrl;
+  final String? carteScolaireUrl;
+  final String? cinUrl;
+
+  User({
+    required this.id,
+    required this.nom,
+    required this.prenom,
+    required this.email,
+    required this.role,
+    required this.tel,
+    required this.adresse,
+    required this.dateNaissance,
+    this.typeAbonnement,
+    this.photoUrl,
+    this.carteScolaireUrl,
+    this.cinUrl,
+  });
+
+  factory User.fromJson(Map<String,dynamic> json){
+    print("JSON COMPLET: $json");
+    return User(
+      id: json['id'],
+      nom: json['nom'],
+      prenom: json['prenom'],
+      email: json['email'],
+      role: json['role'],
+      tel: json['tel'],
+      adresse: json['adresse'],
+      dateNaissance: json['dateNaissance'],
+      typeAbonnement: json['typeAbonnement']?.toString(),
+      photoUrl: json['photoUrl'],
+      carteScolaireUrl: json['carteScolaireUrl'],
+      cinUrl: json['cinUrl'],
+
+    );
+  }
+
+}
+
