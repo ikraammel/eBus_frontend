@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         "/ticketsPage": (context) =>  TicketPage(),
         "/linesPage": (context) =>  LinesPage(),
       },
-      initialRoute: "/loginPage",
+      initialRoute: "/homePage",
       debugShowCheckedModeBanner: false,
     );
   }

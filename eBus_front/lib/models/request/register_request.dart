@@ -32,7 +32,7 @@ class RegisterRequest {
       'password': password,
       'adresse': adresse,
       'dateNaissance': dateNaissance,
-      'typeAbonnement': typeAbonnement,
+      'abonnement': typeAbonnement,
       'CIN': CIN,
       'CNE': CNE,
     };

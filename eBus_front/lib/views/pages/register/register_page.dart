@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/models/request/register_request.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
+import 'package:smart_bus/views/pages/home_page.dart';
+import 'package:smart_bus/views/pages/register/file_picker_field.dart';
 import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/custom_text_field.dart';
@@ -9,6 +12,7 @@ import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
 import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
 
 import '../../../models/User.dart';
+import '../../../services/file_picker_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -27,8 +31,43 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _dateNaissanceController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _showHidePassword = true;
+  bool _showHideConfirmPassword = true;
+
+  final FilePickerService _filePickerService = FilePickerService();
+  XFile? _image;
+  XFile? _carteScolaire;
+  XFile? _cin;
+
+  Future<void> _pickImage() async{
+    final pickedImage = await _filePickerService.pickImage();
+    if (pickedImage != null){
+      setState(() {
+        _image = pickedImage;
+      });
+    }
+  }
+
+  Future<void> _pickCarteScolaire() async{
+    final pickedImage = await _filePickerService.pickImage();
+    if (pickedImage != null){
+      setState(() {
+        _carteScolaire = pickedImage;
+      });
+    }
+  }
+
+  Future<void> _pickCin() async{
+    final pickedImage = await _filePickerService.pickImage();
+    if (pickedImage != null){
+      setState(() {
+        _cin = pickedImage;
+      });
+    }
+  }
+
   String _typeAbonnement = 'SCOLAIRE';
   Future<void> _selectDateNaissance(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -47,11 +86,33 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+
+  bool _verifyPassword(){
+    final password = _passwordController.text;
+
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Le mot de passe doit contenir au moins 8 caractères")),
+      );
+      return false;
+    }
+
+    if (!RegExp(r'[A-Za-z]').hasMatch(password) ||
+        !RegExp(r'\d').hasMatch(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Le mot de passe doit contenir des lettres et des chiffres")),
+      );
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _register() async{
     if (_nomController.text.isEmpty ||
         _prenomController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty ||
         _phoneController.text.isEmpty ||
         _adresseController.text.isEmpty ||
         _dateNaissanceController.text.isEmpty ||
@@ -62,6 +123,20 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Veuillez remplir tous les champs obligatoires"))
       );
+      return;
+    }if(_image == null || _cin == null || _carteScolaire == null){
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Veuillez charger tous les documents obligatoires"))
+      );
+
+    }
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Les mots de passe ne correspondent pas")),
+      );
+      return;
+    }
+    if(!_verifyPassword()){
       return;
     }
 
@@ -79,11 +154,19 @@ class _RegisterPageState extends State<RegisterPage> {
           CIN: _cinController.text,
           CNE: _carteEudiantController.text
       );
-      final User newUser = await authService.register(registerRequest);
+      final User newUser = await authService.register(
+          registerRequest,
+          _image!,
+          _carteScolaire!,
+          _cin!
+      );
       final localStorage = LocalStorageService();
       await localStorage.saveUser(newUser);
 
-      Navigator.pushReplacementNamed(context, '/homePage');
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HomePage(currentUser:newUser)),
+      );
     } catch (e) {
       String errorMessage = "Une erreur est survenue";
 
@@ -169,7 +252,28 @@ class _RegisterPageState extends State<RegisterPage> {
                     hint: 'HH123456',
                     label: 'CIN*',
                 ),
-
+                Container(
+                  padding: EdgeInsets.all(8),
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow[100], // couleur douce pour l'info
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Pour les élèves n'ayant pas l'âge légal pour détenir une CIN, "
+                              "la CIN du tuteur doit être fournie à la place.",
+                          style: TextStyle(color: Colors.black87, fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 CustomTextField(
                     controller: _carteEudiantController,
                     hint:'CNE (Code national de l étudiant) ou le code MASSAR',
@@ -222,6 +326,27 @@ class _RegisterPageState extends State<RegisterPage> {
                   label: 'Date de naissance*',
                 ),
 
+                FilePickerField(
+                    label: "Photo *",
+                    image: _image,
+                    onPick: _pickImage,
+                    placeholder: "Charger la photo (PNG/JPG – max 1MB)"
+                ),
+
+                FilePickerField(
+                    label: "Carte scolaire *",
+                    image: _carteScolaire,
+                    onPick: _pickCarteScolaire,
+                    placeholder:"Charger la photo (PNG/JPG – max 1MB)"
+                ),
+
+                FilePickerField(
+                    label: "CIN *",
+                    image: _cin,
+                    onPick: _pickCin,
+                    placeholder:"Charger la photo (PNG/JPG – max 1MB)"
+                ),
+
                 CustomTextField(
                   controller: _passwordController,
                   obscureText: _showHidePassword,
@@ -236,6 +361,25 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                       icon: Icon(
                         _showHidePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      )),
+                ),
+
+                CustomTextField(
+                  controller: _confirmPasswordController,
+                  obscureText: _showHideConfirmPassword,
+                  hint:'*******',
+                  label: 'Confirmez le Mot de passe*',
+                  prefixIcon: Icons.lock,
+                  suffixIcon: IconButton(
+                      onPressed: (){
+                        setState(() {
+                          _showHideConfirmPassword = !_showHideConfirmPassword;
+                        });
+                      },
+                      icon: Icon(
+                        _showHideConfirmPassword
                             ? Icons.visibility_off
                             : Icons.visibility,
                       )),

@@ -4,7 +4,8 @@ import 'package:smart_bus/services/local_storage_service.dart';
 import '../../models/User.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final User? currentUser;
+  const HomePage({super.key, this.currentUser});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -17,11 +18,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    loadUser();
+    if(widget.currentUser != null){
+      currentUser = widget.currentUser;
+    }else{
+      loadUser();
+    }
   }
 
   void loadUser() async{
-    currentUser = LocalStorageService().getUser();
+    User? user = LocalStorageService().getUser();
+    setState(() {
+      currentUser = user;
+    });
   }
 
   @override

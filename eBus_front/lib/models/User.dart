@@ -9,6 +9,9 @@ class User {
 
   final String dateNaissance;
   final String? typeAbonnement;
+  final String? photoUrl;
+  final String? carteScolaireUrl;
+  final String? cinUrl;
 
   User({
     required this.id,
@@ -19,10 +22,14 @@ class User {
     required this.tel,
     required this.adresse,
     required this.dateNaissance,
-     this.typeAbonnement,
+    this.typeAbonnement,
+    this.photoUrl,
+    this.carteScolaireUrl,
+    this.cinUrl,
   });
 
   factory User.fromJson(Map<String,dynamic> json){
+    print("JSON COMPLET: $json");
     return User(
       id: json['id'],
       nom: json['nom'],
@@ -32,7 +39,11 @@ class User {
       tel: json['tel'],
       adresse: json['adresse'],
       dateNaissance: json['dateNaissance'],
-      typeAbonnement: json['typeAbonnement'].toString(),
+      typeAbonnement: json['typeAbonnement']?.toString(),
+      photoUrl: json['photoUrl'],
+      carteScolaireUrl: json['carteScolaireUrl'],
+      cinUrl: json['cinUrl'],
+
     );
   }
 

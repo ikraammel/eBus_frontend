@@ -15,9 +15,9 @@ class LocalStorageService {
   static const String keyAdresse = 'adresse';
   static const String keyDateNaissance = 'dateNaissance';
   static const String keyTypeAbonnement = 'typeAbonnement';
-
-
-
+  static const String keyPhotoUrl = 'photoUrl';
+  static const String keyCinUrl  = 'cinUrl';
+  static const String keyCarteScolaireUrl = 'carteScolaireUrl';
 
   Future<void> saveUser(User user) async{
     await prefs.setInt(keyUserId,user.id);
@@ -32,6 +32,18 @@ class LocalStorageService {
     await prefs.setString(
         keyTypeAbonnement,
         user.typeAbonnement ?? '',
+    );
+    await prefs.setString(
+        keyPhotoUrl,
+        user.photoUrl ?? '',
+    );
+    await prefs.setString(
+        keyCinUrl,
+        user.cinUrl ?? ''
+    );
+    await prefs.setString(
+        keyCarteScolaireUrl,
+        user.carteScolaireUrl ?? ''
     );
   }
 
@@ -49,6 +61,9 @@ class LocalStorageService {
         adresse: prefs.getString(keyAdresse) ?? '',
         dateNaissance: prefs.getString(keyDateNaissance) ?? '',
         typeAbonnement: prefs.getString(keyTypeAbonnement),
+        photoUrl: prefs.getString(keyPhotoUrl),
+        cinUrl: prefs.getString(keyCinUrl),
+        carteScolaireUrl: prefs.getString(keyCarteScolaireUrl),
       );
     }
   }
