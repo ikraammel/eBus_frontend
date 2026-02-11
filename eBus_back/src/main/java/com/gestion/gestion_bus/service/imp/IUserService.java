@@ -12,10 +12,13 @@ import com.gestion.gestion_bus.repository.AbonnementRepository;
 import com.gestion.gestion_bus.repository.RoleRepository;
 import com.gestion.gestion_bus.repository.UserRepository;
 import com.gestion.gestion_bus.service.interfaces.UserService;
+import com.gestion.gestion_bus.uploads.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +31,16 @@ public class IUserService implements UserService {
     private final AbonnementRepository abonnementRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorageService;
 
     @Override
-    public UserResponseDto registerUser(UserRequestDto dto) {
+    public UserResponseDto registerUser(UserRequestDto dto,
+                                        MultipartFile photo,
+                                        MultipartFile carteScolaire,
+                                        MultipartFile cin) throws IOException {
+        System.out.println("Email reçu: " + dto.getEmail());
+        System.out.println("Nom reçu: " + dto.getNom());
+
         if(userRepository.existsByEmail(dto.getEmail())){
             throw new RuntimeException("Email déjà utilisé");
         }
@@ -48,9 +58,19 @@ public class IUserService implements UserService {
         user.setCIN(dto.getCIN());
         user.setCNE(dto.getCNE());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setPhotoUrl(dto.getPhotoUrl());
-        user.setCarteScolaireUrl(dto.getCarteScolaireUrl());
-        user.setAttestationUrl(dto.getAttestationUrl());
+
+        if(photo != null){
+            String photoUrl = fileStorageService.storeFile(photo);
+            user.setPhotoUrl(photoUrl);
+        }
+        if(carteScolaire != null){
+            String carteUrl = fileStorageService.storeFile(carteScolaire);
+            user.setCarteScolaireUrl(carteUrl);
+        }
+        if(cin != null){
+            String cinUrl = fileStorageService.storeFile(cin);
+            user.setCinUrl(cinUrl);
+        }
 
         User savedUser = userRepository.save(user);
 

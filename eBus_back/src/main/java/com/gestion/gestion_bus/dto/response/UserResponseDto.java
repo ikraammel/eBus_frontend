@@ -3,6 +3,7 @@ package com.gestion.gestion_bus.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +18,7 @@ public class UserResponseDto {
     private String role;
     private String dateNaissance;
     private String typeAbonnement;
+    private String photoUrl;
+    private String carteScolaireUrl;
+    private String cinUrl;
 }
