@@ -3,12 +3,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/models/request/register_request.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
-import 'package:smart_bus/views/pages/home_page.dart';
+import 'package:smart_bus/views/home/home_page.dart';
 import 'package:smart_bus/views/pages/register/file_picker_field.dart';
 import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/custom_text_field.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
+import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
 
 import '../../../models/User.dart';
@@ -402,7 +403,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       )
                     ]
                 ),
-                SizedBox(height: 70,),
+                SizedBox(height: 20,),
+                GuestButton(),
+                SizedBox(height: 20,),
                 AdministratorAccess(),
               ],
             ),

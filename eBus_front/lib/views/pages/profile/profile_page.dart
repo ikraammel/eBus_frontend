@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/models/User.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
+import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/profile/contact_card.dart';
 import 'package:smart_bus/views/pages/profile/header_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres_page.dart';
@@ -83,7 +84,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     onTap: () async {
                       await LocalStorageService().logout();
                       if (mounted) {
-                        Navigator.pushReplacementNamed(context, '/loginPage');
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                                (route) => false,
+                        );
                       }
                     },
                     child: Container(

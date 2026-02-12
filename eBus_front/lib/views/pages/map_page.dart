@@ -10,18 +10,13 @@ class MapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
             'Suivi en temps réel',
             style: TextStyle(
               color: Color(0xFF1A367C),
               fontWeight: FontWeight.w600
             ),
-        ),
-        leading: IconButton(
-            onPressed: (){
-              Navigator.pop(context);
-        },
-            icon: Icon(Icons.arrow_back)
         ),
         actions: [
           IconButton(

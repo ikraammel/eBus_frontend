@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
-import 'package:smart_bus/views/pages/home_page.dart';
+import 'package:smart_bus/views/home/home_page.dart';
 import 'package:smart_bus/views/pages/login/forgot_password.dart';
 import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
+import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
 import '../shared_login_register/custom_text_field.dart';
 
@@ -32,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
 
       await LocalStorageService().saveUser(user);
       if(user.role == 'USER'){
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => HomePage()),
         );
@@ -113,6 +114,8 @@ class _LoginPageState extends State<LoginPage> {
                   onTap: () => Navigator.pushNamed(context, '/registerPage')
               ),
               SizedBox(height: 40,),
+             GuestButton(),
+             SizedBox(height: 70,),
              AdministratorAccess(),
               ],
             ),

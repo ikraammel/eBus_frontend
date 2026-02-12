@@ -8,15 +8,14 @@ class TicketPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: const Color(0xFF1A367C),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Acheter un ticket",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Center(
+          child: const Text(
+            "Acheter un ticket",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
       body: SingleChildScrollView(
