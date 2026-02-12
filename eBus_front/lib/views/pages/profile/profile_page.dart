@@ -48,6 +48,16 @@ class _ProfilePageState extends State<ProfilePage> {
                             label: 'Email'
                         ),
                         ContactCard(
+                            value: currentUser!.cin,
+                            icon: Icons.account_box,
+                            label: 'CIN'
+                        ),
+                        ContactCard(
+                            value: currentUser!.cne,
+                            icon: Icons.badge,
+                            label: 'Carte Scolaire'
+                        ),
+                        ContactCard(
                             value: currentUser?.tel ?? "0600000000",
                             icon: Icons.phone,
                             label: 'Téléphone'
@@ -61,7 +71,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   SizedBox(height: 20),
                   Align(
-                    alignment: Alignment.centerLeft, // Aligne à gauche
+                    alignment: Alignment.centerLeft,
                     child: Text(
                       "PARAMÈTRES",
                       style: TextStyle(
