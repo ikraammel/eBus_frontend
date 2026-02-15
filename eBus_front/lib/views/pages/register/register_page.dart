@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smart_bus/main.dart';
-import 'package:smart_bus/models/request/register_request.dart';
-import 'package:smart_bus/services/auth_service.dart';
-import 'package:smart_bus/services/local_storage_service.dart';
+import 'package:smart_bus/bloc/register/register_actions.dart';
+import 'package:smart_bus/bloc/register/register_bloc.dart';
+import 'package:smart_bus/bloc/register/register_state.dart';
 import 'package:smart_bus/views/home/home_page.dart';
 import 'package:smart_bus/views/pages/register/steps/step0_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step1_widget.dart';
@@ -17,6 +17,7 @@ import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
 
 import '../../../models/User.dart';
+import '../../../models/request/register_request.dart';
 import '../../../services/file_picker_service.dart';
 import '../../app_snack_bar/app_snack_bar.dart';
 
@@ -138,60 +139,6 @@ class _RegisterPageState extends State<RegisterPage> {
     return true;
   }
 
-  Future<void> _register() async{
-    if(!_verifyPassword()){
-      return;
-    }
-    if(_image == null || _cin == null || _carteScolaire == null){
-      AppSnackBar.showError(context, "Veuillez charger tous les documents obligatoires");
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      AppSnackBar.showError(context, "Les mots de passe ne correspondent pas");
-      return;
-    }
-
-    AuthService _authService = getIt<AuthService>();
-    try {
-      final registerRequest = RegisterRequest(
-          nom: _nomController.text,
-          prenom: _prenomController.text,
-          email: _emailController.text,
-          tel: _phoneController.text,
-          password: _passwordController.text,
-          adresse: _adresseController.text,
-          dateNaissance: _dateNaissanceController.text,
-          typeAbonnement: _typeAbonnement,
-          cin: _cinController.text,
-          cne: _carteEudiantController.text
-      );
-      final User newUser = await _authService.register(
-          registerRequest,
-          _image!,
-          _carteScolaire!,
-          _cin!
-      );
-
-      final localStorage = getIt<LocalStorageService>();
-      await localStorage.saveUser(newUser);
-
-      AppSnackBar.showSuccess(context, "Inscription réussie !");
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomePage(currentUser:newUser)),
-      );
-    } catch (e) {
-      String errorMessage = "Une erreur est survenue";
-
-      if (e is Exception) {
-        errorMessage = e.toString().replaceFirst("Exception: ", "");
-      }else{
-        errorMessage = "Une erreur inattendue est survenue";
-      }
-      AppSnackBar.showError(context,errorMessage);
-    }
-  }
   @override
   void dispose(){
     _emailController.dispose();
@@ -209,120 +156,173 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => RegisterBloc(),
+      child:BlocConsumer<RegisterBloc,RegisterState>(
+          listener: (context,state){
+            if(state is RegisterSuccess){
+              AppSnackBar.showSuccess(context, "Inscription réussie !");
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => HomePage(currentUser:state.user)),
+              );
+            }else if(state is RegisterFailure){
+              AppSnackBar.showError(context, state.error);
+            }
+          },
+          builder: (BuildContext context, RegisterState state) {
+            return Scaffold(
+              backgroundColor: Colors.white,
+              body: SafeArea(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Header(label1: 'Inscription', label2: 'Rejoignez eBus'),
+                        SizedBox(height:20),
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Header(label1: 'Inscription', label2: 'Rejoignez eBus'),
-                SizedBox(height:20),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: PageView(
+                            controller: _pageController,
+                            onPageChanged: (index){
+                              setState(() {
+                                _currentPage = index;
+                              });
+                            },
+                            children: [
+                              Form(
+                                key: _formKeyStep0,
+                                child: Step0Widget(
+                                    nomController: _nomController,
+                                    prenomController: _prenomController
+                                ),
+                              ),
+                              Form(
+                                key: _formKeyStep1,
+                                child: Step1Widget(
+                                  adresseController: _adresseController,
+                                  emailController: _emailController,
+                                  phoneController: _phoneController,
+                                  dateNaissanceController: _dateNaissanceController,
+                                ),
+                              ), // Infos personnelles
+                              Form(
+                                key: _formKeyStep2,
+                                child: Step2Widget(
+                                  cinController: _cinController,
+                                  carteEudiantController: _carteEudiantController,
+                                  typeAbonnement: _typeAbonnement,
+                                  onTypeChanged: (value) {
+                                    setState(() {
+                                      _typeAbonnement = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Form(
+                                key: _formKeyStep3,
+                                child: Step3Widget(
+                                  image: _image,
+                                  carteScolaire: _carteScolaire,
+                                  cin: _cin,
+                                  onPickImage: _pickImage,
+                                  onPickCarteScolaire: _pickCarteScolaire,
+                                  onPickCin: _pickCin,
+                                ),
+                              ),
+                              Form(
+                                key: _formKeyStep4,
+                                child: Step4Widget(
+                                  passwordController: _passwordController,
+                                  confirmPasswordController: _confirmPasswordController,
+                                ),
+                              ), // Récapitulatif
+                            ],
+                          ),
+                        ),
 
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (index){
-                      setState(() {
-                        _currentPage = index;
-                      });
-                    },
-                    children: [
-                      Form(
-                        key: _formKeyStep0,
-                        child: Step0Widget(
-                            nomController: _nomController,
-                            prenomController: _prenomController
-                        ),
-                      ),
-                      Form(
-                        key: _formKeyStep1,
-                        child: Step1Widget(
-                          adresseController: _adresseController,
-                          emailController: _emailController,
-                          phoneController: _phoneController,
-                          dateNaissanceController: _dateNaissanceController,
-                        ),
-                      ), // Infos personnelles
-                      Form(
-                        key: _formKeyStep2,
-                        child: Step2Widget(
-                          cinController: _cinController,
-                          carteEudiantController: _carteEudiantController,
-                          typeAbonnement: _typeAbonnement,
-                          onTypeChanged: (value) {
-                            setState(() {
-                              _typeAbonnement = value;
-                            });
-                          },
-                        ),
-                      ),
-                      Form(
-                        key: _formKeyStep3,
-                        child: Step3Widget(
-                          image: _image,
-                          carteScolaire: _carteScolaire,
-                          cin: _cin,
-                          onPickImage: _pickImage,
-                          onPickCarteScolaire: _pickCarteScolaire,
-                          onPickCin: _pickCin,
-                        ),
-                      ),
-                      Form(
-                        key: _formKeyStep4,
-                        child: Step4Widget(
-                          passwordController: _passwordController,
-                          confirmPasswordController: _confirmPasswordController,
-                        ),
-                      ), // Récapitulatif
-                    ],
-                  ),
-                ),
+                        SizedBox(height: 20),
 
-                SizedBox(height: 20),
+                        Row(
+                          children: [
+                            if (_currentPage > 0) ...[
+                              Expanded(
+                                child: AuthButton(
+                                  text: "Précédent",
+                                  onPressed: previousStep,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                            ],
+                            Expanded(
+                                child: AuthButton(
+                                    text: _currentPage == 4 ? 'S\'inscrire' : "Suivant",
+                                    onPressed: _currentPage == 4
+                                      ? (){
+                                      if(!_verifyPassword()){
+                                        return;
+                                      }
+                                      if(_image == null || _cin == null || _carteScolaire == null){
+                                        AppSnackBar.showError(context, "Veuillez charger tous les documents obligatoires");
+                                        return;
+                                      }
 
-                Row(
-                  children: [
-                    if (_currentPage > 0) ...[
-                      Expanded(
-                        child: AuthButton(
-                          text: "Précédent",
-                          onPressed: previousStep,
+                                      if (_passwordController.text != _confirmPasswordController.text) {
+                                        AppSnackBar.showError(context, "Les mots de passe ne correspondent pas");
+                                        return;
+                                      }
+                                      final registerRequest = RegisterRequest(
+                                          nom: _nomController.text,
+                                          prenom: _prenomController.text,
+                                          email: _emailController.text,
+                                          tel: _phoneController.text,
+                                          password: _passwordController.text,
+                                          adresse: _adresseController.text,
+                                          dateNaissance: _dateNaissanceController.text,
+                                          typeAbonnement: _typeAbonnement,
+                                          cin: _cinController.text,
+                                          cne: _carteEudiantController.text
+                                      );
+                                      context.read<RegisterBloc>().add(
+                                          RegisterSubmitted(
+                                              request: registerRequest,
+                                              image: _image!,
+                                              carteScolaire: _carteScolaire!,
+                                              cin: _cin!
+                                          )
+                                      );
+                                      }
+                                        : nextStep
+                                )
+                            ),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 10),
-                    ],
-                      Expanded(
-                          child: AuthButton(
-                              text: _currentPage == 4 ? 'S\'inscrire' : "Suivant",
-                              onPressed: _currentPage == 4 ? _register : nextStep
-                          )
-                      ),
-                  ],
-                ),
-                SizedBox(height: 20,),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SwitchAuthPage(
-                          questionText: 'Vous avez déjà un compte ?',
-                          actionText: 'Se connecter',
-                          onTap:() => Navigator.pushNamed(context, '/loginPage')
-                      )
-                    ]
-                ),
-                const SizedBox(height: 32),
-                const GuestButton(),
-                const SizedBox(height: 30),
-                const AdministratorAccess(),
-                const SizedBox(height: 40)
-              ],
-            ),
-          )
-      ),
-    );
+                        SizedBox(height: 20,),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SwitchAuthPage(
+                                  questionText: 'Vous avez déjà un compte ?',
+                                  actionText: 'Se connecter',
+                                  onTap:() => Navigator.pushNamed(context, '/loginPage')
+                              )
+                            ]
+                        ),
+                        const SizedBox(height: 32),
+                        const GuestButton(),
+                        const SizedBox(height: 30),
+                        const AdministratorAccess(),
+                        const SizedBox(height: 40)
+                      ],
+                    ),
+                  )
+              ),
+            );
+          },
+
+  )
+      );
   }
 }
