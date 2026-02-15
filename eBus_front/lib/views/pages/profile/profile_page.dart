@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/main.dart';
 import 'package:smart_bus/models/User.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
@@ -15,6 +16,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   User? currentUser;
+  final storage = getIt<LocalStorageService>();
 
   @override
   void initState() {
@@ -24,7 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void loadUser(){
     setState(() {
-      currentUser = LocalStorageService().getUser();
+      currentUser = storage.getUser();
     });
   }
 
@@ -92,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 20),
                   InkWell(
                     onTap: () async {
-                      await LocalStorageService().logout();
+                      await storage.logout();
                       if (mounted) {
                         Navigator.pushAndRemoveUntil(
                             context,

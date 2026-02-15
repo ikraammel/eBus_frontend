@@ -1,9 +1,11 @@
-import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/models/User.dart';
 
+import '../enums/enums.dart';
+
 class LocalStorageService {
-  final SharedPreferences prefs = GetIt.instance<SharedPreferences>();
+  LocalStorageService({required this.prefs});
+  final SharedPreferences prefs;
 
   static const String keyUserId = 'userId';
   static const String keyNom = 'nom';
@@ -27,7 +29,7 @@ class LocalStorageService {
     await prefs.setString(keyNom,user.nom);
     await prefs.setString(keyPrenom,user.prenom);
     await prefs.setString(keyEmail,user.email);
-    await prefs.setString(keyRole,user.role);
+    await prefs.setString(keyRole,user.role.name);
     await prefs.setString(keyTel,user.tel);
     await prefs.setString(keyAdresse,user.adresse);
     await prefs.setBool(keyIsLoggedIn,true);
@@ -60,14 +62,18 @@ class LocalStorageService {
 
   User? getUser(){
     final id = prefs.getInt(keyUserId);
-    if(id == null) return null;
-    else{
+    if(id == null) {
+      return null;
+    } else{
       return User(
         id: id,
         nom: prefs.getString(keyNom) ?? '',
         prenom: prefs.getString(keyPrenom) ?? '',
         email: prefs.getString(keyEmail) ?? '',
-        role: prefs.getString(keyRole) ?? '',
+        role: Enums.values.firstWhere(
+            (e) => e.name == prefs.getString(keyRole),
+            orElse: () => Enums.USER
+        ),
         tel: prefs.getString(keyTel) ?? '',
         adresse: prefs.getString(keyAdresse) ?? '',
         dateNaissance: prefs.getString(keyDateNaissance) ?? '',

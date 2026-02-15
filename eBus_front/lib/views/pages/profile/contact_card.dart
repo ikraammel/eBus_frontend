@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/User.dart';
 
 class ContactCard extends StatelessWidget {
   const ContactCard({super.key,required this.icon,required this.label,required this.value});

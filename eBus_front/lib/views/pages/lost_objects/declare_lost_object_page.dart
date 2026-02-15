@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
 
 class DeclareLostObjectPage extends StatefulWidget {
   const DeclareLostObjectPage({super.key});
@@ -70,12 +71,7 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       // Simulation de succès
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Déclaration envoyée !"),
-                          backgroundColor: Color(0xFF8DC63F),
-                        ),
-                      );
+                      AppSnackBar.showSuccess(context, "Déclaration envoyée !");
                       Navigator.pop(context);
                     }
                   },

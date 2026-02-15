@@ -1,0 +1,4 @@
+enum Enums{
+  USER,
+  ADMIN
+}

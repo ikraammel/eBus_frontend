@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/main.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/home/bottom_nav.dart';
 import 'package:smart_bus/views/home/card_menu.dart';
@@ -77,8 +78,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  final storage = getIt<LocalStorageService>();
+
   void loadUser() async{
-    User? user = LocalStorageService().getUser();
+    User? user = storage.getUser();
     setState(() {
       currentUser = user;
     });
@@ -116,7 +119,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _showLoginRequiredDialog(){
+  void _showLoginRequiredDialog(){
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
