@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/models/User.dart';
 
@@ -23,41 +25,43 @@ class LocalStorageService {
   static const String keyCin = 'cin';
   static const String keyCne = 'cne';
 
-
   Future<void> saveUser(User user) async{
-    await prefs.setInt(keyUserId,user.id);
-    await prefs.setString(keyNom,user.nom);
-    await prefs.setString(keyPrenom,user.prenom);
-    await prefs.setString(keyEmail,user.email);
-    await prefs.setString(keyRole,user.role.name);
-    await prefs.setString(keyTel,user.tel);
-    await prefs.setString(keyAdresse,user.adresse);
-    await prefs.setBool(keyIsLoggedIn,true);
-    await prefs.setString(keyDateNaissance,user.dateNaissance);
-    await prefs.setString(
+    await Future.wait([
+      prefs.setInt(keyUserId,user.id),
+      prefs.setString(keyNom,user.nom),
+      prefs.setString(keyPrenom,user.prenom),
+      prefs.setString(keyEmail,user.email),
+      prefs.setString(keyRole,user.role.name),
+      prefs.setString(keyTel,user.tel),
+      prefs.setString(keyAdresse,user.adresse),
+      prefs.setBool(keyIsLoggedIn,true),
+      prefs.setString(keyDateNaissance,user.dateNaissance),
+      prefs.setString(
         keyTypeAbonnement,
         user.typeAbonnement ?? '',
-    );
-    await prefs.setString(
+      ),
+      prefs.setString(
         keyPhotoUrl,
         user.photoUrl ?? '',
-    );
-    await prefs.setString(
-        keyCinUrl,
-        user.cinUrl ?? ''
-    );
-    await prefs.setString(
-        keyCarteScolaireUrl,
-        user.carteScolaireUrl ?? ''
-    );
-    await prefs.setString(
-        keyCin,
-        user.cin
-    );
-    await prefs.setString(
-        keyCne,
-        user.cne
-    );
+      ),
+      prefs.setString(
+          keyCinUrl,
+          user.cinUrl ?? ''
+      ),
+      prefs.setString(
+          keyCarteScolaireUrl,
+          user.carteScolaireUrl ?? ''
+      ),
+      prefs.setString(
+          keyCin,
+          user.cin
+      ),
+      prefs.setString(
+          keyCne,
+          user.cne
+      ),
+    ]);
+
   }
 
   User? getUser(){
