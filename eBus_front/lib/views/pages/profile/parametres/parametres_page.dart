@@ -10,7 +10,7 @@ class ParametresPage extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final VoidCallback? onTap; // Pour gérer le clic
+  final VoidCallback? onTap; 
 
   @override
   Widget build(BuildContext context) {

@@ -95,6 +95,45 @@ class AuthService {
     } catch (e) {
       throw Exception("Erreur inattendue: ${e.toString()}");
     }
-
   }
-}
+
+  Future<User> updateUser(int id,Map<String,dynamic> user) async{
+    try{
+      final response = await _dio.patch(
+        '/users/update/$id',
+        data: user,
+      );
+      return User.fromJson(response.data);
+    }on DioException catch(e){
+      if(e.response != null && e.response!.data != null){
+        final data = e.response!.data;
+
+        if(data is String){
+          throw Exception(data);
+        }
+        if(data is Map){
+          if(data.containsKey('message')){
+            throw Exception(data['message']);
+          }
+        }
+      }
+      throw Exception("Erreur lors de la connexion");
+        }
+      }
+
+      Future<void> deleteUser(int id) async{
+        try{
+          await _dio.delete(
+            '/users/$id',
+          );
+        }on DioException catch(e){
+          if(e.response != null && e.response!.data != null){
+            final data = e.response!.data;
+
+            if(data is String){
+              throw Exception(data);
+            }
+          }
+        }
+      }
+    }

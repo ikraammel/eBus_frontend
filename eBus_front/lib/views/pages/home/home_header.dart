@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/User.dart';
+import '../../../models/User.dart';
+
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key,this.currentUser});

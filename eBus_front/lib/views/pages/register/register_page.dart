@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smart_bus/bloc/register/register_actions.dart';
-import 'package:smart_bus/bloc/register/register_bloc.dart';
-import 'package:smart_bus/bloc/register/register_state.dart';
-import 'package:smart_bus/views/home/home_page.dart';
+import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/views/pages/register/steps/step0_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step1_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step2_widget.dart';
@@ -16,10 +13,13 @@ import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
 import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
 
-import '../../../models/User.dart';
+import '../../../bloc/auth/auth_bloc.dart';
+import '../../../bloc/auth/auth_event.dart';
 import '../../../models/request/register_request.dart';
 import '../../../services/file_picker_service.dart';
 import '../../app_snack_bar/app_snack_bar.dart';
+import '../../loading/splash_screen.dart';
+import '../home/home_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -156,21 +156,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => RegisterBloc(),
-      child:BlocConsumer<RegisterBloc,RegisterState>(
+    return BlocConsumer<AuthBloc,AuthState>(
           listener: (context,state){
-            if(state is RegisterSuccess){
+            if(state is AuthAuthenticated){
               AppSnackBar.showSuccess(context, "Inscription réussie !");
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => HomePage(currentUser:state.user)),
+                MaterialPageRoute(builder: (_) => HomePage()),
               );
-            }else if(state is RegisterFailure){
+            }else if(state is AuthFailure){
               AppSnackBar.showError(context, state.error);
             }
           },
-          builder: (BuildContext context, RegisterState state) {
+          builder: (BuildContext context, AuthState state) {
+            if (state is AuthLoading){
+              return SplashScreen();
+            }
             return Scaffold(
               backgroundColor: Colors.white,
               body: SafeArea(
@@ -285,10 +286,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                           cin: _cinController.text,
                                           cne: _carteEudiantController.text
                                       );
-                                      context.read<RegisterBloc>().add(
-                                          RegisterSubmitted(
+                                      context.read<AuthBloc>().add(
+                                          AuthRegisterRequested(
                                               request: registerRequest,
-                                              image: _image!,
+                                              photo: _image!,
                                               carteScolaire: _carteScolaire!,
                                               cin: _cin!
                                           )
@@ -321,8 +322,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             );
           },
-
-  )
       );
   }
 }

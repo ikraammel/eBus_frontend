@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../home/home_page.dart';
+
+import '../home/home_page.dart';
 
 class GuestButton extends StatelessWidget {
   const GuestButton({super.key});

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:smart_bus/main.dart';
-import 'package:smart_bus/services/local_storage_service.dart';
-import 'package:smart_bus/views/home/bottom_nav.dart';
-import 'package:smart_bus/views/home/card_menu.dart';
-import 'package:smart_bus/views/home/home_header.dart';
-import 'package:smart_bus/views/home/recent_activity.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_state.dart';
+import 'package:smart_bus/views/loading/splash_screen.dart';
+import 'package:smart_bus/views/pages/home/recent_activity.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
-import '../../models/User.dart';
-import '../pages/map_page.dart';
-import '../pages/profile/profile_page.dart';
+import '../../../models/User.dart';
+import '../map_page.dart';
+import '../profile/profile_page.dart';
+import 'bottom_nav.dart';
+import 'card_menu.dart';
+import 'home_header.dart';
+
 
 class HomePage extends StatefulWidget {
-  final User? currentUser;
-  const HomePage({super.key, this.currentUser});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -21,11 +23,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  User? currentUser;
-  Widget _getSelectedPage() {
+  Widget _getSelectedPage(User? user) {
     switch (_selectedIndex) {
       case 0:
-        return _buildHomeContent();
+        return _buildHomeContent(user);
       case 1:
         return MapPage();
       case 2:
@@ -33,14 +34,14 @@ class _HomePageState extends State<HomePage> {
       case 3:
         return ProfilePage();
       default:
-        return _buildHomeContent();
+        return _buildHomeContent(user);
     }
   }
 
-  Widget _buildHomeContent(){
+  Widget _buildHomeContent(User? user){
     return Column(
       children: [
-        HomeHeader(currentUser: currentUser),
+        HomeHeader(currentUser: user),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A367C)),
                 ),
                 const SizedBox(height: 15),
-                _buildGrid(),
+                _buildGrid(user),
                 const SizedBox(height: 25),
                 const Text(
                   "Activité récente",
@@ -69,53 +70,41 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    if(widget.currentUser != null){
-      currentUser = widget.currentUser;
-    }else{
-      loadUser();
-    }
-  }
-
-  final storage = getIt<LocalStorageService>();
-
-  void loadUser() async{
-    User? user = storage.getUser();
-    setState(() {
-      currentUser = user;
-    });
-  }
-
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: _getSelectedPage(),
-      bottomNavigationBar: BottomNav(
-        selectedIndex: _selectedIndex,
-        onItemSelected: (index) {
-          if (index == 3) {
-            if (currentUser == null) {
-              _showLoginRequiredDialog();
-            } else {
-              // Push la page Profile et NE PAS changer _selectedIndex
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ProfilePage()),
-              );
-            }
-            return;
-          }
+    return BlocBuilder<AuthBloc,AuthState>(
+      builder: (context, state) {
+        if (state is AuthAuthenticated) {
+          final currentUser = state.user;
+          return Scaffold(
+            backgroundColor: const Color(0xFFF8F9FB),
+            body: _getSelectedPage(currentUser),
+            bottomNavigationBar: BottomNav(
+              selectedIndex: _selectedIndex,
+              onItemSelected: (index) {
+                if (index == 3) {
+                  if (currentUser == null) {
+                    _showLoginRequiredDialog();
+                  } else {
+                    // Push la page Profile et NE PAS changer _selectedIndex
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ProfilePage()),
+                    );
+                  }
+                  return;
+                }
 
-          // Pour les autres onglets, reste avec setState
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
+                // Pour les autres onglets, reste avec setState
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+            ),
 
+          );
+        }
+        return SplashScreen();
+      }
     );
   }
 
@@ -142,7 +131,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildGrid() {
+  Widget _buildGrid(User? user) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -172,7 +161,7 @@ class _HomePageState extends State<HomePage> {
           icon: Icons.credit_card,
           color: Color(0xFF1A367C),
           onTap: () {
-            if(currentUser == null){
+            if(user == null){
               _showLoginRequiredDialog();
             }else{
               Navigator.pushNamed(context, '/paymentPage');
