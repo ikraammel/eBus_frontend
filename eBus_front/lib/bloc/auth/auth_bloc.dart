@@ -123,4 +123,5 @@ class AuthBloc extends Bloc<AuthEvent,AuthState>{
       emit(AuthFailure(error: e.toString()));
     }
   }
+
   }

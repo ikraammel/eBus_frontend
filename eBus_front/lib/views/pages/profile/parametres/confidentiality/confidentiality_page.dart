@@ -4,8 +4,8 @@ import 'package:smart_bus/main.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
 import 'package:smart_bus/views/loading/splash_screen.dart';
-import 'package:smart_bus/views/pages/profile/parametres/confidentiality/list_tile_items.dart';
-import 'package:smart_bus/views/pages/profile/parametres/confidentiality/switch_list_tile_items.dart';
+import 'package:smart_bus/views/pages/profile/parametres/shared%20ui/list_tile_items.dart';
+import 'package:smart_bus/views/pages/profile/parametres/shared%20ui/switch_list_tile_items.dart';
 
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
@@ -70,6 +70,7 @@ class _ConfidentialityPageState extends State<ConfidentialityPage> {
                       subtitle: "Nous respectons votre vie privée",
                       color: Colors.green[100],
                       prefixIcon: Icons.shield_outlined,
+                      prefixIconColor: Color(0xFF76BC41),
                     ),
                     SwitchListTileItems(
                         title: "Partage de position",

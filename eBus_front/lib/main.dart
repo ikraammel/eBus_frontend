@@ -17,6 +17,8 @@ import 'package:smart_bus/views/pages/register/register_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
+import 'bloc/auth/auth_state.dart';
+
 final getIt = GetIt.instance;
 Future<void> initialDependencies() async{
   final prefs = await SharedPreferences.getInstance();
@@ -56,7 +58,6 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         routes: {
-          "/" : (context) => SplashScreen(),
           "/loginPage": (context) => LoginPage(),
           "/homePage": (context) => HomePage(),
           "/mapPage": (context) => MapPage(),
@@ -66,7 +67,19 @@ class MyApp extends StatelessWidget {
           "/ticketsPage": (context) =>  TicketPage(),
           "/linesPage": (context) =>  LinesPage(),
         },
-        initialRoute: "/",
+        home: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is AuthLoading || state is AuthInitial) {
+              return const SplashScreen();
+            }
+            else if (state is AuthAuthenticated) {
+              return const HomePage();
+            }
+            else {
+              return const LoginPage();
+            }
+          },
+        ),
         debugShowCheckedModeBanner: false,
       ),
     );

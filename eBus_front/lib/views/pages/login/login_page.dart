@@ -49,14 +49,12 @@ class _LoginPageState extends State<LoginPage> {
                   context,
                   MaterialPageRoute(builder: (_) => HomePage()),
                 );
-              } else if (state is AuthFailure) {
+              }
+              else if (state is AuthFailure ) {
                 AppSnackBar.showError(context, state.error);
               }
             },
             builder: (context, state) {
-              if (state is AuthLoading){
-                return SplashScreen();
-              }
               return Scaffold(
                 backgroundColor: Colors.white,
                 body: SafeArea(

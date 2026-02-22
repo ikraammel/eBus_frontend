@@ -8,7 +8,8 @@ class ListTileItems extends StatelessWidget {
     this.color,
     this.titleColor,
     this.subtitleColor,
-    this.onTap
+    this.onTap,
+    this.prefixIconColor
   });
 
   final String title;
@@ -17,6 +18,7 @@ class ListTileItems extends StatelessWidget {
   final Color? subtitleColor;
   final IconData? prefixIcon;
   final Color? color;
+  final Color? prefixIconColor;
   final Function()? onTap;
 
   @override
@@ -37,7 +39,7 @@ class ListTileItems extends StatelessWidget {
         ),
         child: ListTile(
           onTap: onTap,
-          leading: prefixIcon != null ? Icon(prefixIcon, color: Color(0xFF76BC41)) : null,
+          leading: prefixIcon != null ? Icon(prefixIcon, color: prefixIconColor) : null,
           title: Text(title, style: TextStyle(color: titleColor, fontWeight: FontWeight.w500)),
           subtitle: Text(subtitle, style: TextStyle(color: subtitleColor,fontSize: 13),),
 

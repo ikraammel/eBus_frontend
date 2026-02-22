@@ -73,8 +73,16 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc,AuthState>(
       builder: (context, state) {
+        User? currentUser;
         if (state is AuthAuthenticated) {
-          final currentUser = state.user;
+          currentUser = state.user;
+        } else if (state is AuthUnauthenticated) {
+          currentUser = null; // mode invité
+        } else {
+          return const Scaffold(
+            body: SplashScreen(),
+          );
+        }
           return Scaffold(
             backgroundColor: const Color(0xFFF8F9FB),
             body: _getSelectedPage(currentUser),
@@ -103,8 +111,6 @@ class _HomePageState extends State<HomePage> {
 
           );
         }
-        return SplashScreen();
-      }
     );
   }
 
