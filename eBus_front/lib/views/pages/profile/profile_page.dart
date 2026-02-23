@@ -7,6 +7,7 @@ import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/profile/contact_card.dart';
 import 'package:smart_bus/views/pages/profile/header_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/confidentiality/confidentiality_page.dart';
+import 'package:smart_bus/views/pages/profile/parametres/help_and_support/help_and_support_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/notifications/notifications_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/parametres_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos.dart';
@@ -114,7 +115,13 @@ class ProfilePage extends StatelessWidget {
                       ),
                       ParametresPage(
                           icon: Icons.help,
-                          label: 'Aide & Support'
+                          label: 'Aide & Support',
+                          onTap:() => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HelpAndSupportPage()
+                            )
+                          ),
                       ),
                       // À ajouter à la fin de votre Column de paramètres
                       const SizedBox(height: 20),

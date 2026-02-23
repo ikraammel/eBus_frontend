@@ -26,6 +26,7 @@ dependencies:
   dio: ^5.9.1
   equatable: ^2.0.8
   webview_flutter: ^4.13.1
+  package_info_plus: ^9.0.0
 
 dev_dependencies:
   flutter_test:
