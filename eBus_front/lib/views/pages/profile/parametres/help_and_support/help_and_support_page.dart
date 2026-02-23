@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/utils/contact_support.dart';
 import 'package:smart_bus/views/pages/profile/parametres/help_and_support/app_infos.dart';
 import 'package:smart_bus/views/pages/profile/parametres/help_and_support/expansion_tile_items.dart';
 import 'package:smart_bus/views/pages/profile/parametres/help_and_support/help_banner.dart';
@@ -67,11 +68,13 @@ class HelpAndSupportPage extends StatelessWidget {
                 text: "Envoyer un email",
                 icon: Icons.email,
                 color: Color(0xFF1A367C),
+                onTap: () => ContactSupport.sendEmail(),
               ),
               QuickActions(
                 text: "Appeler le support",
                 icon: Icons.phone,
                 color: Color(0xFF76BC41),
+                onTap: () => ContactSupport.callSupport(),
               ),
               AppInfos(),
             ],

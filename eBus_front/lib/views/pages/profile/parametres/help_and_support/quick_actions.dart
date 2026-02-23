@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class QuickActions extends StatelessWidget {
-  const QuickActions({super.key,required this.text,required this.icon,this.color});
+  const QuickActions({super.key,required this.text,required this.icon,this.color,this.onTap});
 
   final String text;
   final IconData icon;
   final Color? color;
+  final Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +25,7 @@ class QuickActions extends StatelessWidget {
       ),
       child: ListTile(
         title: Text(text),
+        onTap: onTap,
         leading: Icon(icon,color: color,),
       ),
     );
