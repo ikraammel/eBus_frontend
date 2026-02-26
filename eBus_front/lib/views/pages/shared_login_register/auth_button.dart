@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/app_colors.dart';
+
 class AuthButton extends StatelessWidget {
   const AuthButton({
     super.key,
     required this.text,
-    required this.onPressed
+    this.onPressed,
+    this.color = AppColors.darkBlue,
   });
 
-  final VoidCallback onPressed; // Utiliser VoidCallback est plus standard en Flutter
+  final VoidCallback? onPressed; // Utiliser VoidCallback est plus standard en Flutter
   final String text;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,7 @@ class AuthButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1A367C), // Ton bleu foncé
+          backgroundColor: color,
           foregroundColor: Colors.white, // Gère la couleur du texte et du splash
           elevation: 2, // Légère ombre pour l'effet "Elevated" de l'image
           shape: RoundedRectangleBorder(
@@ -27,7 +31,7 @@ class AuthButton extends StatelessWidget {
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            letterSpacing: 0.5, // Un petit espacement pour la clarté
+            letterSpacing: 0.5,
           ),
         ),
         child: Text(text),

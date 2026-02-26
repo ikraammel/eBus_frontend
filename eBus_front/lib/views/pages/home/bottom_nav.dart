@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/app_colors.dart';
+
 class BottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onItemSelected;
@@ -15,7 +17,7 @@ class BottomNav extends StatelessWidget {
         onItemSelected(index);
       },
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF1A367C),
+      selectedItemColor: AppColors.darkBlue,
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Accueil"),

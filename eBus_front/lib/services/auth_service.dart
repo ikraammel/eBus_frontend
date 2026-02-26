@@ -136,4 +136,48 @@ class AuthService {
           }
         }
       }
+
+  Future<String> forgotPassword(String email) async {
+    try {
+      final response = await _dio.post(
+        "/users/forgot-password",
+        queryParameters: {"email": email},
+      );
+
+      if (response.statusCode == 200 && response.data is String) {
+        // extraire le token depuis le lien renvoyé par le backend
+        final data = response.data as String;
+        final token = data.split('token=')[1]; // récupère juste le token
+        return token;
+      } else {
+        throw Exception("Impossible de récupérer le token");
+      }
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.data != null) {
+        final data = e.response!.data;
+        if (data is String) throw Exception(data);
+      }
+      throw Exception("Erreur serveur lors de la récupération du token");
+    }
+  }
+
+      Future<void> resetPassword(String token,String newPassword) async{
+        try{
+          await _dio.post(
+              "/users/reset-password",
+              queryParameters: {
+                "token": token,
+                "newPassword": newPassword
+              }
+          );
+        }on DioException catch(e){
+          if(e.response != null && e.response!.data != null){
+            final data = e.response!.data;
+
+            if(data is String){
+              throw Exception(data);
+            }
+          }
+        }
+      }
     }

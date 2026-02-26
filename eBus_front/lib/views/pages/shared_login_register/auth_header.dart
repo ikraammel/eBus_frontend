@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key,required this.label1,required this.label2,this.image});
@@ -30,7 +31,7 @@ class Header extends StatelessWidget {
              child: Text(
               label1,
               style: TextStyle(
-                color: Color(0xFF1A367C),
+                color: AppColors.darkBlue,
                 fontWeight: FontWeight.bold,
                 fontSize: 24,
               ),

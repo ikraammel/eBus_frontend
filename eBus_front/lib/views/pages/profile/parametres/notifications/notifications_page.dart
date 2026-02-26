@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 
 import '../shared ui/list_tile_items.dart';
 import '../shared ui/switch_list_tile_items.dart';
@@ -30,7 +31,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          backgroundColor: Color(0xFF1A367C),
+          backgroundColor: AppColors.darkBlue,
         ),
       body: SingleChildScrollView(
       child: Padding(
@@ -42,7 +43,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           subtitle: "Choisissez les alertes que vous souhaitez recevoir",
           color: Colors.blue[50],
           prefixIcon: Icons.notifications_none,
-          prefixIconColor: Color(0xFF1A367C),
+          prefixIconColor: AppColors.darkBlue,
         ),
         SwitchListTileItems(
           title: "Arrivée du bus",

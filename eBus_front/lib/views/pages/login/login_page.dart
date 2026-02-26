@@ -6,8 +6,7 @@ import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
-import 'package:smart_bus/views/loading/splash_screen.dart';
-import 'package:smart_bus/views/pages/login/forgot_password.dart';
+import 'package:smart_bus/views/pages/login/forgot_password/forgot_password.dart';
 import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
@@ -95,8 +94,25 @@ class _LoginPageState extends State<LoginPage> {
                                 : Icons.visibility,
                           )),
                     ),
-
-                    ForgotPassword(),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ForgotPassword(),)
+                          );
+                        },
+                        child: Text('Mot de passe oublié ?',
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ),
+                    ]
+                ),
                     SizedBox(height: 20,),
                     AuthButton(
                         onPressed: (){

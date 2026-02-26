@@ -1,53 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
+import 'package:smart_bus/bloc/ligne/ligne_state.dart';
+import 'package:smart_bus/views/loading/splash_screen.dart';
+import '../../../bloc/ligne/ligne_event.dart';
+import '../../../constants/app_colors.dart';
 import 'line_details_page.dart';
 
 class LinesPage extends StatelessWidget {
   const LinesPage({super.key});
 
-  // Données pour la démonstration
-  final List<Map<String, String>> stopsLine12 = const [
-    {"name": "Gare Centrale", "time": "08:00"},
-    {"name": "Avenue des Lilas", "time": "08:05"},
-    {"name": "Rue du Commerce", "time": "08:10"},
-    {"name": "Place Victor Hugo", "time": "08:15"},
-    {"name": "Campus Universitaire", "time": "08:30"},
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: AppColors.lightGreenBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A367C),
+        backgroundColor: AppColors.darkBlue,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text("Lignes de bus",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
+      body: BlocBuilder<LigneBloc,LigneState>(
+        builder: (context, state) {
+          if(state is LigneLoading){
+            return SplashScreen();
+          }
+          if(state is LigneLoaded){
+            final lignes = state.lignes;
+
+            return Column(
               children: [
-                _buildLineCard(context, "12", "Centre-Ville", "Gare Centrale", "Campus", "10 min", const Color(0xFF1A367C)),
-                _buildLineCard(context, "5", "Quartier Ouest", "Place Rép.", "Zone Ind.", "15 min", const Color(0xFF8DC63F)),
-                _buildLineCard(context, "8", "Ligne Express", "Aéroport", "Centre Com.", "20 min", const Color(0xFF1A367C)),
+                _buildSearchBar(context),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: lignes.length,
+                    itemBuilder: (context, index) {
+                      final ligne = lignes[index];
+
+                      return _buildLineCard(
+                        context,
+                        ligne.numero,
+                        ligne.startPoint,
+                        ligne.endPoint,
+                        AppColors.darkBlue,
+                      );
+                    },
+                  ),
+                ),
               ],
-            ),
-          ),
-        ],
+            );
+          }if(state is LigneError){
+            return Center(child: Text(state.error));
+          }
+          return const SizedBox();
+        }
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
     return Container(
-      color: const Color(0xFF1A367C),
+      color: AppColors.darkBlue,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: TextField(
         style: const TextStyle(color: Colors.white),
+        onChanged: (value) {
+          context.read<LigneBloc>().add(SearchLignes(value));
+        },
         decoration: InputDecoration(
           hintText: "Rechercher une ligne...",
           hintStyle: const TextStyle(color: Colors.white54),
@@ -60,7 +81,7 @@ class LinesPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLineCard(BuildContext context, String number, String name, String start, String end, String freq, Color color) {
+  Widget _buildLineCard(BuildContext context, String number, String start, String end, Color color) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
@@ -76,10 +97,9 @@ class LinesPage extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => LineDetailsPage(
-                lineName: name,
                 lineNumber: number,
                 themeColor: color,
-                stops: stopsLine12,
+                stops: [],
               ),
             ),
           );
@@ -101,7 +121,7 @@ class LinesPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A367C))),
+                      Text("Ligne $number", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
                       const SizedBox(height: 5),
                       Text("$start → $end", style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                     ],
@@ -116,4 +136,4 @@ class LinesPage extends StatelessWidget {
       ),
     );
   }
-}
+  }

@@ -5,6 +5,8 @@ import 'package:smart_bus/views/pages/profile/parametres/help_and_support/expans
 import 'package:smart_bus/views/pages/profile/parametres/help_and_support/help_banner.dart';
 import 'package:smart_bus/views/pages/profile/parametres/help_and_support/quick_actions.dart';
 
+import '../../../../../constants/app_colors.dart';
+
 class HelpAndSupportPage extends StatelessWidget {
   const HelpAndSupportPage({super.key});
 
@@ -19,7 +21,7 @@ class HelpAndSupportPage extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
         ),
-        backgroundColor: const Color(0xFF1A367C),
+        backgroundColor: AppColors.darkBlue,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -67,13 +69,13 @@ class HelpAndSupportPage extends StatelessWidget {
               QuickActions(
                 text: "Envoyer un email",
                 icon: Icons.email,
-                color: Color(0xFF1A367C),
+                color: AppColors.darkBlue,
                 onTap: () => ContactSupport.sendEmail(),
               ),
               QuickActions(
                 text: "Appeler le support",
                 icon: Icons.phone,
-                color: Color(0xFF76BC41),
+                color: AppColors.green,
                 onTap: () => ContactSupport.callSupport(),
               ),
               AppInfos(),

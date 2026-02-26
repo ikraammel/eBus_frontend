@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/app_colors.dart';
+
 class LineDetailsPage extends StatelessWidget {
-  final String lineName;
   final String lineNumber;
   final Color themeColor;
   final List<Map<String, String>> stops; // Liste des arrêts reçue dynamiquement
 
   const LineDetailsPage({
     super.key,
-    required this.lineName,
     required this.lineNumber,
     required this.themeColor,
     required this.stops,
@@ -40,7 +40,7 @@ class LineDetailsPage extends StatelessWidget {
             // Nom de la destination
             Expanded(
               child: Text(
-                lineName,
+                'Station',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -95,7 +95,7 @@ class LineDetailsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A367C),
+                  color: AppColors.darkBlue,
                 ),
               ),
             ),
@@ -137,7 +137,7 @@ class LineDetailsPage extends StatelessWidget {
   }) {
     // Logique de couleur
     Color dotColor = isCurrent ? themeColor : (isPassed ? Colors.grey[300]! : Colors.white);
-    Color textColor = isCurrent ? themeColor : (isPassed ? Colors.grey : const Color(0xFF1A367C));
+    Color textColor = isCurrent ? themeColor : (isPassed ? Colors.grey : AppColors.darkBlue);
 
     return IntrinsicHeight(
       child: Row(

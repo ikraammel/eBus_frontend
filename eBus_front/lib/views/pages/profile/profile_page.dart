@@ -13,6 +13,7 @@ import 'package:smart_bus/views/pages/profile/parametres/parametres_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos.dart';
 
 import '../../../bloc/auth/auth_bloc.dart';
+import '../../../bloc/auth/auth_event.dart';
 import '../../../bloc/auth/auth_state.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -127,7 +128,7 @@ class ProfilePage extends StatelessWidget {
                       const SizedBox(height: 20),
                       InkWell(
                         onTap: () async {
-                          await storage.logout();
+                          context.read<AuthBloc>().add(AuthLogoutRequested());
                           if (context.mounted) {
                             Navigator.pushAndRemoveUntil(
                               context,

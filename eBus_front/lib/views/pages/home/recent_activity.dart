@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/app_colors.dart';
+
 class RecentActivity extends StatelessWidget {
   const RecentActivity({super.key});
 
@@ -15,8 +17,8 @@ class RecentActivity extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF8DC63F).withOpacity(0.1),
-            child: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF8DC63F)),
+            backgroundColor: AppColors.green.withOpacity(0.1),
+            child: const Icon(Icons.confirmation_number_outlined, color: AppColors.green),
           ),
           const SizedBox(width: 15),
           const Expanded(
@@ -28,7 +30,7 @@ class RecentActivity extends StatelessWidget {
               ],
             ),
           ),
-          const Text("2.50€", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A367C))),
+          const Text("2.50€", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
         ],
       ),
     );

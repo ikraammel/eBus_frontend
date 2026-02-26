@@ -40,3 +40,14 @@ class AuthFailure extends AuthState {
   List<Object> get props => [error];
 }
 
+class ForgotPasswordSuccess extends AuthState {
+  final String token;
+
+  ForgotPasswordSuccess({required this.token});
+
+  @override
+  List<Object> get props => [token];
+}
+
+class ResetPasswordSuccess extends AuthState {}
+

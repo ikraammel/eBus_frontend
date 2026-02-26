@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/app_colors.dart';
+
 class AdministratorAccess extends StatelessWidget {
   const AdministratorAccess({super.key});
 
@@ -18,7 +20,7 @@ class AdministratorAccess extends StatelessWidget {
         child: const Text(
           'Accès administrateur',
           style: TextStyle(
-            color: Color(0xFF1A367C),
+            color: AppColors.darkBlue,
             fontWeight: FontWeight.w600,
             fontSize: 14,
             decoration: TextDecoration.underline,

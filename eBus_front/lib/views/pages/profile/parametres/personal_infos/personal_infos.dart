@@ -7,6 +7,7 @@ import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal
 import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
+import '../../../../../constants/app_colors.dart';
 import '../../../../../models/User.dart';
 
 class PersonalInfos extends StatefulWidget {
@@ -114,7 +115,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: const Color(0xFF1A367C),
+              backgroundColor: AppColors.darkBlue,
             ),
             body: Container(
               padding: const EdgeInsets.all(20.0),

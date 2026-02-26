@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../constants/app_colors.dart';
+
 class ParametresPage extends StatelessWidget {
   const ParametresPage({
     super.key,
@@ -23,13 +25,13 @@ class ParametresPage extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: const Color(0xFF1A367C), size: 22),
+        leading: Icon(icon, color: AppColors.darkBlue, size: 22),
         title: Text(
           label,
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A367C),
+            color: AppColors.darkBlue,
           ),
         ),
         trailing: const Icon(

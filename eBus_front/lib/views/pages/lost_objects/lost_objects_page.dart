@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 import 'declare_lost_object_page.dart';
 
 class LostObjectsPage extends StatelessWidget {
@@ -8,7 +9,7 @@ class LostObjectsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8DC63F),
+        backgroundColor: AppColors.green,
         title: const Text("Objets trouvés"),
         actions: [
           IconButton(
@@ -20,7 +21,7 @@ class LostObjectsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _buildCard("Portefeuille noir", "Disponible", const Color(0xFF8DC63F)),
+          _buildCard("Portefeuille noir", "Disponible", AppColors.green),
           _buildCard("Téléphone Samsung", "Récupéré", Colors.grey),
         ],
       ),

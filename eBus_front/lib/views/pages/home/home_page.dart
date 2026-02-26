@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/views/loading/splash_screen.dart';
 import 'package:smart_bus/views/pages/home/recent_activity.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
@@ -50,14 +51,14 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const Text(
                   "Accès rapide",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A367C)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                 ),
                 const SizedBox(height: 15),
                 _buildGrid(user),
                 const SizedBox(height: 25),
                 const Text(
                   "Activité récente",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A367C)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                 ),
                 const SizedBox(height: 15),
                 RecentActivity(),
@@ -84,7 +85,7 @@ class _HomePageState extends State<HomePage> {
           );
         }
           return Scaffold(
-            backgroundColor: const Color(0xFFF8F9FB),
+            backgroundColor:  const Color(0xFFF8F9FB),
             body: _getSelectedPage(currentUser),
             bottomNavigationBar: BottomNav(
               selectedIndex: _selectedIndex,
@@ -93,7 +94,6 @@ class _HomePageState extends State<HomePage> {
                   if (currentUser == null) {
                     _showLoginRequiredDialog();
                   } else {
-                    // Push la page Profile et NE PAS changer _selectedIndex
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => ProfilePage()),
@@ -101,8 +101,6 @@ class _HomePageState extends State<HomePage> {
                   }
                   return;
                 }
-
-                // Pour les autres onglets, reste avec setState
                 setState(() {
                   _selectedIndex = index;
                 });
@@ -149,7 +147,7 @@ class _HomePageState extends State<HomePage> {
         CardMenu(
           title: 'Lignes',
           icon: Icons.directions_bus_filled,
-          color: Color(0xFF1A367C),
+          color: AppColors.darkBlue,
           onTap: () {
             Navigator.pushNamed(context, '/linesPage');
           },
@@ -157,15 +155,20 @@ class _HomePageState extends State<HomePage> {
         CardMenu(
           title: 'Suivi du bus',
           icon: Icons.map,
-          color: Color(0xFF8DC63F),
+          color: AppColors.green,
           onTap: () {
-            Navigator.pushNamed(context, '/busTrackingPage');
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => MapPage(showBackButton: true,)
+                )
+            );
           },
         ),
         CardMenu(
           title: 'Paiement',
           icon: Icons.credit_card,
-          color: Color(0xFF1A367C),
+          color: AppColors.darkBlue,
           onTap: () {
             if(user == null){
               _showLoginRequiredDialog();
@@ -177,7 +180,7 @@ class _HomePageState extends State<HomePage> {
         CardMenu(
           title: 'Réclamations',
           icon: Icons.chat_bubble_outline,
-          color: Color(0xFF8DC63F),
+          color: AppColors.green,
           onTap: () {
             Navigator.pushNamed(context, '/claimsPage');
           },
@@ -185,7 +188,7 @@ class _HomePageState extends State<HomePage> {
         CardMenu(
           title: 'Objets perdus',
           icon: Icons.inventory_2_outlined,
-          color: Color(0xFF1A367C),
+          color: AppColors.darkBlue,
           onTap: () {
             Navigator.pushNamed(context, '/lostObjectsPage');
           },

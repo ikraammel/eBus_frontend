@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../constants/app_colors.dart';
+
 class HelpBanner extends StatelessWidget {
   const HelpBanner({super.key});
 
@@ -9,7 +11,7 @@ class HelpBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Color(0xFF1A367C),
+        color: AppColors.darkBlue,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

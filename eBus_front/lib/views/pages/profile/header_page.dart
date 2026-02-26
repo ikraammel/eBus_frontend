@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/models/User.dart';
 import '../../../constants/constants.dart';
 
@@ -16,7 +17,7 @@ class HeaderPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, bottom: 40, left: 20, right: 20),
       decoration: const BoxDecoration(
-        color: Color(0xFF1B3C83), // Couleur unie
+        color: AppColors.darkBlue,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),

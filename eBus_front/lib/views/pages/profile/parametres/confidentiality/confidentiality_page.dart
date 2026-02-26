@@ -10,6 +10,7 @@ import 'package:smart_bus/views/pages/profile/parametres/shared%20ui/switch_list
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
 import '../../../../../bloc/auth/auth_state.dart';
+import '../../../../../constants/app_colors.dart';
 
 class ConfidentialityPage extends StatefulWidget {
   const ConfidentialityPage({super.key});
@@ -39,7 +40,7 @@ class _ConfidentialityPageState extends State<ConfidentialityPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Color(0xFF76BC41),
+        backgroundColor: AppColors.green,
       ),
       body: BlocConsumer<AuthBloc,AuthState>(
         listener: (context, state) {
@@ -70,7 +71,7 @@ class _ConfidentialityPageState extends State<ConfidentialityPage> {
                       subtitle: "Nous respectons votre vie privée",
                       color: Colors.green[100],
                       prefixIcon: Icons.shield_outlined,
-                      prefixIconColor: Color(0xFF76BC41),
+                      prefixIconColor: AppColors.green,
                     ),
                     SwitchListTileItems(
                         title: "Partage de position",

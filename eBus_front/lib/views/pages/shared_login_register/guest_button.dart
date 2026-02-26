@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 
 import '../../../bloc/auth/auth_bloc.dart';
+import '../../../constants/app_colors.dart';
 
 class GuestButton extends StatelessWidget {
   const GuestButton({super.key});
@@ -14,11 +15,11 @@ class GuestButton extends StatelessWidget {
       height: 40,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFF1A367C), width: 1.5),
+          side: const BorderSide(color: AppColors.darkBlue, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          foregroundColor: const Color(0xFF1A367C),
+          foregroundColor: AppColors.darkBlue,
         ),
         onPressed: () {
           Navigator.pushReplacementNamed(context, "/homePage");

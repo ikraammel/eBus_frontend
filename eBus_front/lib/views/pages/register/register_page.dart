@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
+import 'package:smart_bus/utils/password_utils.dart';
 import 'package:smart_bus/views/pages/register/steps/step0_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step1_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step2_widget.dart';
@@ -125,15 +126,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _verifyPassword(){
     final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
 
-    if (password.length < 8) {
-      AppSnackBar.showError(context, "Le mot de passe doit contenir au moins 8 caractères");
-      return false;
-    }
-
-    if (!RegExp(r'[A-Za-z]').hasMatch(password) ||
-        !RegExp(r'\d').hasMatch(password)) {
-      AppSnackBar.showError(context, "Le mot de passe doit contenir des lettres et des chiffres");
+    final errorMessage = PasswordUtils.validatePassword(password, confirmPassword);
+    if(errorMessage != null){
+      AppSnackBar.showError(context, errorMessage);
       return false;
     }
     return true;

@@ -65,4 +65,15 @@ class AuthDeleteUserRequested extends AuthEvent{
   AuthDeleteUserRequested({required this.id});
 }
 
+class AuthForgotPasswordRequested extends AuthEvent{
+  final String email;
+  AuthForgotPasswordRequested({required this.email});
+}
+
+class AuthResetPasswordRequested extends AuthEvent{
+  final String token;
+  final String newPassword;
+  AuthResetPasswordRequested({required this.token,required this.newPassword});
+}
+
 

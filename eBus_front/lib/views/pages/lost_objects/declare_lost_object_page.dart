@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
 
 class DeclareLostObjectPage extends StatefulWidget {
@@ -17,7 +18,7 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF8DC63F),
+        backgroundColor: AppColors.green,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -76,7 +77,7 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8DC63F),
+                    backgroundColor: AppColors.green,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -104,7 +105,7 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
         text,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
-          color: Color(0xFF1A367C),
+          color: AppColors.darkBlue,
           fontSize: 15,
         ),
       ),
@@ -128,19 +129,19 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
       filled: true,
-      fillColor: const Color(0xFFF8F9FB),
+      fillColor: AppColors.lightGreenBg,
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        borderSide: const BorderSide(color: AppColors.lightGreenBg),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        borderSide: const BorderSide(color:AppColors.lightGreenBg),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF8DC63F), width: 2),
+        borderSide: const BorderSide(color: AppColors.green, width: 2),
       ),
     );
   }

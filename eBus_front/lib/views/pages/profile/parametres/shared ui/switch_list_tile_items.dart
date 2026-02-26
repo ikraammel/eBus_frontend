@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../constants/app_colors.dart';
+
 class SwitchListTileItems extends StatelessWidget {
   const SwitchListTileItems({super.key, required this.title, required this.subtitle, required this.value, this.onChanged});
 
@@ -30,7 +32,7 @@ class SwitchListTileItems extends StatelessWidget {
               style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400)
           ),
           subtitle: Text(subtitle),
-          activeTrackColor: Color(0xFF76BC41),
+          activeTrackColor: AppColors.green,
           value: value,
           onChanged: onChanged
         ),
