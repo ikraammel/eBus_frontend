@@ -174,16 +174,20 @@ class LineDetailsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                        fontSize: 16,
+                    Expanded(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 10),
                     Text(
                       time,
                       style: TextStyle(color: Colors.grey[500], fontSize: 14),

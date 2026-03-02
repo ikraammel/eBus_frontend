@@ -5,6 +5,7 @@ import 'package:smart_bus/bloc/ligne/ligne_state.dart';
 import 'package:smart_bus/views/loading/splash_screen.dart';
 import '../../../bloc/ligne/ligne_event.dart';
 import '../../../constants/app_colors.dart';
+import '../../../models/Ligne.dart';
 import 'line_details_page.dart';
 
 class LinesPage extends StatelessWidget {
@@ -13,7 +14,7 @@ class LinesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightGreenBg,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: AppColors.darkBlue,
         elevation: 0,
@@ -26,8 +27,24 @@ class LinesPage extends StatelessWidget {
           if(state is LigneLoading){
             return SplashScreen();
           }
-          if(state is LigneLoaded){
-            final lignes = state.lignes;
+          if (state is LigneLoaded) {
+            final lignes = List<Ligne>.from(state.lignes)
+              ..sort((a, b) {
+                final regex = RegExp(r'^\d+'); // récupère les chiffres au début
+
+                final matchA = regex.firstMatch(a.numero);
+                final matchB = regex.firstMatch(b.numero);
+
+                final numA = matchA != null ? int.tryParse(matchA.group(0)!) : null;
+                final numB = matchB != null ? int.tryParse(matchB.group(0)!) : null;
+
+                if (numA != null && numB != null) {
+                  final compareNumber = numA.compareTo(numB);
+                  if (compareNumber != 0) return compareNumber;
+                }
+
+                return a.numero.compareTo(b.numero);
+              });
 
             return Column(
               children: [
@@ -41,9 +58,7 @@ class LinesPage extends StatelessWidget {
 
                       return _buildLineCard(
                         context,
-                        ligne.numero,
-                        ligne.startPoint,
-                        ligne.endPoint,
+                        ligne,
                         AppColors.darkBlue,
                       );
                     },
@@ -81,7 +96,7 @@ class LinesPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLineCard(BuildContext context, String number, String start, String end, Color color) {
+  Widget _buildLineCard(BuildContext context, Ligne ligne, Color color){
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
@@ -91,19 +106,26 @@ class LinesPage extends StatelessWidget {
       ),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque, // FORCE la détection du clic sur toute la carte
-        onTap: () {
-          debugPrint("Clic sur la ligne $number");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LineDetailsPage(
-                lineNumber: number,
-                themeColor: color,
-                stops: [],
+          onTap: () {
+            final sortedStations = List.from(ligne.stations)
+              ..sort((a, b) => a.ordre.compareTo(b.ordre));
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LineDetailsPage(
+                  lineNumber: ligne.numero,
+                  themeColor: color,
+                  stops: sortedStations
+                      .map<Map<String, String>>((s) => {
+                    "name": s.nom.toString(),
+                    "time": "--:--",
+                  })
+                      .toList(),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
         child: IntrinsicHeight(
           child: Row(
             children: [
@@ -113,7 +135,7 @@ class LinesPage extends StatelessWidget {
                   color: color,
                   borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), bottomLeft: Radius.circular(15)),
                 ),
-                child: Center(child: Text(number, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20))),
+                child: Center(child: Text(ligne.numero, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20))),
               ),
               Expanded(
                 child: Padding(
@@ -121,9 +143,9 @@ class LinesPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Ligne $number", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+                      Text("Ligne ${ligne.numero}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
                       const SizedBox(height: 5),
-                      Text("$start → $end", style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                      Text("${ligne.startPoint} → ${ligne.endPoint}", style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                     ],
                   ),
                 ),
