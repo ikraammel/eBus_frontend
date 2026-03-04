@@ -7,8 +7,8 @@ class RegisterRequest {
   final String adresse;
   final String dateNaissance;
   final String typeAbonnement;
-  final String CIN;
-  final String CNE;
+  final String cin;
+  final String cne;
 
   RegisterRequest({
     required this.nom,
@@ -19,8 +19,8 @@ class RegisterRequest {
     required this.adresse,
     required this.dateNaissance,
     required this.typeAbonnement,
-    required this.CIN,
-    required this.CNE,
+    required this.cin,
+    required this.cne,
 });
 
   Map<String, dynamic> toJson() {
@@ -33,8 +33,8 @@ class RegisterRequest {
       'adresse': adresse,
       'dateNaissance': dateNaissance,
       'abonnement': typeAbonnement,
-      'CIN': CIN,
-      'CNE': CNE,
+      'cin': cin,
+      'cne': cne,
     };
   }
 }

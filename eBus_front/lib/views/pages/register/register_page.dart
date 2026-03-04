@@ -3,12 +3,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/models/request/register_request.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
-import 'package:smart_bus/views/pages/home_page.dart';
+import 'package:smart_bus/views/home/home_page.dart';
 import 'package:smart_bus/views/pages/register/file_picker_field.dart';
 import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/custom_text_field.dart';
 import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
+import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
 import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
 
 import '../../../models/User.dart';
@@ -108,6 +109,9 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async{
+    if(!_verifyPassword()){
+      return;
+    }
     if (_nomController.text.isEmpty ||
         _prenomController.text.isEmpty ||
         _emailController.text.isEmpty ||
@@ -128,15 +132,13 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Veuillez charger tous les documents obligatoires"))
       );
-
+      return;
     }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Les mots de passe ne correspondent pas")),
       );
-      return;
-    }
-    if(!_verifyPassword()){
       return;
     }
 
@@ -151,8 +153,8 @@ class _RegisterPageState extends State<RegisterPage> {
           adresse: _adresseController.text,
           dateNaissance: _dateNaissanceController.text,
           typeAbonnement: _typeAbonnement,
-          CIN: _cinController.text,
-          CNE: _carteEudiantController.text
+          cin: _cinController.text,
+          cne: _carteEudiantController.text
       );
       final User newUser = await authService.register(
           registerRequest,
@@ -170,16 +172,10 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       String errorMessage = "Une erreur est survenue";
 
-      final exception = e.toString();
-
-      if (exception.contains('403')) {
-        errorMessage = "Email déjà utilisé";
-      } else if (exception.contains('400')) {
-        errorMessage = "Requête invalide. Vérifiez vos informations";
-      } else if (exception.contains('500')) {
-        errorMessage = "Erreur serveur, veuillez réessayer plus tard";
-      } else if (exception.contains('Network')) {
-        errorMessage = "Impossible de se connecter. Vérifiez votre connexion internet";
+      if (e is Exception) {
+        errorMessage = e.toString().replaceFirst("Exception: ", "");
+      }else{
+        errorMessage = "Une erreur inattendue est survenue";
       }
 
       ScaffoldMessenger.of(context)
@@ -305,8 +301,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: Text('Scolaire'),
                     ),
                     DropdownMenuItem(
-                      value: 'UNIVERSITAIRE',
-                      child: Text('Universitaire'),
+                      value: 'MENSUEL',
+                      child: Text('Mensuel'),
                     ),
                   ],
                   onChanged: (value) {
@@ -402,7 +398,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       )
                     ]
                 ),
-                SizedBox(height: 70,),
+                SizedBox(height: 20,),
+                GuestButton(),
+                SizedBox(height: 20,),
                 AdministratorAccess(),
               ],
             ),

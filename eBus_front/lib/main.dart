@@ -3,7 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/views/lines/lines_page.dart';
 import 'package:smart_bus/views/loading/splash_screen.dart';
-import 'package:smart_bus/views/pages/home_page.dart';
+import 'package:smart_bus/views/home/home_page.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/lost_objects/lost_objects_page.dart';
 import 'package:smart_bus/views/pages/map_page.dart';

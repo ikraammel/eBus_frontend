@@ -6,6 +6,8 @@ class User {
   final String role;
   final String tel;
   final String adresse;
+  final String cin;
+  final String cne;
 
   final String dateNaissance;
   final String? typeAbonnement;
@@ -22,6 +24,8 @@ class User {
     required this.tel,
     required this.adresse,
     required this.dateNaissance,
+    required this.cin,
+    required this.cne,
     this.typeAbonnement,
     this.photoUrl,
     this.carteScolaireUrl,
@@ -43,7 +47,8 @@ class User {
       photoUrl: json['photoUrl'],
       carteScolaireUrl: json['carteScolaireUrl'],
       cinUrl: json['cinUrl'],
-
+      cin: json['cin'],
+      cne: json['cne'],
     );
   }
 

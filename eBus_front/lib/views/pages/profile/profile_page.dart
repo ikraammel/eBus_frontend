@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/models/User.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
+import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/profile/contact_card.dart';
 import 'package:smart_bus/views/pages/profile/header_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres_page.dart';
@@ -47,6 +48,16 @@ class _ProfilePageState extends State<ProfilePage> {
                             label: 'Email'
                         ),
                         ContactCard(
+                            value: currentUser!.cin,
+                            icon: Icons.account_box,
+                            label: 'CIN'
+                        ),
+                        ContactCard(
+                            value: currentUser!.cne,
+                            icon: Icons.badge,
+                            label: 'Carte Scolaire'
+                        ),
+                        ContactCard(
                             value: currentUser?.tel ?? "0600000000",
                             icon: Icons.phone,
                             label: 'Téléphone'
@@ -60,7 +71,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   SizedBox(height: 20),
                   Align(
-                    alignment: Alignment.centerLeft, // Aligne à gauche
+                    alignment: Alignment.centerLeft,
                     child: Text(
                       "PARAMÈTRES",
                       style: TextStyle(
@@ -83,7 +94,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     onTap: () async {
                       await LocalStorageService().logout();
                       if (mounted) {
-                        Navigator.pushReplacementNamed(context, '/loginPage');
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                                (route) => false,
+                        );
                       }
                     },
                     child: Container(
