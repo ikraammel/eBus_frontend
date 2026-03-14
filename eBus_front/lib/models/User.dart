@@ -41,9 +41,9 @@ class User {
       nom: json['nom'],
       prenom: json['prenom'],
       email: json['email'],
-      role: Enums.values.firstWhere(
+      role: Role.values.firstWhere(
         (e) => e.name == json['role'],
-        orElse: () => Enums.USER
+        orElse: () => Role.USER
       ),
       tel: json['tel'],
       adresse: json['adresse'],

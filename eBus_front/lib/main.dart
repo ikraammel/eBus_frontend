@@ -9,7 +9,8 @@ import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/ligne_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
-import 'package:smart_bus/views/loading/splash_screen.dart';
+import 'package:smart_bus/views/UI/splash_screen.dart';
+import 'package:smart_bus/views/pages/admin/admin_home_page/admin_home_page.dart';
 import 'package:smart_bus/views/pages/home/home_page.dart';
 import 'package:smart_bus/views/pages/lines/lines_page.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
@@ -79,7 +80,7 @@ class MyApp extends StatelessWidget {
               return const SplashScreen();
             }
             else if (state is AuthAuthenticated) {
-              return const HomePage();
+              return const AdminHomePage();
             }
             else {
               return const LoginPage();

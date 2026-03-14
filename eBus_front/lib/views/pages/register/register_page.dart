@@ -8,18 +8,17 @@ import 'package:smart_bus/views/pages/register/steps/step1_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step2_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step3_widget.dart';
 import 'package:smart_bus/views/pages/register/steps/step4_widget.dart';
-import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
-import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
-import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
-
 import '../../../bloc/auth/auth_bloc.dart';
 import '../../../bloc/auth/auth_event.dart';
 import '../../../models/request/register_request.dart';
 import '../../../services/file_picker_service.dart';
-import '../../app_snack_bar/app_snack_bar.dart';
-import '../../loading/splash_screen.dart';
+import '../../../utils/app_snack_bar.dart';
+import '../../UI/buttons/app_button.dart';
+import '../../UI/shared_login_register/administrator_access.dart';
+import '../../UI/shared_login_register/auth_header.dart';
+import '../../UI/shared_login_register/guest_button.dart';
+import '../../UI/shared_login_register/switch_auth_page.dart';
+import '../../UI/splash_screen.dart';
 import '../home/home_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -247,7 +246,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           children: [
                             if (_currentPage > 0) ...[
                               Expanded(
-                                child: AuthButton(
+                                child: AppButton(
                                   text: "Précédent",
                                   onPressed: previousStep,
                                 ),
@@ -255,7 +254,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               SizedBox(width: 10),
                             ],
                             Expanded(
-                                child: AuthButton(
+                                child: AppButton(
                                     text: _currentPage == 4 ? 'S\'inscrire' : "Suivant",
                                     onPressed: _currentPage == 4
                                       ? (){

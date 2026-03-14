@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import '../../../../constants/app_colors.dart';
+import '../../../../utils/app_snack_bar.dart';
 import '../../../../utils/password_utils.dart';
-import '../../shared_login_register/custom_text_field.dart';
+import '../../../UI/buttons/app_button.dart';
+import '../../../UI/shared_login_register/custom_text_field.dart';
 import 'auth_header.dart';
 
 class NewPassword extends StatefulWidget {
@@ -132,7 +132,7 @@ class _NewPasswordState extends State<NewPassword> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  AuthButton(
+                  AppButton(
                     text: state is AuthLoading
                     ? "Chargement..."
                     : 'Réinitialiser le mot de passe',

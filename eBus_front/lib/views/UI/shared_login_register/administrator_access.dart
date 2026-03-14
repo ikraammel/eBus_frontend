@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/views/pages/admin/login/login_page_admin.dart';
 
 import '../../../constants/app_colors.dart';
 
@@ -10,7 +11,10 @@ class AdministratorAccess extends StatelessWidget {
     return Center(
       child: TextButton(
         onPressed: () {
-          print("Vers l'interface admin");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => LoginPageAdmin())
+          );
         },
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),

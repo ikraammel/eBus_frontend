@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
-import 'package:smart_bus/views/loading/splash_screen.dart';
 import 'package:smart_bus/views/pages/login/forgot_password/new_password.dart';
 import '../../../../bloc/auth/auth_bloc.dart';
 import '../../../../bloc/auth/auth_event.dart';
-import '../../shared_login_register/auth_button.dart';
+import '../../../../utils/app_snack_bar.dart';
+import '../../../UI/buttons/app_button.dart';
+import '../../../UI/splash_screen.dart';
 import 'auth_header.dart';
 
 class Verification extends StatefulWidget {
@@ -105,7 +105,7 @@ class _VerificationState extends State<Verification> {
                   const SizedBox(height: 40),
                   state is AuthLoading
                       ? SplashScreen()
-                      : AuthButton(
+                      : AppButton(
                     text: "Vérifier le code",
                     onPressed: () {
                       final code = _codeControllers.map((c) => c.text).join();

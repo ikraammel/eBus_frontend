@@ -1,4 +1,4 @@
-enum Enums{
+enum Role{
   USER,
   ADMIN
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../shared_login_register/custom_text_field.dart';
+import '../../../UI/shared_login_register/custom_text_field.dart';
+
 
 class Step2Widget extends StatefulWidget {
   const Step2Widget({

@@ -74,9 +74,9 @@ class LocalStorageService {
         nom: prefs.getString(keyNom) ?? '',
         prenom: prefs.getString(keyPrenom) ?? '',
         email: prefs.getString(keyEmail) ?? '',
-        role: Enums.values.firstWhere(
+        role: Role.values.firstWhere(
             (e) => e.name == prefs.getString(keyRole),
-            orElse: () => Enums.USER
+            orElse: () => Role.USER
         ),
         tel: prefs.getString(keyTel) ?? '',
         adresse: prefs.getString(keyAdresse) ?? '',

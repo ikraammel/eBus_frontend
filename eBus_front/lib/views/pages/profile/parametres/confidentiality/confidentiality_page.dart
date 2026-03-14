@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/main.dart';
 import 'package:smart_bus/services/auth_service.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
-import 'package:smart_bus/views/loading/splash_screen.dart';
-import 'package:smart_bus/views/pages/profile/parametres/shared%20ui/list_tile_items.dart';
-import 'package:smart_bus/views/pages/profile/parametres/shared%20ui/switch_list_tile_items.dart';
-
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
 import '../../../../../bloc/auth/auth_state.dart';
 import '../../../../../constants/app_colors.dart';
+import '../../../../../utils/app_snack_bar.dart';
+import '../../../../UI/list_tile_items.dart';
+import '../../../../UI/splash_screen.dart';
+import '../../../../UI/switch_list_tile_items.dart';
 
 class ConfidentialityPage extends StatefulWidget {
   const ConfidentialityPage({super.key});

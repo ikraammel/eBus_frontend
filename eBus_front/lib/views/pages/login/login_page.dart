@@ -5,16 +5,18 @@ import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
+import 'package:smart_bus/views/pages/admin/admin_home_page/admin_home_page.dart';
 import 'package:smart_bus/views/pages/login/forgot_password/forgot_password.dart';
-import 'package:smart_bus/views/pages/shared_login_register/administrator_access.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_header.dart';
-import 'package:smart_bus/views/pages/shared_login_register/guest_button.dart';
-import 'package:smart_bus/views/pages/shared_login_register/switch_auth_page.dart';
+import '../../../enums/enums.dart';
 import '../../../main.dart';
+import '../../../utils/app_snack_bar.dart';
+import '../../UI/buttons/app_button.dart';
+import '../../UI/shared_login_register/administrator_access.dart';
+import '../../UI/shared_login_register/auth_header.dart';
+import '../../UI/shared_login_register/custom_text_field.dart';
+import '../../UI/shared_login_register/guest_button.dart';
+import '../../UI/shared_login_register/switch_auth_page.dart';
 import '../home/home_page.dart';
-import '../shared_login_register/custom_text_field.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -43,11 +45,20 @@ class _LoginPageState extends State<LoginPage> {
     return BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthAuthenticated) {
-                AppSnackBar.showSuccess(context, "Connexion réussie !");
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => HomePage()),
-                );
+                if(state.user.role == Role.USER){
+                  AppSnackBar.showSuccess(context, "Connexion réussie !");
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => HomePage()),
+                  );
+                }
+                if(state.user.role == Role.ADMIN){
+                  AppSnackBar.showSuccess(context, "Connexion réussie !");
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => AdminHomePage())
+                  );
+                }
               }
               else if (state is AuthFailure ) {
                 AppSnackBar.showError(context, state.error);
@@ -114,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                     ]
                 ),
                     SizedBox(height: 20,),
-                    AuthButton(
+                    AppButton(
                         onPressed: (){
                           context.read<AuthBloc>().add(
                             AuthLoginRequested(

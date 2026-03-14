@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/constants/app_colors.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
+
+import '../../../utils/app_snack_bar.dart';
+import '../../UI/buttons/app_button.dart';
+import '../../UI/form_label.dart';
+import '../../UI/form_text_field.dart';
+import '../../UI/input_decoration.dart';
 
 class DeclareLostObjectPage extends StatefulWidget {
   const DeclareLostObjectPage({super.key});
@@ -36,13 +41,13 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLabel("Nom de l'objet"),
-              _buildTextField("Ex: Portefeuille noir"),
+              FormLabel(text: "Nom de l'objet"),
+              FormTextField(hint:"Ex: Portefeuille noir"),
               const SizedBox(height: 20),
 
-              _buildLabel("Ligne où vous l'avez perdu"),
+              FormLabel(text: "Ligne où vous l'avez perdu"),
               DropdownButtonFormField<String>(
-                decoration: _inputDecoration("Sélectionner une ligne"),
+                decoration: AppInputDecoration.input("Sélectionner une ligne"),
                 items: ["Ligne 12", "Ligne 5", "Ligne 8", "Ligne 3"]
                     .map((ligne) => DropdownMenuItem(
                   value: ligne,
@@ -53,95 +58,30 @@ class _DeclareLostObjectPageState extends State<DeclareLostObjectPage> {
               ),
               const SizedBox(height: 20),
 
-              _buildLabel("Date approximative"),
-              _buildTextField("jj/mm/aaaa", icon: Icons.calendar_today),
+              FormLabel(text: "Date approximative"),
+              FormTextField(hint:"jj/mm/aaaa", icon: Icons.calendar_today),
               const SizedBox(height: 20),
 
-              _buildLabel("Description détaillée"),
-              _buildTextField("Décrivez l'objet en détail...", maxLines: 4),
+              FormLabel(text: "Description détaillée"),
+              FormTextField(hint:"Décrivez l'objet en détail...", maxLines: 4),
               const SizedBox(height: 20),
 
-              _buildLabel("Votre email de contact"),
-              _buildTextField("exemple@email.com", keyboardType: TextInputType.emailAddress),
+              FormLabel(text: "Votre email de contact"),
+              FormTextField(hint:"exemple@email.com", keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 40),
 
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Simulation de succès
-                      AppSnackBar.showSuccess(context, "Déclaration envoyée !");
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.green,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "Soumettre la déclaration",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
+              AppButton(
+                text: "Soumettre la déclaration",
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    AppSnackBar.showSuccess(context, "Déclaration envoyée !");
+                    Navigator.pop(context);
+                  }
+                },
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // Widget pour les titres des champs
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: AppColors.darkBlue,
-          fontSize: 15,
-        ),
-      ),
-    );
-  }
-
-  // Widget pour générer les champs de texte
-  Widget _buildTextField(String hint, {IconData? icon, int maxLines = 1, TextInputType? keyboardType}) {
-    return TextFormField(
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      decoration: _inputDecoration(hint).copyWith(
-        suffixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,
-      ),
-    );
-  }
-
-  // Décoration réutilisable pour les inputs
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-      filled: true,
-      fillColor: AppColors.lightGreenBg,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.lightGreenBg),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color:AppColors.lightGreenBg),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.green, width: 2),
       ),
     );
   }

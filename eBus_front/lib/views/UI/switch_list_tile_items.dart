@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../constants/app_colors.dart';
+import '../../../../constants/app_colors.dart';
 
 class SwitchListTileItems extends StatelessWidget {
   const SwitchListTileItems({super.key, required this.title, required this.subtitle, required this.value, this.onChanged});

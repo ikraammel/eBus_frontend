@@ -2,31 +2,33 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 
-class AuthButton extends StatelessWidget {
-  const AuthButton({
+class AppButton extends StatelessWidget {
+  const AppButton({
     super.key,
     required this.text,
     this.onPressed,
     this.color = AppColors.darkBlue,
+    this.icon,
   });
 
-  final VoidCallback? onPressed; // Utiliser VoidCallback est plus standard en Flutter
+  final VoidCallback? onPressed;
   final String text;
   final Color color;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 52, // Un peu plus haut pour le confort tactile
+      height: 52,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white, // Gère la couleur du texte et du splash
-          elevation: 2, // Légère ombre pour l'effet "Elevated" de l'image
+          foregroundColor: Colors.white,
+          elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // Coins arrondis modernes
+            borderRadius: BorderRadius.circular(12),
           ),
           textStyle: const TextStyle(
             fontSize: 16,
@@ -34,7 +36,16 @@ class AuthButton extends StatelessWidget {
             letterSpacing: 0.5,
           ),
         ),
-        child: Text(text),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 20),
+              const SizedBox(width: 10),
+            ],
+            Text(text),
+          ],
+        ),
       ),
     );
   }

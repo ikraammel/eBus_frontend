@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
-import 'package:smart_bus/views/loading/splash_screen.dart';
 import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos_items.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
 import '../../../../../constants/app_colors.dart';
 import '../../../../../models/User.dart';
+import '../../../../../utils/app_snack_bar.dart';
+import '../../../../UI/buttons/app_button.dart';
+import '../../../../UI/splash_screen.dart';
 
 class PersonalInfos extends StatefulWidget {
   const PersonalInfos({super.key});
@@ -95,7 +95,6 @@ class _PersonalInfosState extends State<PersonalInfos> {
           return SplashScreen();
         }
 
-        // Remplissage des controllers
         nomController.text = currentUser!.nom;
         prenomController.text = currentUser!.prenom;
         emailController.text = currentUser!.email;
@@ -208,7 +207,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       SizedBox(
                         width: double.infinity,
                         height: 50,
-                        child: AuthButton(
+                        child: AppButton(
                           text: 'Enregistrer les modifications',
                           onPressed: () {
                             if (currentUser == null) return;

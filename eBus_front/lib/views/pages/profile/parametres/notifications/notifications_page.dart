@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/constants/app_colors.dart';
 
-import '../shared ui/list_tile_items.dart';
-import '../shared ui/switch_list_tile_items.dart';
+import '../../../../UI/list_tile_items.dart';
+import '../../../../UI/switch_list_tile_items.dart';
+
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});

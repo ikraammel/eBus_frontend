@@ -5,7 +5,7 @@ import '../../../constants/app_colors.dart';
 class LineDetailsPage extends StatelessWidget {
   final String lineNumber;
   final Color themeColor;
-  final List<Map<String, String>> stops; // Liste des arrêts reçue dynamiquement
+  final List<Map<String, String>> stops;
 
   const LineDetailsPage({
     super.key,

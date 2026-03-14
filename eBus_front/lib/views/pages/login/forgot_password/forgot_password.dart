@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
-import 'package:smart_bus/views/app_snack_bar/app_snack_bar.dart';
 import 'package:smart_bus/views/pages/login/forgot_password/verification.dart';
-import 'package:smart_bus/views/pages/shared_login_register/auth_button.dart';
-import 'package:smart_bus/views/pages/shared_login_register/custom_text_field.dart';
 
 import '../../../../constants/app_colors.dart';
+import '../../../../utils/app_snack_bar.dart';
+import '../../../UI/buttons/app_button.dart';
+import '../../../UI/shared_login_register/custom_text_field.dart';
 import 'auth_header.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -72,7 +72,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     ],
                   ),
                   SizedBox(height: 40,),
-                  AuthButton(
+                  AppButton(
                       color: AppColors.green,
                       text: state is AuthLoading
                       ? "Envoi"

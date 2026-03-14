@@ -3,15 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
-import 'package:smart_bus/views/loading/splash_screen.dart';
 import 'package:smart_bus/views/pages/home/recent_activity.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
 import '../../../models/User.dart';
+import '../../UI/card_menu.dart';
+import '../../UI/splash_screen.dart';
 import '../map_page.dart';
 import '../profile/profile_page.dart';
 import 'bottom_nav.dart';
-import 'card_menu.dart';
 import 'home_header.dart';
 
 
