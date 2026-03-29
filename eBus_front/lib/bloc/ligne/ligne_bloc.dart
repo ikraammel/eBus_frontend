@@ -11,6 +11,7 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
   List<Ligne> lignes=[];
 
   LigneBloc(this.ligneService):super(LigneInitial()){
+
     on<LoadLignes>((event,emit) async{
       emit(LigneLoading());
       try{
@@ -85,7 +86,7 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
       try {
         final patchData = event.patch.toJson();
         await ligneService.updateLine(event.id,patchData);
-        emit(LigneUpdated(event.id,event.patch.toJson()));
+        emit(LigneUpdated(event.id,patchData));
       }catch(e){
         String errorMessage = "Erreur de modification";
         if(e is DioException && e.response!=null){

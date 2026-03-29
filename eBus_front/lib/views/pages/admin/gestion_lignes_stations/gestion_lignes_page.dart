@@ -6,6 +6,7 @@ import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/bloc/ligne/ligne_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/utils/app_snack_bar.dart';
+import 'package:smart_bus/views/UI/app_bar_gestion.dart';
 import 'package:smart_bus/views/pages/lines/lines_list.dart';
 import 'package:smart_bus/views/pages/lines/search_bar.dart';
 
@@ -30,42 +31,15 @@ class _GestionLignesPageState extends State<GestionLignesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.darkBlue,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-                "Gestion des lignes",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold
-                ),
-            ),
-            Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                color: AppColors.green,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                color: Colors.white,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => LineFormPage())
-                  );
-                },
-                  icon: Icon(
-                    CupertinoIcons.plus,
-                    size: 20,
-                  ),
-              ),
-            )
-          ],
-        ),
-
+      appBar: AppBarGestion(
+        title: "Gestion des lignes",
+        bgColor: AppColors.darkBlue,
+        onPressed: (){
+          Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => LineFormPage())
+          );
+        }
       ),
       body: BlocConsumer<LigneBloc,LigneState>(
         listener: (context, state) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/views/pages/admin/admin_profile/admin_profile_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_bus/gestion_bus_page.dart';
 import 'package:smart_bus/views/pages/admin/stats/stats_page.dart';
 
 import '../../../../constants/app_colors.dart';
@@ -43,12 +44,12 @@ Widget _buildGrid(BuildContext context,User? user) {
         icon: Icons.map,
         color: AppColors.green,
         onTap: () {
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (_) => MapPage(showBackButton: true,)
-          //     )
-          // );
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => GestionBusPage(),
+              )
+          );
         },
       ),
       CardMenu(

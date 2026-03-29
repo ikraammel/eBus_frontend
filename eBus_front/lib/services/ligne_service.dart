@@ -40,7 +40,7 @@ class LigneService {
     if(response.statusCode == 200){
       return Ligne.fromJson(response.data);
     }else{
-      throw Exception("Erreur création ligne: ${response.data}");
+      throw Exception("Erreur modification ligne: ${response.data}");
     }
   }
 

@@ -4,9 +4,12 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
+import 'package:smart_bus/bloc/bus/bus_bloc.dart';
+import 'package:smart_bus/bloc/bus/bus_event.dart';
 import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/services/auth_service.dart';
+import 'package:smart_bus/services/bus_service.dart';
 import 'package:smart_bus/services/ligne_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
@@ -50,6 +53,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => AuthBloc()..add(AuthCheckRequested())),
         BlocProvider(create: (_) => LigneBloc(LigneService())..add(LoadLignes())),
+        BlocProvider(create: (_) => BusBloc(BusService())..add(LoadBuses())),
       ],
       child: MaterialApp(
         locale: const Locale('fr', 'FR'),

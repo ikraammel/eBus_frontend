@@ -16,7 +16,7 @@ class Ligne {
   required this.startPoint,
   required this.endPoint,
   required this.stations,
-});
+  });
 
   factory Ligne.fromJson(Map<String, dynamic> json) {
     return Ligne(

@@ -7,6 +7,7 @@ import '../../../../../bloc/auth/auth_event.dart';
 import '../../../../../bloc/auth/auth_state.dart';
 import '../../../../../constants/app_colors.dart';
 import '../../../../../utils/app_snack_bar.dart';
+import '../../../../UI/confirm_delete_dialog.dart';
 import '../../../../UI/list_tile_items.dart';
 import '../../../../UI/splash_screen.dart';
 import '../../../../UI/switch_list_tile_items.dart';
@@ -142,26 +143,14 @@ class _ConfidentialityPageState extends State<ConfidentialityPage> {
   void _showDeleteDialog(int id) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Supprimer le compte"),
-          content: Text("Etes-vous sûr de vouloir supprimer votre compte ?"),
-          actions: [
-            TextButton(
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-              child: Text("Annuler")
-            ),
-            TextButton(
-              onPressed: () async {
-                await _deleteUser(id);
-              },
-              child: Text("Supprimer mon compte")
-            ),
-          ],
-        );
-      }
+      builder: (_) => ConfirmDeleteDialog(
+        title: "Supprimer le compte",
+        content: "Êtes-vous sûr de vouloir supprimer votre compte ?",
+        onConfirm: () async {
+          context.read<AuthBloc>().add(AuthDeleteUserRequested(id: id));
+          AppSnackBar.showSuccess(context, "Compte supprimé avec succès");
+        },
+      ),
     );
   }
 

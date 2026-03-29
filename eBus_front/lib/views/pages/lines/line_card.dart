@@ -9,6 +9,7 @@ import 'package:smart_bus/enums/enums.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/Ligne.dart';
 import '../../UI/buttons/action_icon_button.dart';
+import '../../UI/confirm_delete_dialog.dart';
 import '../admin/gestion_lignes_stations/line_form_page.dart';
 import 'line_details_page.dart';
 
@@ -117,7 +118,16 @@ class LineCard extends StatelessWidget {
                       iconColor: Colors.red,
                       backgroundColor: Colors.red.withOpacity(0.15),
                       onTap: () {
-                        _showDeleteDialog(context, ligne.id!);
+                        showDialog(
+                            context: context,
+                            builder: (_) => ConfirmDeleteDialog(
+                              title: "Supprimer la ligne",
+                              content: "Êtes-vous sûr de vouloir supprimer cette ligne ?",
+                              onConfirm: () {
+                                context.read<LigneBloc>().add(DeleteLine(ligne.id!));
+                              },
+                            )
+                        );
                       },
                     ),
 
@@ -144,32 +154,6 @@ class LineCard extends StatelessWidget {
           ),
         );
       }
-    );
-  }
-  void _showDeleteDialog(BuildContext context,int id) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Supprimer la ligne"),
-            content: Text("Etes-vous sûr de vouloir supprimer cette ligne ?"),
-            actions: [
-              TextButton(
-                  onPressed: (){
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Annuler")
-              ),
-              TextButton(
-                  onPressed: () async {
-                    context.read<LigneBloc>().add(DeleteLine(ligne.id!));
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Supprimer la ligne")
-              ),
-            ],
-          );
-        }
     );
   }
 }

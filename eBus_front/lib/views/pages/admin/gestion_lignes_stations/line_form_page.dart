@@ -8,9 +8,9 @@ import 'package:smart_bus/models/Ligne.dart';
 import 'package:smart_bus/models/Station.dart';
 import 'package:smart_bus/utils/app_snack_bar.dart';
 import '../../../UI/buttons/app_button.dart';
+import '../../../UI/confirm_delete_dialog.dart';
 import '../../../UI/form_label.dart';
 import '../../../UI/form_text_field.dart';
-import 'confirm_delete_dialog.dart';
 import 'edit_station_dialog.dart';
 import 'station_card.dart';
 
@@ -118,15 +118,6 @@ class _LineFormPageState extends State<LineFormPage> {
     });
   }
 
-  void _confirmDeleteStation(int index) {
-    showDialog(
-      context: context,
-      builder: (_) => ConfirmDeleteDialog(
-        onConfirm: () => _removeStationAt(index),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,7 +139,6 @@ class _LineFormPageState extends State<LineFormPage> {
             context.read<LigneBloc>().add(LoadLignes());
             Navigator.pop(context);
           } else if (state is StationCreated) {
-            // Mettre à jour l'ID de la station après création côté serveur
             final index = _stationCount - 1;
             _stationIds[index] = state.station.id;
             setState(() {});
@@ -237,7 +227,16 @@ class _LineFormPageState extends State<LineFormPage> {
                             ),
                           );
                         },
-                      onDelete: () => _confirmDeleteStation(index),
+                        onDelete: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => ConfirmDeleteDialog(
+                              title: "Supprimer la station",
+                              content: "Êtes-vous sûr de vouloir supprimer cette station ?",
+                              onConfirm: () => _removeStationAt(index),
+                            ),
+                          );
+                        }
                     );
                   }),
                   const SizedBox(height: 20),
