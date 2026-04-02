@@ -4,6 +4,8 @@ ebus_front/build/
 ebus_front/android/.gradle/
 ebus_front/android/local.properties
 ebus_front/ios/Pods/
+# Ouvre .gitignore et ajoute cette ligne
+eBus_front/android/build/
 
 # Spring Boot
 ebus_back/target/
