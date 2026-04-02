@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 
-import '../../../models/User.dart';
 
 class ContactCard extends StatelessWidget {
   const ContactCard({super.key,required this.icon,required this.label,required this.value});
@@ -20,7 +20,7 @@ class ContactCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon,color: Color(0xFF1A367C)),
+          Icon(icon,color: AppColors.darkBlue),
           SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

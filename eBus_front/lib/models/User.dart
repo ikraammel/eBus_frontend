@@ -1,9 +1,11 @@
+import '../enums/enums.dart';
+
 class User {
   final int id;
   final String nom;
   final String prenom;
   final String email;
-  final String role;
+  final Enum role;
   final String tel;
   final String adresse;
   final String cin;
@@ -39,7 +41,10 @@ class User {
       nom: json['nom'],
       prenom: json['prenom'],
       email: json['email'],
-      role: json['role'],
+      role: Enums.values.firstWhere(
+        (e) => e.name == json['role'],
+        orElse: () => Enums.USER
+      ),
       tel: json['tel'],
       adresse: json['adresse'],
       dateNaissance: json['dateNaissance'],

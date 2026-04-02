@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 
 
 class MapPage extends StatelessWidget {
-  const MapPage({super.key});
+  const MapPage({super.key, this.showBackButton = false});
+
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: showBackButton,
         title: Text(
             'Suivi en temps réel',
             style: TextStyle(
-              color: Color(0xFF1A367C),
+              color: AppColors.darkBlue,
               fontWeight: FontWeight.w600
             ),
         ),

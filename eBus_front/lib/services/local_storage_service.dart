@@ -1,9 +1,13 @@
-import 'package:get_it/get_it.dart';
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/models/User.dart';
 
+import '../enums/enums.dart';
+
 class LocalStorageService {
-  final SharedPreferences prefs = GetIt.instance<SharedPreferences>();
+  LocalStorageService({required this.prefs});
+  final SharedPreferences prefs;
 
   static const String keyUserId = 'userId';
   static const String keyNom = 'nom';
@@ -21,53 +25,59 @@ class LocalStorageService {
   static const String keyCin = 'cin';
   static const String keyCne = 'cne';
 
-
   Future<void> saveUser(User user) async{
-    await prefs.setInt(keyUserId,user.id);
-    await prefs.setString(keyNom,user.nom);
-    await prefs.setString(keyPrenom,user.prenom);
-    await prefs.setString(keyEmail,user.email);
-    await prefs.setString(keyRole,user.role);
-    await prefs.setString(keyTel,user.tel);
-    await prefs.setString(keyAdresse,user.adresse);
-    await prefs.setBool(keyIsLoggedIn,true);
-    await prefs.setString(keyDateNaissance,user.dateNaissance);
-    await prefs.setString(
+    await Future.wait([
+      prefs.setInt(keyUserId,user.id),
+      prefs.setString(keyNom,user.nom),
+      prefs.setString(keyPrenom,user.prenom),
+      prefs.setString(keyEmail,user.email),
+      prefs.setString(keyRole,user.role.name),
+      prefs.setString(keyTel,user.tel),
+      prefs.setString(keyAdresse,user.adresse),
+      prefs.setBool(keyIsLoggedIn,true),
+      prefs.setString(keyDateNaissance,user.dateNaissance),
+      prefs.setString(
         keyTypeAbonnement,
         user.typeAbonnement ?? '',
-    );
-    await prefs.setString(
+      ),
+      prefs.setString(
         keyPhotoUrl,
         user.photoUrl ?? '',
-    );
-    await prefs.setString(
-        keyCinUrl,
-        user.cinUrl ?? ''
-    );
-    await prefs.setString(
-        keyCarteScolaireUrl,
-        user.carteScolaireUrl ?? ''
-    );
-    await prefs.setString(
-        keyCin,
-        user.cin
-    );
-    await prefs.setString(
-        keyCne,
-        user.cne
-    );
+      ),
+      prefs.setString(
+          keyCinUrl,
+          user.cinUrl ?? ''
+      ),
+      prefs.setString(
+          keyCarteScolaireUrl,
+          user.carteScolaireUrl ?? ''
+      ),
+      prefs.setString(
+          keyCin,
+          user.cin
+      ),
+      prefs.setString(
+          keyCne,
+          user.cne
+      ),
+    ]);
+
   }
 
   User? getUser(){
     final id = prefs.getInt(keyUserId);
-    if(id == null) return null;
-    else{
+    if(id == null) {
+      return null;
+    } else{
       return User(
         id: id,
         nom: prefs.getString(keyNom) ?? '',
         prenom: prefs.getString(keyPrenom) ?? '',
         email: prefs.getString(keyEmail) ?? '',
-        role: prefs.getString(keyRole) ?? '',
+        role: Enums.values.firstWhere(
+            (e) => e.name == prefs.getString(keyRole),
+            orElse: () => Enums.USER
+        ),
         tel: prefs.getString(keyTel) ?? '',
         adresse: prefs.getString(keyAdresse) ?? '',
         dateNaissance: prefs.getString(keyDateNaissance) ?? '',
@@ -79,6 +89,9 @@ class LocalStorageService {
         cne: prefs.getString(keyCne) ?? '',
       );
     }
+  }
+  int? getUserId() {
+    return prefs.getInt(keyUserId);
   }
 
   bool isLoggedIn() => prefs.getBool(keyIsLoggedIn) ?? false;

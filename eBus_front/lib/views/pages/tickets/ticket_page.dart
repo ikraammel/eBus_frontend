@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 
 class TicketPage extends StatelessWidget {
   const TicketPage({super.key});
@@ -6,10 +7,10 @@ class TicketPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor:const Color(0xFFF8F9FB),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFF1A367C),
+        backgroundColor: AppColors.darkBlue,
         elevation: 0,
         title: Center(
           child: const Text(
@@ -28,7 +29,7 @@ class TicketPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A367C),
+                color: AppColors.darkBlue,
               ),
             ),
             const SizedBox(height: 20),
@@ -37,28 +38,28 @@ class TicketPage extends StatelessWidget {
               title: "Ticket Simple",
               subtitle: "1 trajet",
               price: "2.50€",
-              iconColor: const Color(0xFF1A367C),
+              iconColor: AppColors.darkBlue,
             ),
             _buildTicketOption(
               context,
               title: "Pass Journée",
               subtitle: "Illimité 24h",
               price: "8.00€",
-              iconColor: const Color(0xFF8DC63F),
+              iconColor: AppColors.green,
             ),
             _buildTicketOption(
               context,
               title: "Abonnement Hebdo",
               subtitle: "7 jours",
               price: "25.00€",
-              iconColor: const Color(0xFF1A367C),
+              iconColor: AppColors.darkBlue,
             ),
             _buildTicketOption(
               context,
               title: "Abonnement Mensuel",
               subtitle: "30 jours",
               price: "65.00€",
-              iconColor: const Color(0xFF8DC63F),
+              iconColor: AppColors.green,
               isPopular: true,
             ),
           ],
@@ -110,7 +111,7 @@ class TicketPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A367C))),
+                    Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color:AppColors.darkBlue)),
                     Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.grey)),
                   ],
                 ),
@@ -118,7 +119,7 @@ class TicketPage extends StatelessWidget {
               // Prix
               Text(
                 price,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A367C)),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
               ),
             ],
           ),
@@ -131,7 +132,7 @@ class TicketPage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF8DC63F),
+                color: AppColors.green,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(

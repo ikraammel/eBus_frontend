@@ -1,55 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/models/User.dart';
-
 import '../../../constants/constants.dart';
 
 class HeaderPage extends StatelessWidget {
-  const HeaderPage({super.key,required this.currentUser});
+  const HeaderPage({super.key, required this.currentUser});
   final User? currentUser;
 
   @override
   Widget build(BuildContext context) {
-    print("Photo URL: ${currentUser?.photoUrl}");
-    print("Full URL: ${AppConstants.baseUrl}/${currentUser?.photoUrl}");
-    String fullUrl = '${AppConstants.baseUrl}${currentUser!.photoUrl!.startsWith('/') ? currentUser!.photoUrl : '/${currentUser!.photoUrl}'}';
+
+    String fullUrl = '${AppConstants.baseUrl}'
+        '${currentUser!.photoUrl!.startsWith('/') ? currentUser!.photoUrl : '/${currentUser!.photoUrl}'}';
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(top: 50, bottom: 40, left: 20, right: 20),
+      padding: const EdgeInsets.only(top: 60, bottom: 40, left: 20, right: 20),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1B3C83), Color(0xFF76BC41)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+        color: AppColors.darkBlue,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.arrow_back,color: Colors.white,)
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              children: [
-                CircleAvatar(
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              // Avatar amélioré
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 3),
+                ),
+                child: CircleAvatar(
                   radius: 45,
                   backgroundColor: Colors.white24,
-                  backgroundImage: (currentUser?.photoUrl != null && currentUser!.photoUrl!.isNotEmpty)
-                      ? NetworkImage(
-                    fullUrl,
-                  )
+                  backgroundImage: (currentUser?.photoUrl != null &&
+                      currentUser!.photoUrl!.isNotEmpty)
+                      ? NetworkImage(fullUrl)
                       : null,
-                  child: (currentUser?.photoUrl == null || currentUser!.photoUrl!.isEmpty)
+                  child: (currentUser?.photoUrl == null ||
+                      currentUser!.photoUrl!.isEmpty)
                       ? Text(
-                    (currentUser?.nom.isNotEmpty == true && currentUser?.prenom.isNotEmpty == true)
-                        ? "${currentUser!.nom[0].toUpperCase()}${currentUser!.prenom[0].toUpperCase()}"
-                        : "JD",
+                    "${currentUser?.nom[0].toUpperCase() ?? ''}"
+                        "${currentUser?.prenom[0].toUpperCase() ?? ''}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -58,32 +68,36 @@ class HeaderPage extends StatelessWidget {
                   )
                       : null,
                 ),
-                SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        currentUser != null ?
-                        '${currentUser?.nom}  ${currentUser?.prenom}'
-                            : "User",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),Text(
-                          currentUser != null ?
-                          '${currentUser?.email}'
-                              : "User",
-                          style: TextStyle(color: Colors.white70, fontSize: 14)
+              ),
+
+              const SizedBox(width: 20),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${currentUser?.nom ?? ''} ${currentUser?.prenom ?? ''}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      currentUser?.email ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )
+              ),
+            ],
+          ),
         ],
       ),
     );
