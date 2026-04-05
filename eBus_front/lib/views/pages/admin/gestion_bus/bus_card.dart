@@ -28,76 +28,76 @@ class BusCard extends StatelessWidget {
           return false;
         },
         builder: (context, isAdmin) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0,4))],
-      ),
-      child: GestureDetector(
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Page détails du bus à venir"))
-          );
-        },
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              color: color,
-              child: Center(child: Text(bus.numero.toString(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0,4))],
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("${bus.immatriculation}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text(bus.etat, style: const TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              ),
-            ),
-            if(isAdmin) ...[
-              ActionIconButton(
-                icon: CupertinoIcons.trash,
-                iconColor: Colors.red,
-                backgroundColor: Colors.red.withOpacity(0.15),
-                onTap: () {
-                  showDialog(
-                      context: context,
-                      builder: (_) => ConfirmDeleteDialog(
-                        title: "Supprimer le bus",
-                        content: "Êtes-vous sûr de vouloir supprimer cette ligne ?",
-                        onConfirm: () {
-                          context.read<BusBloc>().add(DeleteBus(bus.id!));
-                        },
-                      )
-                  );
-                },
-              ),
-
-              ActionIconButton(
-                icon: CupertinoIcons.pen,
-                iconColor: Colors.blueGrey,
-                backgroundColor: Colors.blueGrey.withOpacity(0.15),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => BusFormPage(bus: bus),
+            child: GestureDetector(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Page détails du bus à venir"))
+                );
+              },
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    color: color,
+                    child: Center(child: Text(bus.numero.toString(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("${bus.immatriculation}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(bus.etat, style: const TextStyle(color: Colors.grey)),
+                        ],
+                      ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ],
-        ),
-      ),
+                  ),
+                  if(isAdmin) ...[
+                    ActionIconButton(
+                      icon: CupertinoIcons.trash,
+                      iconColor: Colors.red,
+                      backgroundColor: Colors.red.withOpacity(0.15),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (_) => ConfirmDeleteDialog(
+                              title: "Supprimer le bus",
+                              content: "Êtes-vous sûr de vouloir supprimer cette ligne ?",
+                              onConfirm: () {
+                                context.read<BusBloc>().add(DeleteBus(bus.id!));
+                              },
+                            )
+                        );
+                      },
+                    ),
 
-    );
+                    ActionIconButton(
+                      icon: CupertinoIcons.pen,
+                      iconColor: Colors.blueGrey,
+                      backgroundColor: Colors.blueGrey.withOpacity(0.15),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BusFormPage(bus: bus),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+          );
   });
 }
 }

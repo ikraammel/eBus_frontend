@@ -42,7 +42,7 @@ class _Step2WidgetState extends State<Step2Widget> {
           padding: EdgeInsets.all(8),
           margin: EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.yellow[100], // couleur douce pour l'info
+            color: Colors.yellow[100],
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(

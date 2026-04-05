@@ -6,14 +6,19 @@ import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/bus/bus_bloc.dart';
 import 'package:smart_bus/bloc/bus/bus_event.dart';
+import 'package:smart_bus/bloc/claims/claims_bloc.dart';
+import 'package:smart_bus/bloc/claims/claims_event.dart';
 import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_event.dart';
+import 'package:smart_bus/enums/enums.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/bus_service.dart';
 import 'package:smart_bus/services/ligne_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
+import 'package:smart_bus/services/reclamation_service.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
 import 'package:smart_bus/views/pages/admin/admin_home_page/admin_home_page.dart';
+import 'package:smart_bus/views/pages/claims/claims_page.dart';
 import 'package:smart_bus/views/pages/home/home_page.dart';
 import 'package:smart_bus/views/pages/lines/lines_page.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
@@ -54,6 +59,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => AuthBloc()..add(AuthCheckRequested())),
         BlocProvider(create: (_) => LigneBloc(LigneService())..add(LoadLignes())),
         BlocProvider(create: (_) => BusBloc(BusService())..add(LoadBuses())),
+        BlocProvider(create: (_) => ClaimsBloc(ReclamationService())..add(LoadClaims())),
       ],
       child: MaterialApp(
         locale: const Locale('fr', 'FR'),
@@ -77,6 +83,7 @@ class MyApp extends StatelessWidget {
           "/ticketsPage": (context) =>  TicketPage(),
           "/linesPage": (context) =>  LinesPage(),
           "/resetSuccess": (context) =>  ResetSuccess(),
+          "/claimsPage": (context) =>  ClaimsPage(),
         },
         home: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
@@ -84,7 +91,10 @@ class MyApp extends StatelessWidget {
               return const SplashScreen();
             }
             else if (state is AuthAuthenticated) {
-              return const AdminHomePage();
+              if(state.user.role == Role.ADMIN){
+                return const AdminHomePage();
+              }
+              return const HomePage();
             }
             else {
               return const LoginPage();
