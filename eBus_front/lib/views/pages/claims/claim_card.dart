@@ -197,8 +197,7 @@ class ClaimCard extends StatelessWidget {
                             context: context,
                             builder: (_) => ConfirmDeleteDialog(
                               title: "Supprimer la réclamation",
-                              content:
-                              "Êtes-vous sûr de vouloir supprimer cette réclamation ?",
+                              content: "Êtes-vous sûr de vouloir supprimer cette réclamation ?",
                               onConfirm: () {
                                 context.read<ClaimsBloc>().add(DeleteClaim(claim.id!));
                               },
