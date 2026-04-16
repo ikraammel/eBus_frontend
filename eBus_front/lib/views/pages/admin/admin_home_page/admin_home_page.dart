@@ -3,6 +3,8 @@ import 'package:smart_bus/views/pages/admin/admin_profile/admin_profile_page.dar
 import 'package:smart_bus/views/pages/admin/gestion_bus/gestion_bus_page.dart';
 import 'package:smart_bus/views/pages/admin/stats/stats_page.dart';
 
+import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_list_page.dart';
+
 import '../../../../constants/app_colors.dart';
 import '../../../../models/User.dart';
 import '../../../UI/card_menu.dart';
@@ -34,7 +36,7 @@ Widget _buildGrid(BuildContext context,User? user) {
         color: AppColors.darkBlue,
         onTap: () {
           Navigator.push(
-              context, 
+              context,
               MaterialPageRoute(builder: (_) => GestionLignesPage())
           );
         },
@@ -57,17 +59,21 @@ Widget _buildGrid(BuildContext context,User? user) {
         icon: Icons.chat_bubble_outline,
         color: AppColors.green,
         onTap: () {
-          // Navigator.pushNamed(context, '/claimsPage');
+
         },
       ),
       CardMenu(
-        title: 'Objets perdus',
-        icon: Icons.inventory_2_outlined,
-        color: AppColors.darkBlue,
-        onTap: () {
-          // Navigator.pushNamed(context, '/lostObjectsPage');
-        },
-      ),
+              title: 'Objets perdus',
+              icon: Icons.inventory_2_outlined,
+              color: AppColors.darkBlue,
+              onTap: () {
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminListPage()),
+                );
+              },
+            ),
     ],
   );
 }

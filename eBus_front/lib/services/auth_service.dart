@@ -96,6 +96,9 @@ class AuthService {
       throw Exception("Erreur inattendue: ${e.toString()}");
     }
   }
+  Future<bool> isLoggedIn() async {
+    return true;
+  }
 
   Future<User> updateUser(int id,Map<String,dynamic> user) async{
     try{

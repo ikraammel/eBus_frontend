@@ -48,7 +48,7 @@ class MapPage extends StatelessWidget {
                 TextSourceAttribution(
                   'OpenStreetMap contributors',
                 ),
-                // Also add images...
+
               ],
             ),
           ]
