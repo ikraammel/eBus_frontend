@@ -10,21 +10,33 @@ import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/bloc/bus/bus_bloc.dart';
 import 'package:smart_bus/bloc/bus/bus_event.dart';
+import 'package:smart_bus/bloc/claims/claims_bloc.dart';
+import 'package:smart_bus/bloc/claims/claims_event.dart';
 import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_event.dart';
+
 import 'package:smart_bus/bloc/objet_perdu/objet_perdu_bloc.dart';
 import 'package:smart_bus/bloc/objet_perdu/objet_perdu_event.dart';
 
 // Services
+
+import 'package:smart_bus/enums/enums.dart';
+
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/bus_service.dart';
 import 'package:smart_bus/services/ligne_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 
 // Views - General
+
+
+import 'package:smart_bus/services/reclamation_service.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
-import 'package:smart_bus/views/pages/home/home_page.dart';
 import 'package:smart_bus/views/pages/admin/admin_home_page/admin_home_page.dart';
+import 'package:smart_bus/views/pages/claims/claims_page.dart';
+
+import 'package:smart_bus/views/pages/home/home_page.dart';
+
 import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/login/forgot_password/reset_success.dart';
 import 'package:smart_bus/views/pages/map_page.dart';
@@ -70,11 +82,15 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => LigneBloc(LigneService())..add(LoadLignes())),
         BlocProvider(create: (_) => BusBloc(BusService())..add(LoadBuses())),
 
+
         BlocProvider(create: (_) => ObjetPerduBloc()..add(const LoadObjetsPerdus())),
+
+        BlocProvider(create: (_) => ClaimsBloc(ReclamationService())..add(LoadClaims())),
+
       ],
       child: MaterialApp(
         title: 'Smart Bus',
-        debugShowCheckedModeBanner: false,
+
         locale: const Locale('fr', 'FR'),
         supportedLocales: const [
           Locale('fr', 'FR'),
@@ -88,19 +104,33 @@ class MyApp extends StatelessWidget {
 
 
         routes: {
-          "/loginPage": (context) => LoginPage(),
-          "/homePage": (context) => const HomePage(),
-          "/mapPage": (context) => const MapPage(),
-          "/profilePage": (context) => const ProfilePage(),
-          "/registerPage": (context) => const RegisterPage(),
+
+
+
           "/lostObjectsPage": (context) => const LostObjectsPage(),
           "/declare-objet": (context) => const DeclareObjetPage(),
-          "/linesPage": (context) => const LinesPage(),
-          "/ticketsPage": (context) => const TicketPage(),
-          "/resetSuccess": (context) => const ResetSuccess(),
 
-          // Routes Admin
+
+
+
           "/adminListPage": (context) => const AdminListPage(),
+
+
+
+
+
+
+           "/loginPage": (context) => LoginPage(),
+           "/homePage": (context) => HomePage(),
+            "/mapPage": (context) => MapPage(),
+            "/profilePage": (context) => ProfilePage(),
+            "/registerPage": (context) => RegisterPage(),
+
+             "/ticketsPage": (context) =>  TicketPage(),
+                    "/linesPage": (context) =>  LinesPage(),
+                    "/resetSuccess": (context) =>  ResetSuccess(),
+                    "/claimsPage": (context) =>  ClaimsPage(),
+
         },
 
 
@@ -113,14 +143,14 @@ class MyApp extends StatelessWidget {
           }
 
           if (settings.name == '/detail') {
-            // Supporte l'envoi de l'objet complet ou de l'ID
+
             if (settings.arguments is ObjetPerdu) {
               final objet = settings.arguments as ObjetPerdu;
               return MaterialPageRoute(
                 builder: (context) => UserObjetDetailPage(objet: objet),
               );
             } else if (settings.arguments is int) {
-              // Si tu décides de ne passer que l'ID plus tard
+
               final id = settings.arguments as int;
               return MaterialPageRoute(
                 builder: (context) => UserObjetDetailPage(objetId: id),
@@ -131,18 +161,24 @@ class MyApp extends StatelessWidget {
         },
 
         home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthLoading || state is AuthInitial) {
-              return const SplashScreen();
-            } else if (state is AuthAuthenticated) {
+                  builder: (context, state) {
+                    if (state is AuthLoading || state is AuthInitial) {
+                      return const SplashScreen();
+                    }
+                    else if (state is AuthAuthenticated) {
+                      if(state.user.role == Role.ADMIN){
+                        return const AdminHomePage();
+                      }
+                      return const HomePage();
+                    }
+                    else {
+                      return const LoginPage();
+                    }
+                  },
+                ),
+                debugShowCheckedModeBanner: false,
+              ),
 
-              return const AdminHomePage();
-            } else {
-              return const LoginPage();
-            }
-          },
-        ),
-      ),
     );
   }
 }

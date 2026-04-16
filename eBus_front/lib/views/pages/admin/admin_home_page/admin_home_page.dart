@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/views/pages/admin/admin_profile/admin_profile_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_bus/gestion_bus_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_reclamation/gestion_reclamation_page.dart';
 import 'package:smart_bus/views/pages/admin/stats/stats_page.dart';
 
 import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_list_page.dart';
@@ -59,6 +60,10 @@ Widget _buildGrid(BuildContext context,User? user) {
         icon: Icons.chat_bubble_outline,
         color: AppColors.green,
         onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => GestionReclamationPage())
+          );
 
         },
       ),

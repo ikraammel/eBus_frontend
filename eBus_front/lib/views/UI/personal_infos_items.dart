@@ -31,7 +31,6 @@ class PersonalInfosItems extends StatelessWidget {
           onTap: onTap,
           decoration: InputDecoration(
             suffixIcon: Icon(suffixIcon),
-            // Text("${user.nom} ${user.prenom}"),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(

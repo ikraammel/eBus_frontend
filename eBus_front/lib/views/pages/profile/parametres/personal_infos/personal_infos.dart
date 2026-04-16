@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
-import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos_items.dart';
+import 'package:smart_bus/views/UI/personal_infos_items.dart';
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
 import '../../../../../constants/app_colors.dart';

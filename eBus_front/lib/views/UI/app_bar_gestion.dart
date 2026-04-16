@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_bus/enums/claims_sort_type.dart';
 
 import '../../constants/app_colors.dart';
 
@@ -7,18 +8,21 @@ class AppBarGestion extends StatelessWidget implements PreferredSizeWidget{
   final String title;
   final Color bgColor;
   final Function()? onPressed;
+  final List<PopupMenuButton<ClaimsSortType>>? actions;
+
 
   const AppBarGestion({
     super.key,
     required this.title,
     this.bgColor = AppColors.darkBlue,
-    this.onPressed
+    this.onPressed, this.actions
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: bgColor,
+      actions: actions,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
