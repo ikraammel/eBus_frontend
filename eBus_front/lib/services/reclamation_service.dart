@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../constants/constants.dart';
-import '../models/Reclamation.dart';
+import '../models/reclamation.dart';
 
 class ReclamationService {
   final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));

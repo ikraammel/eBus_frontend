@@ -4,7 +4,7 @@ import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/bloc/ligne/ligne_state.dart';
 import 'package:smart_bus/services/ligne_service.dart';
 
-import '../../models/Ligne.dart';
+import '../../models/ligne.dart';
 
 class LigneBloc extends Bloc<LigneEvent,LigneState>{
   final LigneService ligneService;

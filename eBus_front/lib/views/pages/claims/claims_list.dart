@@ -6,7 +6,7 @@ import '../../../bloc/claims/claims_state.dart';
 import '../../../enums/claims_sort_type.dart';
 import '../../../enums/reclamation_status.dart';
 import '../../UI/splash_screen.dart';
-import '../../../models/Reclamation.dart';
+import '../../../models/reclamation.dart';
 import 'claim_card.dart';
 
 class ClaimsList extends StatelessWidget {

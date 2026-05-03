@@ -3,17 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
+import 'package:smart_bus/services/dossier_service.dart';
 import 'package:smart_bus/views/pages/home/recent_activity.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
-import '../../../models/User.dart';
+import '../../../models/user.dart';
+import '../../../models/Dossier.dart';
 import '../../UI/card_menu.dart';
 import '../../UI/splash_screen.dart';
 import '../map_page.dart';
 import '../profile/profile_page.dart';
 import 'bottom_nav.dart';
 import 'home_header.dart';
-
+import 'dossier_status_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,25 +26,47 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final DossierService _dossierService = DossierService();
+
   Widget _getSelectedPage(User? user) {
     switch (_selectedIndex) {
       case 0:
         return _buildHomeContent(user);
       case 1:
-        return MapPage();
+        return const MapPage();
       case 2:
-        return TicketPage();
+        return const TicketPage();
       case 3:
-        return ProfilePage();
+        return const ProfilePage(showBackButton: false);
       default:
         return _buildHomeContent(user);
     }
   }
 
-  Widget _buildHomeContent(User? user){
+  Widget _buildHomeContent(User? user) {
     return Column(
       children: [
         HomeHeader(currentUser: user),
+        if (user != null) 
+          FutureBuilder<Dossier?>(
+            future: _dossierService.getMyDossier(user.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator())
+                );
+              }
+              if (snapshot.hasData && snapshot.data != null) {
+                final dossier = snapshot.data!;
+                if (dossier.statusDossier != "ACTIF") {
+                  return DossierStatusCard(status: dossier.statusDossier);
+                }
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -61,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                 ),
                 const SizedBox(height: 15),
-                RecentActivity(),
+                const RecentActivity(),
               ],
             ),
           ),
@@ -72,66 +96,51 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc,AuthState>(
+    return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         User? currentUser;
         if (state is AuthAuthenticated) {
           currentUser = state.user;
         } else if (state is AuthUnauthenticated) {
-          currentUser = null; // mode invité
+          currentUser = null;
         } else {
-          return const Scaffold(
-            body: SplashScreen(),
-          );
+          return const Scaffold(body: SplashScreen());
         }
-          return Scaffold(
-            backgroundColor:  const Color(0xFFF8F9FB),
-            body: _getSelectedPage(currentUser),
-            bottomNavigationBar: BottomNav(
-              selectedIndex: _selectedIndex,
-              onItemSelected: (index) {
-                if (index == 3) {
-                  if (currentUser == null) {
-                    _showLoginRequiredDialog();
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ProfilePage()),
-                    );
-                  }
-                  return;
-                }
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-            ),
-
-          );
-        }
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FB),
+          body: _getSelectedPage(currentUser),
+          bottomNavigationBar: BottomNav(
+            selectedIndex: _selectedIndex,
+            onItemSelected: (index) {
+              if (index == 3 && currentUser == null) {
+                _showLoginRequiredDialog();
+                return;
+              }
+              setState(() => _selectedIndex = index);
+            },
+          ),
+        );
+      },
     );
   }
 
-  void _showLoginRequiredDialog(){
+  void _showLoginRequiredDialog() {
     showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Connexion requise"),
-          content: Text("Vous devez vous connecter pour accéder à cette page."),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Annuler")
-            ),
-            TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/loginPage');
-                },
-                  child: Text("Se Connecter")
-            ),
-          ],
-        )
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Connexion requise"),
+        content: const Text("Vous devez vous connecter pour accéder à cette page."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Annuler")),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/loginPage');
+            },
+            child: const Text("Se Connecter", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -144,55 +153,22 @@ class _HomePageState extends State<HomePage> {
       crossAxisSpacing: 15,
       childAspectRatio: 1.1,
       children: [
-        CardMenu(
-          title: 'Lignes',
-          icon: Icons.directions_bus_filled,
-          color: AppColors.darkBlue,
-          onTap: () {
-            Navigator.pushNamed(context, '/linesPage');
-          },
-        ),
-        CardMenu(
-          title: 'Suivi du bus',
-          icon: Icons.map,
-          color: AppColors.green,
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => MapPage(showBackButton: true,)
-                )
-            );
-          },
-        ),
+        CardMenu(title: 'Lignes', icon: Icons.directions_bus_filled, color: AppColors.darkBlue, onTap: () => Navigator.pushNamed(context, '/linesPage')),
+        CardMenu(title: 'Suivi du bus', icon: Icons.map, color: AppColors.green, onTap: () => setState(() => _selectedIndex = 1)),
         CardMenu(
           title: 'Paiement',
           icon: Icons.credit_card,
           color: AppColors.darkBlue,
           onTap: () {
-            if(user == null){
+            if (user == null) {
               _showLoginRequiredDialog();
-            }else{
+            } else {
               Navigator.pushNamed(context, '/paymentPage');
             }
           },
         ),
-        CardMenu(
-          title: 'Réclamations',
-          icon: Icons.chat_bubble_outline,
-          color: AppColors.green,
-          onTap: () {
-            Navigator.pushNamed(context, '/claimsPage');
-          },
-        ),
-        CardMenu(
-          title: 'Objets perdus',
-          icon: Icons.inventory_2_outlined,
-          color: AppColors.darkBlue,
-          onTap: () {
-            Navigator.pushNamed(context, '/lostObjectsPage');
-          },
-        ),
+        CardMenu(title: 'Réclamations', icon: Icons.chat_bubble_outline, color: AppColors.green, onTap: () => Navigator.pushNamed(context, '/claimsPage')),
+        CardMenu(title: 'Objets perdus', icon: Icons.inventory_2_outlined, color: AppColors.darkBlue, onTap: () => Navigator.pushNamed(context, '/lostObjectsPage')),
       ],
     );
   }

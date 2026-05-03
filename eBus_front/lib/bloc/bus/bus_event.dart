@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../models/Bus.dart';
+import '../../models/bus.dart';
 
 abstract class BusEvent extends Equatable{
   @override

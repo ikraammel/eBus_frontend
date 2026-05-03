@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/constants/app_colors.dart';
-import 'package:smart_bus/models/User.dart';
+import 'package:smart_bus/models/user.dart';
 import '../../../constants/constants.dart';
 
 class HeaderPage extends StatelessWidget {
-  const HeaderPage({super.key, required this.currentUser});
+  const HeaderPage({super.key, required this.currentUser, this.showBackButton = true});
   final User? currentUser;
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
-
-    String fullUrl = '${AppConstants.baseUrl}'
-        '${currentUser!.photoUrl!.startsWith('/') ? currentUser!.photoUrl : '/${currentUser!.photoUrl}'}';
+    String? photoUrl = currentUser?.photoUrl;
+    String fullUrl = "";
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      fullUrl = '${AppConstants.baseUrl}${photoUrl.startsWith('/') ? photoUrl : '/$photoUrl'}';
+    }
 
     return Container(
       width: double.infinity,
@@ -33,10 +36,14 @@ class HeaderPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-          ),
+          if (showBackButton && Navigator.canPop(context))
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+            )
+          else
+            const SizedBox(height: 48), // Spacer to maintain layout when button is hidden
+          
           const SizedBox(height: 20),
 
           Row(
@@ -51,15 +58,13 @@ class HeaderPage extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 45,
                   backgroundColor: Colors.white24,
-                  backgroundImage: (currentUser?.photoUrl != null &&
-                      currentUser!.photoUrl!.isNotEmpty)
+                  backgroundImage: fullUrl.isNotEmpty
                       ? NetworkImage(fullUrl)
                       : null,
-                  child: (currentUser?.photoUrl == null ||
-                      currentUser!.photoUrl!.isEmpty)
+                  child: fullUrl.isEmpty
                       ? Text(
-                    "${currentUser?.nom[0].toUpperCase() ?? ''}"
-                        "${currentUser?.prenom[0].toUpperCase() ?? ''}",
+                    "${currentUser?.nom.isNotEmpty == true ? currentUser!.nom[0].toUpperCase() : ''}"
+                        "${currentUser?.prenom.isNotEmpty == true ? currentUser!.prenom[0].toUpperCase() : ''}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,

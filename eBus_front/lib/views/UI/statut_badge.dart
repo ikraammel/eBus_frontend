@@ -10,7 +10,6 @@ class StatutBadge extends StatelessWidget {
     Color color;
     String label;
 
-
     switch (statut) {
       case StatutObjet.DISPONIBLE:
         color = const Color(0xFF2E7D32);
@@ -18,15 +17,15 @@ class StatutBadge extends StatelessWidget {
         break;
       case StatutObjet.EN_ATTENTE:
         color = const Color(0xFFE67E22);
-        label = "Signalé";
-        break;
-      case StatutObjet.EN_ATTENTE_RECUPERATION:
-        color = const Color(0xFF1976D2); // Bleu Info
         label = "En attente";
         break;
+      case StatutObjet.EN_ATTENTE_RECUPERATION:
+        color = const Color(0xFF1976D2);
+        label = "À récupérer";
+        break;
       case StatutObjet.RECUPERE:
-        color = const Color(0xFF607D8B); // Gris Bleu
-        label = "Récupéré";
+        color = const Color(0xFF607D8B);
+        label = "Clôturé";
         break;
       default:
         color = Colors.grey;
@@ -34,39 +33,31 @@ class StatutBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08), // Fond pastel très léger
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.15), width: 1),
+        color: color.withValues(alpha: 0.15), // Fond un peu plus prononcé
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-
           Container(
-            width: 6,
-            height: 6,
+            width: 8,
+            height: 8,
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.4),
-                  blurRadius: 4,
-                  spreadRadius: 1,
-                )
-              ],
             ),
           ),
           const SizedBox(width: 8),
           Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: color,
-              fontSize: 10,
+              color: color, // Couleur vive sur fond pastel
+              fontSize: 11,
               fontWeight: FontWeight.w900,
-              letterSpacing: 0.6,
+              letterSpacing: 0.8,
             ),
           ),
         ],

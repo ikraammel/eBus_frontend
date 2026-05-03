@@ -9,7 +9,8 @@ class User {
   final String tel;
   final String adresse;
   final String cin;
-  final String cne;
+  final String? cne;
+  final String? statusDossier; // Corrigé de statutDossier à statusDossier
 
   final String dateNaissance;
   final String? typeAbonnement;
@@ -27,7 +28,8 @@ class User {
     required this.adresse,
     required this.dateNaissance,
     required this.cin,
-    required this.cne,
+    this.cne,
+    this.statusDossier,
     this.typeAbonnement,
     this.photoUrl,
     this.carteScolaireUrl,
@@ -35,7 +37,6 @@ class User {
   });
 
   factory User.fromJson(Map<String,dynamic> json){
-    print("JSON COMPLET: $json");
     return User(
       id: json['id'],
       nom: json['nom'],
@@ -48,14 +49,13 @@ class User {
       tel: json['tel'],
       adresse: json['adresse'],
       dateNaissance: json['dateNaissance'],
+      statusDossier: json['statusDossier']?.toString() ?? "EN_ATTENTE", // Corrigé ici
       typeAbonnement: json['typeAbonnement']?.toString(),
       photoUrl: json['photoUrl'],
       carteScolaireUrl: json['carteScolaireUrl'],
       cinUrl: json['cinUrl'],
       cin: json['cin'],
-      cne: json['cne'],
+      cne: json['cne']?.toString(),
     );
   }
-
 }
-

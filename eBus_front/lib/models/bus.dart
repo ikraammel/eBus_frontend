@@ -1,4 +1,4 @@
-class Bus{
+class Bus {
   final int? id;
   final String numero;
   final String etat;
@@ -6,16 +6,16 @@ class Bus{
   final int ligneId;
 
   Bus({
-    required this.id,
+    this.id, // Rendu optionnel pour faciliter la création
     required this.numero,
     required this.etat,
     required this.immatriculation,
-    required this.ligneId
+    required this.ligneId,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id != null) 'id': id,
       'numero': numero,
       'etat': etat,
       'immatriculation': immatriculation,
@@ -23,7 +23,7 @@ class Bus{
     };
   }
 
-  factory Bus.fromJson(Map<String,dynamic> json){
+  factory Bus.fromJson(Map<String, dynamic> json) {
     return Bus(
       id: json['id']?.toInt(),
       numero: json['numero']?.toString() ?? '',
@@ -33,4 +33,3 @@ class Bus{
     );
   }
 }
-

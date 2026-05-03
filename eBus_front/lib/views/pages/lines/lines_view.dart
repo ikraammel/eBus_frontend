@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_bus/views/UI/splash_screen.dart';
 import '../../../../bloc/ligne/ligne_bloc.dart';
 import '../../../../bloc/ligne/ligne_state.dart';
-import '../../../../models/Ligne.dart';
+import '../../../../models/ligne.dart';
 
 class LignesView extends StatelessWidget {
 
@@ -17,6 +18,10 @@ class LignesView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LigneBloc, LigneState>(
       builder: (context, state) {
+        if (state is LigneLoading) {
+          return const SplashScreen();
+        }
+
         List<Ligne> lignes;
         if (state is LigneLoaded) {
           lignes = state.lignes;

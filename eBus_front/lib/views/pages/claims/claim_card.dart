@@ -8,7 +8,7 @@ import '../../../bloc/claims/claims_event.dart';
 import '../../../bloc/claims/claims_state.dart';
 import '../../../enums/enums.dart';
 import '../../../enums/reclamation_status.dart';
-import '../../../models/Reclamation.dart';
+import '../../../models/reclamation.dart';
 import '../../UI/confirm_delete_dialog.dart';
 import '../../../utils/app_snack_bar.dart';
 

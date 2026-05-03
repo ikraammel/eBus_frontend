@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:smart_bus/models/Reclamation.dart';
+import 'package:smart_bus/models/reclamation.dart';
 
 abstract class ClaimsEvent extends Equatable{
   @override

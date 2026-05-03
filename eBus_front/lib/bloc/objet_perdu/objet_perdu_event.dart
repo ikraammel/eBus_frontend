@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class ObjetPerduEvent extends Equatable {
   const ObjetPerduEvent();
@@ -15,11 +16,12 @@ class LoadObjetsPerdus extends ObjetPerduEvent {
 // ---------------- ADD ----------------
 class AddObjetPerdu extends ObjetPerduEvent {
   final Map<String, dynamic> objetData;
+  final XFile? image; // Ajout de l'image ici
 
-  const AddObjetPerdu({required this.objetData});
+  const AddObjetPerdu({required this.objetData, this.image});
 
   @override
-  List<Object?> get props => [objetData];
+  List<Object?> get props => [objetData, image];
 }
 
 // ---------------- UPDATE STATUS ----------------

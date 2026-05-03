@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../constants/app_colors.dart';
-import '../../../../models/Bus.dart';
+import '../../../../models/bus.dart';
 import 'bus_card.dart';
 
 class BusList extends StatelessWidget {

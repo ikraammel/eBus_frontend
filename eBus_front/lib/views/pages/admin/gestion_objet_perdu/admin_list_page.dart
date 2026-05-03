@@ -127,7 +127,7 @@ class _AdminListPageState extends State<AdminListPage>
           objet: item,
           isAdmin: true,
           onMarquerDisponible: item.statut == StatutObjet.EN_ATTENTE
-              ? () => _updateStatus(item, StatutObjet.DISPONIBLE, "Valider cette annonce et la rendre visible ?")
+              ? () => _updateStatus(item, StatutObjet.DISPONIBLE, "Valider cette annonce et la rendre disponible ?")
               : null,
           onMarquerRecupere: (item.statut == StatutObjet.DISPONIBLE || item.statut == StatutObjet.EN_ATTENTE_RECUPERATION)
               ? () => _updateStatus(item, StatutObjet.RECUPERE, "Confirmer que l'objet a été remis au propriétaire ?")

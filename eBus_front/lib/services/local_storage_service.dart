@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_bus/models/User.dart';
+import 'package:smart_bus/models/user.dart';
 
 import '../enums/enums.dart';
 
@@ -58,7 +58,7 @@ class LocalStorageService {
       ),
       prefs.setString(
           keyCne,
-          user.cne
+          user.cne ?? ''
       ),
     ]);
 

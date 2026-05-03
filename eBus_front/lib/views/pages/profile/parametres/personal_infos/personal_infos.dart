@@ -5,7 +5,7 @@ import 'package:smart_bus/views/UI/personal_infos_items.dart';
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
 import '../../../../../constants/app_colors.dart';
-import '../../../../../models/User.dart';
+import '../../../../../models/user.dart';
 import '../../../../../utils/app_snack_bar.dart';
 import '../../../../UI/buttons/app_button.dart';
 import '../../../../UI/splash_screen.dart';

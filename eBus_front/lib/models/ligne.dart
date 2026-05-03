@@ -1,4 +1,4 @@
-import 'Station.dart';
+import 'station.dart';
 
 class Ligne {
   final int? id;

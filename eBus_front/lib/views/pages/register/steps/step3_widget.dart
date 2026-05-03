@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../../../services/file_picker_service.dart';
 import '../file_picker_field.dart';
 
 class Step3Widget extends StatelessWidget {
@@ -12,11 +10,14 @@ class Step3Widget extends StatelessWidget {
     required this.cin,
     required this.onPickImage,
     required this.onPickCarteScolaire,
-    required this.onPickCin});
+    required this.onPickCin,
+    required this.typeAbonnement
+  });
 
   final XFile? image;
   final XFile? carteScolaire;
   final XFile? cin;
+  final String typeAbonnement;
 
   final VoidCallback onPickImage;
   final VoidCallback onPickCarteScolaire;
@@ -24,28 +25,33 @@ class Step3Widget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Détection si c'est un profil étudiant
+    bool isEtudiant = (typeAbonnement ?? '').toUpperCase().contains('SCOLAIRE') || 
+                      (typeAbonnement ?? '').toUpperCase().contains('ETUDIANT');
+
     return SingleChildScrollView(
       child: Column(
         children: [
           FilePickerField(
-              label: "Photo *",
-              image: image,
-              onPick: onPickImage,
-              placeholder: "Charger la photo (PNG/JPG – max 1MB)",
+            label: "Photo de profil*",
+            image: image,
+            onPick: onPickImage,
+            placeholder: "Charger votre photo",
           ),
       
-          FilePickerField(
-              label: "Carte scolaire *",
+          if (isEtudiant)
+            FilePickerField(
+              label: "Carte scolaire ou Attestation de scolarité*",
               image: carteScolaire,
               onPick: onPickCarteScolaire,
-              placeholder:"Charger la photo (PNG/JPG – max 1MB)"
-          ),
+              placeholder: "Charger le justificatif de scolarité",
+            ),
       
           FilePickerField(
-              label: "CIN *",
-              image: cin,
-              onPick: onPickCin,
-              placeholder:"Charger la photo (PNG/JPG – max 1MB)"
+            label: "CIN (Recto/Verso)*",
+            image: cin,
+            onPick: onPickCin,
+            placeholder: "Charger la photo de votre CIN",
           ),
         ],
       ),

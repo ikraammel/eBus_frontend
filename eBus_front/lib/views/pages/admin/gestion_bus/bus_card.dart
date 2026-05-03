@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/bloc/bus/bus_bloc.dart';
 import 'package:smart_bus/bloc/bus/bus_event.dart';
-import 'package:smart_bus/models/Bus.dart';
+import 'package:smart_bus/models/bus.dart';
+import 'package:smart_bus/utils/app_snack_bar.dart';
 
 import '../../../../bloc/auth/auth_bloc.dart';
 import '../../../../bloc/auth/auth_state.dart';
@@ -37,9 +38,7 @@ class BusCard extends StatelessWidget {
             ),
             child: GestureDetector(
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Page détails du bus à venir"))
-                );
+                AppSnackBar.showSuccess(context, "Page détails du bus à venir");
               },
               child: Row(
                 children: [

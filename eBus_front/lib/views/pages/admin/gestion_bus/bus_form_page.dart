@@ -4,7 +4,7 @@ import 'package:smart_bus/bloc/bus/bus_bloc.dart';
 import 'package:smart_bus/bloc/bus/bus_event.dart';
 import 'package:smart_bus/bloc/bus/bus_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
-import 'package:smart_bus/models/Bus.dart';
+import 'package:smart_bus/models/bus.dart';
 import 'package:smart_bus/utils/app_snack_bar.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
 import '../../../UI/buttons/app_button.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
-import '../../../models/Ligne.dart';
+import '../../../models/ligne.dart';
 import 'line_card.dart';
 
 class LinesList extends StatelessWidget {

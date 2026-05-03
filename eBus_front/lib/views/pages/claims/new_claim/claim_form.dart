@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../bloc/ligne/ligne_bloc.dart';
 import '../../../../bloc/ligne/ligne_state.dart';
-import '../../../../models/Ligne.dart';
+import '../../../../models/ligne.dart';
 import '../../../UI/personal_infos_items.dart';
 
 class ClaimForm extends StatelessWidget {

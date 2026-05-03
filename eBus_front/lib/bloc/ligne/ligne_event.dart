@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../../models/Ligne.dart';
-import '../../models/Station.dart';
+import '../../models/ligne.dart';
+import '../../models/station.dart';
 
 abstract class LigneEvent extends Equatable{
   @override

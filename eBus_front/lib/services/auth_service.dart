@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/constants/constants.dart';
-import 'package:smart_bus/models/User.dart';
+import 'package:smart_bus/models/user.dart';
 import 'package:smart_bus/models/request/register_request.dart';
 import 'package:http_parser/http_parser.dart';
 
@@ -56,7 +56,7 @@ class AuthService {
             filename: photo.name),
         'carteScolaire': await MultipartFile.fromFile(carteScolaire.path,
             filename: carteScolaire.name),
-        'cin': await MultipartFile.fromFile(cin.path,
+        'cinPhoto': await MultipartFile.fromFile(cin.path,
             filename: cin.name),
       });
 

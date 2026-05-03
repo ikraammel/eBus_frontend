@@ -20,7 +20,6 @@ class ObjetPerduBloc extends Bloc<ObjetPerduEvent, ObjetPerduState> {
     Emitter<ObjetPerduState> emit,
   ) async {
     emit(const ObjetPerduLoading());
-
     try {
       final objets = await _objetService.getAll();
       emit(ObjetPerduLoadSuccess(objets: objets));
@@ -34,12 +33,13 @@ class ObjetPerduBloc extends Bloc<ObjetPerduEvent, ObjetPerduState> {
     AddObjetPerdu event,
     Emitter<ObjetPerduState> emit,
   ) async {
+    emit(const ObjetPerduLoading()); // Optionnel: afficher loading pendant l'ajout
     try {
-      await _objetService.declare(event.objetData);
+      // On passe maintenant l'image au service
+      await _objetService.declare(event.objetData, event.image);
 
       final objets = await _objetService.getAll();
       emit(ObjetPerduLoadSuccess(objets: objets));
-
     } catch (e) {
       emit(ObjetPerduFailure(error: e.toString()));
     }
@@ -60,7 +60,6 @@ class ObjetPerduBloc extends Bloc<ObjetPerduEvent, ObjetPerduState> {
 
       final objets = await _objetService.getAll();
       emit(ObjetPerduLoadSuccess(objets: objets));
-
     } catch (e) {
       emit(ObjetPerduFailure(error: e.toString()));
     }
@@ -73,10 +72,8 @@ class ObjetPerduBloc extends Bloc<ObjetPerduEvent, ObjetPerduState> {
   ) async {
     try {
       await _objetService.deleteObjet(event.id);
-
       final objets = await _objetService.getAll();
       emit(ObjetPerduLoadSuccess(objets: objets));
-
     } catch (e) {
       emit(ObjetPerduFailure(error: e.toString()));
     }

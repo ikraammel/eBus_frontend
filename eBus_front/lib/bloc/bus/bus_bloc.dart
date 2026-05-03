@@ -4,7 +4,7 @@ import 'package:smart_bus/bloc/bus/bus_event.dart';
 import 'package:smart_bus/bloc/bus/bus_state.dart';
 import 'package:smart_bus/services/bus_service.dart';
 
-import '../../models/Bus.dart';
+import '../../models/bus.dart';
 
 class BusBloc extends Bloc<BusEvent,BusState>{
   final BusService busService;

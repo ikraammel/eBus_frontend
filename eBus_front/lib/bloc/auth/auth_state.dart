@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../models/User.dart';
+import '../../models/user.dart';
 
 abstract class AuthState extends Equatable {
   AuthState();

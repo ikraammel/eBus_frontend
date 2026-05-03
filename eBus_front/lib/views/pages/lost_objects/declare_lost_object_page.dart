@@ -1,10 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
+import 'package:smart_bus/bloc/ligne/ligne_state.dart';
 import 'package:smart_bus/bloc/objet_perdu/objet_perdu_bloc.dart';
 import 'package:smart_bus/bloc/objet_perdu/objet_perdu_event.dart';
-import 'package:smart_bus/constants/constants.dart';
 import 'package:smart_bus/enums/enums.dart';
+import 'package:smart_bus/models/bus.dart';
 import 'package:smart_bus/models/statut_objet.dart';
+import 'package:smart_bus/services/bus_service.dart';
+import 'package:smart_bus/services/file_picker_service.dart';
+
+import '../../../constants/app_colors.dart';
 
 class DeclareObjetPage extends StatefulWidget {
   const DeclareObjetPage({super.key});
@@ -15,40 +23,73 @@ class DeclareObjetPage extends StatefulWidget {
 
 class _DeclareObjetPageState extends State<DeclareObjetPage> {
   final _formKey = GlobalKey<FormState>();
-
   final _nomCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
+  final _contactCtrl = TextEditingController(); // Changé de _emailCtrl à _contactCtrl
 
-  String? _ligneSel;
+  int? _selectedLigneId;
+  Bus? _selectedBus;
+  List<Bus> _availableBuses = [];
+  bool _loadingBuses = false;
+
   DateTime? _date;
   TypeAnnonce _typeSelectionne = TypeAnnonce.PERTE;
+
+  final FilePickerService _filePickerService = FilePickerService();
+  final BusService _busService = BusService();
+  XFile? _pickedImage;
 
   @override
   void dispose() {
     _nomCtrl.dispose();
     _descCtrl.dispose();
-    _emailCtrl.dispose();
+    _contactCtrl.dispose(); // Mis à jour
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _filePickerService.pickImage();
+    if (image != null && mounted) {
+      setState(() => _pickedImage = image);
+    }
+  }
+
+  Future<void> _fetchBuses(int ligneId) async {
+    setState(() {
+      _loadingBuses = true;
+      _selectedBus = null;
+      _availableBuses = [];
+    });
+    try {
+      final buses = await _busService.getBusesByLigne(ligneId);
+      debugPrint("BUSES LOADED: ${buses.length}");
+      if (mounted) {
+        setState(() {
+          _availableBuses = buses;
+          _loadingBuses = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("ERROR BUS: $e");
+      if (mounted) setState(() => _loadingBuses = false);
+    }
+  }
+
+  Color get _activeColor {
+    return _typeSelectionne == TypeAnnonce.PERTE ? AppColors.darkBlue : AppColors.primaryColor;
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color activeColor = _typeSelectionne == TypeAnnonce.PERTE
-        ? Colors.orange
-        : const Color(0xFF6DC24B);
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.lightGreenBg,
       appBar: AppBar(
-        backgroundColor: activeColor,
+        backgroundColor: AppColors.darkBlue,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          _typeSelectionne == TypeAnnonce.PERTE
-              ? 'Déclarer un objet perdu'
-              : 'Déclarer un objet trouvé',
+          _typeSelectionne == TypeAnnonce.PERTE ? 'Déclarer un objet perdu' : 'Déclarer un objet trouvé',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -59,141 +100,214 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _typeSelectionne = TypeAnnonce.PERTE),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _typeSelectionne == TypeAnnonce.PERTE
-                              ? Colors.orange
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          "J'ai perdu",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _typeSelectionne == TypeAnnonce.PERTE
-                                ? Colors.white
-                                : Colors.black54,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _typeSelectionne = TypeAnnonce.TROUVE),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _typeSelectionne == TypeAnnonce.TROUVE
-                              ? const Color(0xFF6DC24B)
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          "J'ai trouvé",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _typeSelectionne == TypeAnnonce.TROUVE
-                                ? Colors.white
-                                : Colors.black54,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
+              _buildTypeSelector(),
               const SizedBox(height: 24),
-
-              _label("Nom de l'objet"),
-              TextFormField(
-                controller: _nomCtrl,
-                decoration: _inputDecor('Ex: Sac, Clés...', Icons.inventory_2_outlined),
-                validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-
+              _buildImagePicker(),
+              const SizedBox(height: 24),
+              _buildTextField("Nom de l'objet", _nomCtrl, Icons.inventory_2_outlined, 'Ex: Sac, Clés...'),
               const SizedBox(height: 20),
-
-              _label("Ligne concernée"),
-              DropdownButtonFormField<String>(
-                value: _ligneSel,
-                hint: const Text('Sélectionner la ligne'),
-                items: AppConstants.lignes
-                    .map((l) => DropdownMenuItem(value: l, child: Text(l)))
-                    .toList(),
-                onChanged: (v) => setState(() => _ligneSel = v),
-                decoration: _inputDecor('', Icons.directions_bus_outlined),
-                validator: (v) => v == null ? 'Choisissez une ligne' : null,
-              ),
-
+              _buildLigneSelector(),
               const SizedBox(height: 20),
-
-              _label("Date de l'événement"),
-              TextFormField(
-                readOnly: true,
-                controller: TextEditingController(
-                  text: _date == null
-                      ? ''
-                      : '${_date!.day}/${_date!.month}/${_date!.year}',
-                ),
-                decoration: _inputDecor(
-                    'Cliquer pour choisir une date',
-                    Icons.calendar_today_outlined),
-                onTap: _pickDate,
-                validator: (v) => v == null || v.isEmpty ? 'Date requise' : null,
-              ),
-
+              _buildBusSelector(),
               const SizedBox(height: 20),
-
-              _label("Description"),
-              TextFormField(
-                controller: _descCtrl,
-                maxLines: 3,
-                decoration: _inputDecor(
-                    'Décrivez l\'objet...',
-                    Icons.description_outlined),
-                validator: (v) => v == null || v.isEmpty ? 'Description requise' : null,
-              ),
-
+              _buildDatePicker(),
               const SizedBox(height: 20),
-
-              _label("Email de contact"),
-              TextFormField(
-                controller: _emailCtrl,
-                decoration: _inputDecor('Email', Icons.email_outlined),
-                validator: (v) =>
-                    v == null || !v.contains('@') ? 'Email invalide' : null,
-              ),
-
+              _buildTextField("Description", _descCtrl, Icons.description_outlined, 'Décrivez l\'objet...', maxLines: 3),
+              const SizedBox(height: 20),
+              _buildTextField("Contact (Téléphone)", _contactCtrl, Icons.phone_outlined, 'Votre numéro de téléphone', isPhone: true), // Mis à jour
               const SizedBox(height: 40),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: activeColor,
-                  ),
-                  onPressed: _submit,
-                  child: const Text("VALIDER",
-                      style: TextStyle(color: Colors.white)),
-                ),
-              ),
+              _buildSubmitButton(),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTypeSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _typeSelectionne = TypeAnnonce.PERTE),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: _typeSelectionne == TypeAnnonce.PERTE ? AppColors.darkBlue : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _typeSelectionne == TypeAnnonce.PERTE ? AppColors.darkBlue : Colors.grey.shade300),
+              ),
+              child: Text("J'ai perdu", textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, color: _typeSelectionne == TypeAnnonce.PERTE ? Colors.white : AppColors.darkBlue),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _typeSelectionne = TypeAnnonce.TROUVE),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: _typeSelectionne == TypeAnnonce.TROUVE ? AppColors.primaryColor : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _typeSelectionne == TypeAnnonce.TROUVE ? AppColors.primaryColor : Colors.grey.shade300),
+              ),
+              child: Text("J'ai trouvé", textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, color: _typeSelectionne == TypeAnnonce.TROUVE ? Colors.white : AppColors.primaryColor),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Photo de l'objet (Optionnel)", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _pickImage,
+          child: Container(
+            width: double.infinity,
+            height: 180,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: _pickedImage != null
+                ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.file(File(_pickedImage!.path), fit: BoxFit.cover))
+                : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.add_a_photo_outlined, size: 40, color: _activeColor),
+              const SizedBox(height: 8),
+              Text("Ajouter une photo", style: TextStyle(color: _activeColor, fontWeight: FontWeight.w500)),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, String hint, {int maxLines = 1, bool isEmail = false, bool isPhone = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: isPhone ? TextInputType.phone : (isEmail ? TextInputType.emailAddress : TextInputType.text),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon, color: AppColors.primaryColor),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primaryColor)),
+          ),
+          validator: (v) {
+            if (v == null || v.isEmpty) return 'Champ requis';
+            if (isEmail && !v.contains('@')) return 'Email invalide';
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLigneSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Ligne concernée", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+        const SizedBox(height: 8),
+        BlocBuilder<LigneBloc, LigneState>(
+          builder: (context, state) {
+            if (state is LigneLoaded) {
+              return DropdownButtonFormField<int>(
+                value: _selectedLigneId,
+                hint: const Text('Sélectionner la ligne'),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.directions_bus_outlined, color: AppColors.primaryColor),
+                ),
+                items: state.lignes.map((l) => DropdownMenuItem(value: l.id, child: Text("Ligne ${l.numero}"))).toList(),
+                onChanged: (id) {
+                  if (id != null) {
+                    setState(() => _selectedLigneId = id);
+                    _fetchBuses(id);
+                  }
+                },
+                validator: (v) => v == null ? 'Choisissez une ligne' : null,
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBusSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Bus concerné (Optionnel)", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+        const SizedBox(height: 8),
+        if (_loadingBuses)
+          const Center(child: CircularProgressIndicator())
+        else
+          DropdownButtonFormField<Bus>(
+            value: _selectedBus,
+            hint: const Text('Sélectionner le bus'),
+            disabledHint: const Text('Sélectionnez d\'abord une ligne'),
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              prefixIcon: Icon(Icons.directions_bus, color: AppColors.primaryColor),
+            ),
+            items: _availableBuses.map((b) => DropdownMenuItem(value: b, child: Text("${b.numero} - ${b.immatriculation}"))).toList(),
+            onChanged: _selectedLigneId == null ? null : (Bus? bus) => setState(() => _selectedBus = bus),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Date de l'événement", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkBlue)),
+        const SizedBox(height: 8),
+        TextFormField(
+          readOnly: true,
+          controller: TextEditingController(text: _date == null ? '' : '${_date!.day}/${_date!.month}/${_date!.year}'),
+          decoration: InputDecoration(
+            hintText: 'Cliquer pour choisir une date',
+            prefixIcon: Icon(Icons.calendar_today_outlined, color: AppColors.primaryColor),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onTap: _pickDate,
+          validator: (v) => _date == null ? 'Date requise' : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _activeColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        onPressed: _submit,
+        child: const Text("VALIDER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -205,7 +319,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
       firstDate: DateTime(2024),
       lastDate: DateTime.now(),
     );
-    if (d != null) setState(() => _date = d);
+    if (d != null && mounted) setState(() => _date = d);
   }
 
   Future<void> _submit() async {
@@ -214,36 +328,25 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
     final objetData = {
       'nom': _nomCtrl.text,
       'description': _descCtrl.text,
-      'ligne': _ligneSel,
-      'contact': _emailCtrl.text,
-
+      'ligneId': _selectedLigneId,
+      'busId': _selectedBus?.id,
+      'contact': _contactCtrl.text,
       'type': _typeSelectionne.name,
       'statut': StatutObjet.EN_ATTENTE.name,
       'dateDeclaration': (_date ?? DateTime.now()).toIso8601String(),
       'userId': 1,
     };
 
-    context.read<ObjetPerduBloc>().add(AddObjetPerdu(objetData: objetData));
+    context.read<ObjetPerduBloc>().add(AddObjetPerdu(
+      objetData: objetData,
+      image: _pickedImage,
+    ));
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Déclaration envoyée !'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('Déclaration envoyée !'), backgroundColor: Colors.green),
       );
       Navigator.pop(context);
     }
   }
-
-  Widget _label(String t) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(t, style: const TextStyle(fontWeight: FontWeight.bold)),
-      );
-
-  InputDecoration _inputDecor(String hint, IconData icon) => InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      );
 }

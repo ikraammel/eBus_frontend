@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
-import 'package:smart_bus/models/User.dart';
+import 'package:smart_bus/models/user.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 
 import '../../main.dart';

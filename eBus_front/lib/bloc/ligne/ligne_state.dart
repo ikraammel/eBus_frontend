@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:smart_bus/models/Ligne.dart';
-import 'package:smart_bus/models/Station.dart';
+import 'package:smart_bus/models/ligne.dart';
+import 'package:smart_bus/models/station.dart';
 
 abstract class LigneState extends Equatable{
   @override

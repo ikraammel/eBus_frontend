@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:smart_bus/models/Station.dart';
+import 'package:smart_bus/models/station.dart';
 
 import '../constants/constants.dart';
-import '../models/Ligne.dart';
+import '../models/ligne.dart';
 
 class LigneService {
   final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));

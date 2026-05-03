@@ -7,7 +7,7 @@ import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/enums/enums.dart';
 import '../../../constants/app_colors.dart';
-import '../../../models/Ligne.dart';
+import '../../../models/ligne.dart';
 import '../../UI/buttons/action_icon_button.dart';
 import '../../UI/confirm_delete_dialog.dart';
 import '../admin/gestion_lignes_stations/line_form_page.dart';

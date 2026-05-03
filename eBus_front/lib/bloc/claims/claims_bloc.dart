@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:smart_bus/services/reclamation_service.dart';
 
-import '../../models/Reclamation.dart';
+import '../../models/reclamation.dart';
 import 'claims_event.dart';
 import 'claims_state.dart';
 

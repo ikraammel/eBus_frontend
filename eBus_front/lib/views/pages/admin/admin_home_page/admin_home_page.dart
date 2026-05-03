@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/views/pages/admin/admin_profile/admin_profile_page.dart';
-import 'package:smart_bus/views/pages/admin/gestion_bus/gestion_bus_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_reclamation/gestion_reclamation_page.dart';
-import 'package:smart_bus/views/pages/admin/stats/stats_page.dart';
-
 import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_list_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_tickets/gestion_tickets_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_dossiers/admin_dossiers_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_abonnements/admin_abonnements_page.dart';
 
 import '../../../../constants/app_colors.dart';
-import '../../../../models/User.dart';
+import '../../../../models/user.dart';
 import '../../../UI/card_menu.dart';
 import '../../home/recent_activity.dart';
-import '../../tickets/ticket_page.dart';
+import '../dashboard_admin/admin_dashboard_page.dart';
 import '../gestion_lignes_stations/gestion_lignes_page.dart';
 import 'admin_header.dart';
 import 'bottom_nav_admin.dart';
@@ -22,83 +22,25 @@ class AdminHomePage extends StatefulWidget {
   @override
   State<AdminHomePage> createState() => _AdminHomePageState();
 }
-Widget _buildGrid(BuildContext context,User? user) {
-  return GridView.count(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    crossAxisCount: 2,
-    mainAxisSpacing: 15,
-    crossAxisSpacing: 15,
-    childAspectRatio: 1.3,
-    children: [
-      CardMenu(
-        title: 'Gestion des lignes',
-        icon: Icons.directions_bus_filled,
-        color: AppColors.darkBlue,
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => GestionLignesPage())
-          );
-        },
-      ),
-      CardMenu(
-        title: 'Gestion des bus',
-        icon: Icons.map,
-        color: AppColors.green,
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => GestionBusPage(),
-              )
-          );
-        },
-      ),
-      CardMenu(
-        title: 'Réclamations',
-        icon: Icons.chat_bubble_outline,
-        color: AppColors.green,
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => GestionReclamationPage())
-          );
-
-        },
-      ),
-      CardMenu(
-              title: 'Objets perdus',
-              icon: Icons.inventory_2_outlined,
-              color: AppColors.darkBlue,
-              onTap: () {
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AdminListPage()),
-                );
-              },
-            ),
-    ],
-  );
-}
 
 class _AdminHomePageState extends State<AdminHomePage> {
   int _selectedIndex = 0;
+
   Widget _getSelectedPage(User? user) {
     switch (_selectedIndex) {
       case 0:
         return _buildDashboard();
       case 1:
-        return StatsPage();
+        return const AdminDashboardPage();
       case 2:
-        return TicketPage();
+        return const GestionTicketsPage();
       case 3:
-        return AdminProfilePage();
+        return const AdminProfilePage();
       default:
-        return Container();
+        return _buildDashboard();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,10 +49,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
         selectedIndex: _selectedIndex,
         onItemSelected: (index) {
           if (index == 3) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => AdminProfilePage()),
-              );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminProfilePage()),
+            );
             return;
           }
           setState(() {
@@ -152,7 +94,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                       color: Color(0xFF1A1F26),
                     ),
                   ),
-                  _buildGrid(context,null),
+                  _buildGrid(context, null),
                   const SizedBox(height: 20),
                   const Text(
                     "Activité récente",
@@ -163,7 +105,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  RecentActivity(),
+                  const RecentActivity(),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -173,4 +115,61 @@ class _AdminHomePageState extends State<AdminHomePage> {
       ),
     );
   }
+
+  Widget _buildGrid(BuildContext context, User? user) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 15,
+      crossAxisSpacing: 15,
+      childAspectRatio: 1.3,
+      children: [
+        CardMenu(
+          title: 'Gestion des dossiers',
+          icon: Icons.folder_shared,
+          color: AppColors.darkBlue,
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminDossiersPage())
+            );
+          },
+        ),
+        CardMenu(
+          title: 'Gestion Abonnements',
+          icon: Icons.card_membership,
+          color: AppColors.green,
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminAbonnementsPage())
+            );
+          },
+        ),
+        CardMenu(
+          title: 'Réclamations',
+          icon: Icons.chat_bubble_outline,
+          color: AppColors.green,
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const GestionReclamationPage())
+            );
+          },
+        ),
+        CardMenu(
+          title: 'Objets perdus',
+          icon: Icons.inventory_2_outlined,
+          color: AppColors.darkBlue,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminListPage()),
+            );
+          },
+        ),
+      ],
+    );
   }
+}

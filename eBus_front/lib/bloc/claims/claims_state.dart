@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../models/Reclamation.dart';
+import '../../models/reclamation.dart';
 
 abstract class ClaimsState extends Equatable{
   @override
