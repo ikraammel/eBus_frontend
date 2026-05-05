@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../models/dashboard_model.dart';
+import '../models/dashboard.dart';
 
 class OccupancyLineChart extends StatelessWidget {
   final RealtimeOccupancyDTO data;

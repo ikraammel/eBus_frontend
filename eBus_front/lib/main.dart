@@ -9,9 +9,10 @@ import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/bloc/bus/bus_bloc.dart';
-import 'package:smart_bus/bloc/bus/bus_event.dart'; // Import ajouté
+import 'package:smart_bus/bloc/bus/bus_event.dart';
 import 'package:smart_bus/bloc/claims/claims_bloc.dart';
 import 'package:smart_bus/bloc/claims/claims_event.dart';
+import 'package:smart_bus/bloc/dashboard/dashboard_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/bloc/objet_perdu/objet_perdu_bloc.dart';
@@ -44,6 +45,8 @@ import 'package:smart_bus/views/pages/lost_objects/user_objet_detail_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_list_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_objet_detail_page.dart';
 
+import 'bloc/dashboard/dashboard_event.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> initialDependencies() async {
@@ -73,6 +76,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => BusBloc(BusService())..add(LoadBuses())),
         BlocProvider(create: (_) => ObjetPerduBloc()..add(const LoadObjetsPerdus())),
         BlocProvider(create: (_) => ClaimsBloc(ReclamationService())..add(LoadClaims())),
+        BlocProvider(create: (_) => DashboardBloc()..add(LoadDashboard())),
       ],
       child: MaterialApp(
         title: 'Smart Bus',

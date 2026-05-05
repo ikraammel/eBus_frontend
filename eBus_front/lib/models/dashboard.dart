@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Modèle principal du dashboard
 class DashboardData {
   final DateTime timestamp;
   final int refreshInterval;
@@ -9,6 +8,10 @@ class DashboardData {
   final List<AlertDTO> alerts;
   final List<TopLineDTO> topLines;
   final List<EnergyConsumptionDTO> energyConsumption;
+  final int users;
+  final int bus;
+  final int reclamations;
+  final int objets;
 
   DashboardData({
     required this.timestamp,
@@ -18,6 +21,10 @@ class DashboardData {
     required this.alerts,
     required this.topLines,
     required this.energyConsumption,
+    required this.users,
+    required this.bus,
+    required this.reclamations,
+    required this.objets,
   });
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
@@ -25,6 +32,10 @@ class DashboardData {
       timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now(),
       refreshInterval: json['refreshInterval'] ?? 30,
       kpis: KPIsDTO.fromJson(json['kpis'] ?? {}),
+      users: json['users'] ?? 0,
+      bus: json['bus'] ?? 0,
+      reclamations: json['reclamations'] ?? 0,
+      objets: json['objets'] ?? 0,
       realtimeOccupancy: RealtimeOccupancyDTO.fromJson(json['realtimeOccupancy'] ?? {'labels': [], 'datasets': []}),
       alerts: json['alerts'] != null 
           ? (json['alerts'] as List).map((e) => AlertDTO.fromJson(e)).toList() 
