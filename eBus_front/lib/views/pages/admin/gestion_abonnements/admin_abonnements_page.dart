@@ -22,13 +22,32 @@ class AdminAbonnementsPage extends StatelessWidget {
   }
 }
 
-class AdminAbonnementsView extends StatelessWidget {
+class AdminAbonnementsView extends StatefulWidget {
   const AdminAbonnementsView({super.key});
+
+  @override
+  State<AdminAbonnementsView> createState() => _AdminAbonnementsViewState();
+}
+
+class _AdminAbonnementsViewState extends State<AdminAbonnementsView> {
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
 
   String _formatTitle(String title) {
     if (title.isEmpty) return title;
     String formatted = title.replaceAll('_', ' ').toLowerCase();
     return formatted[0].toUpperCase() + formatted.substring(1);
+  }
+
+  List<Abonnement> _applySearch(List<Abonnement> list) {
+    if (_searchQuery.isEmpty) return list;
+    return list.where((a) {
+      final query = _searchQuery.toLowerCase();
+      final fullName = "${a.nom} ${a.prenom}".toLowerCase();
+      final email = a.email.toLowerCase();
+      return fullName.contains(query) || email.contains(query);
+    }).toList();
   }
 
   @override
@@ -37,11 +56,43 @@ class AdminAbonnementsView extends StatelessWidget {
       backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
         backgroundColor: AppColors.darkBlue,
-        title: const Text(
-          "Monitoring Abonnements",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: "Rechercher un abonné...",
+                  hintStyle: TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
+                ),
+                style: const TextStyle(color: Colors.white),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+              )
+            : const Text(
+                "Monitoring Abonnements",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchController.clear();
+                  _searchQuery = "";
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -54,10 +105,21 @@ class AdminAbonnementsView extends StatelessWidget {
                 }
 
                 if (state is AdminAbonnementLoaded) {
-                  final list = state.filteredAbonnements;
+                  final list = _applySearch(state.filteredAbonnements);
+                  
                   if (list.isEmpty) {
-                    return const Center(
-                      child: Text("Aucun abonnement trouvé", style: TextStyle(color: Colors.grey)),
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.search_off, size: 60, color: Colors.grey),
+                          const SizedBox(height: 10),
+                          Text(
+                            _searchQuery.isEmpty ? "Aucun abonnement trouvé" : "Aucun résultat pour \"$_searchQuery\"",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
                     );
                   }
 
@@ -137,9 +199,14 @@ class AdminAbonnementsView extends StatelessWidget {
   Widget _buildAbonnementCard(BuildContext context, Abonnement a) {
     Color statusColor;
     switch (a.status) {
-      case 'ACTIF': statusColor = Colors.green; break;
-      case 'EXPIRE': statusColor = Colors.red; break;
-      default: statusColor = Colors.orange;
+      case 'ACTIF':
+        statusColor = Colors.green;
+        break;
+      case 'EXPIRE':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.orange;
     }
 
     return Card(

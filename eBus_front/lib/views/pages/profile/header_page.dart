@@ -1,12 +1,30 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/models/user.dart';
+import '../../../bloc/auth/auth_bloc.dart';
+import '../../../bloc/auth/auth_event.dart';
 import '../../../constants/constants.dart';
 
 class HeaderPage extends StatelessWidget {
-  const HeaderPage({super.key, required this.currentUser, this.showBackButton = true});
+  const HeaderPage({super.key, required this.currentUser, this.showBackButton = true, this.allowEditAvatar = false});
   final User? currentUser;
   final bool showBackButton;
+  final bool allowEditAvatar;
+
+  Future<void> _pickAndUploadImage(BuildContext context) async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null && context.mounted && currentUser != null) {
+      context.read<AuthBloc>().add(AuthUpdateAvatarRequested(
+        id: currentUser!.id,
+        photo: image,
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,37 +60,60 @@ class HeaderPage extends StatelessWidget {
               icon: const Icon(Icons.arrow_back, color: Colors.white),
             )
           else
-            const SizedBox(height: 48), // Spacer to maintain layout when button is hidden
+            const SizedBox(height: 48),
           
           const SizedBox(height: 20),
 
           Row(
             children: [
-              // Avatar amélioré
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
-                ),
-                child: CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Colors.white24,
-                  backgroundImage: fullUrl.isNotEmpty
-                      ? NetworkImage(fullUrl)
-                      : null,
-                  child: fullUrl.isEmpty
-                      ? Text(
-                    "${currentUser?.nom.isNotEmpty == true ? currentUser!.nom[0].toUpperCase() : ''}"
-                        "${currentUser?.prenom.isNotEmpty == true ? currentUser!.prenom[0].toUpperCase() : ''}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+              Stack(
+                children: [
+                  GestureDetector(
+                    onTap: allowEditAvatar ? () => _pickAndUploadImage(context) : null,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                      ),
+                      child: CircleAvatar(
+                        radius: 45,
+                        backgroundColor: Colors.white24,
+                        backgroundImage: fullUrl.isNotEmpty
+                            ? NetworkImage(fullUrl)
+                            : null,
+                        child: (fullUrl.isEmpty)
+                            ? Text(
+                          "${currentUser?.nom.isNotEmpty == true ? currentUser!.nom[0].toUpperCase() : ''}"
+                              "${currentUser?.prenom.isNotEmpty == true ? currentUser!.prenom[0].toUpperCase() : ''}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                            : null,
+                      ),
                     ),
-                  )
-                      : null,
-                ),
+                  ),
+                  if (allowEditAvatar)
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: AppColors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                ],
               ),
 
               const SizedBox(width: 20),
@@ -98,6 +139,19 @@ class HeaderPage extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
+                    if (currentUser?.role.toString().contains('ADMIN') ?? false)
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          "ADMINISTRATEUR",
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                   ],
                 ),
               ),

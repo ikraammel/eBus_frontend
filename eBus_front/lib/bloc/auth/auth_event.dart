@@ -58,6 +58,15 @@ class AuthUpdateUserRequested extends AuthEvent{
   List<Object?> get props => [id,nom,prenom,email,tel,adresse,dateNaissance];
 }
 
+class AuthUpdateAvatarRequested extends AuthEvent {
+  final int id;
+  final XFile photo;
+  AuthUpdateAvatarRequested({required this.id, required this.photo});
+
+  @override
+  List<Object?> get props => [id, photo];
+}
+
 class AuthLogoutRequested extends AuthEvent{}
 
 class AuthDeleteUserRequested extends AuthEvent{
@@ -75,5 +84,3 @@ class AuthResetPasswordRequested extends AuthEvent{
   final String newPassword;
   AuthResetPasswordRequested({required this.token,required this.newPassword});
 }
-
-

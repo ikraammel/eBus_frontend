@@ -18,6 +18,10 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
   List<Ticket> _tickets = [];
   bool _loading = true;
 
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,17 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: c),
     );
+  }
+
+  List<dynamic> _filterItems(List<dynamic> items, bool isAbonnement) {
+    if (_searchQuery.isEmpty) return items;
+    final query = _searchQuery.toLowerCase();
+    return items.where((item) {
+      final text = isAbonnement 
+          ? (item as TypeAbonnement).nom.toLowerCase() 
+          : (item as Ticket).typeTicket.toLowerCase();
+      return text.contains(query);
+    }).toList();
   }
 
   // --- FORMULAIRES ---
@@ -183,9 +198,42 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F9FB),
         appBar: AppBar(
-          title: const Text("Gestion des Offres", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: _isSearching
+              ? TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    hintText: "Rechercher une offre...",
+                    hintStyle: TextStyle(color: Colors.white70),
+                    border: InputBorder.none,
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                )
+              : const Text("Gestion des Offres", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           backgroundColor: AppColors.darkBlue,
           elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+              icon: Icon(_isSearching ? Icons.close : Icons.search),
+              onPressed: () {
+                setState(() {
+                  if (_isSearching) {
+                    _isSearching = false;
+                    _searchController.clear();
+                    _searchQuery = "";
+                  } else {
+                    _isSearching = true;
+                  }
+                });
+              },
+            ),
+          ],
           bottom: const TabBar(
             labelColor: Colors.white,
             indicatorColor: AppColors.green,
@@ -198,8 +246,8 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
             ? const Center(child: CircularProgressIndicator(color: AppColors.darkBlue))
             : TabBarView(
                 children: [
-                  _buildList(_abonnements, true),
-                  _buildList(_tickets, false),
+                  _buildList(_filterItems(_abonnements, true), true),
+                  _buildList(_filterItems(_tickets, false), false),
                 ],
               ),
         floatingActionButton: Builder(
@@ -231,7 +279,23 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
   }
 
   Widget _buildList(List<dynamic> items, bool isAbonnement) {
-    if (items.isEmpty) return const Center(child: Text("Aucune offre disponible"));
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(_searchQuery.isEmpty ? Icons.inventory_2_outlined : Icons.search_off, size: 60, color: Colors.grey),
+            const SizedBox(height: 10),
+            Text(
+              _searchQuery.isEmpty 
+                  ? "Aucune offre disponible" 
+                  : "Aucun résultat pour \"$_searchQuery\"",
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
     return RefreshIndicator(
       onRefresh: _loadAll,
       child: ListView.builder(

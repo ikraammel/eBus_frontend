@@ -16,6 +16,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
     on<AuthUpdateUserRequested>(_onUpdateUserRequested);
+    on<AuthUpdateAvatarRequested>(_onUpdateAvatarRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthDeleteUserRequested>(_onDeleteUserRequested);
     on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
@@ -87,6 +88,18 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
         data['dateNaissance'] = event.dateNaissance;
       }
       final User updatedUser = await _authService.updateUser(event.id, data);
+      await _localStorageService.saveUser(updatedUser);
+      emit(AuthProfileUpdated(user: updatedUser));
+      emit(AuthAuthenticated(user: updatedUser));
+    } catch (e) {
+      emit(AuthFailure(error: e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateAvatarRequested(AuthUpdateAvatarRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      final User updatedUser = await _authService.updateAvatar(event.id, event.photo);
       await _localStorageService.saveUser(updatedUser);
       emit(AuthProfileUpdated(user: updatedUser));
       emit(AuthAuthenticated(user: updatedUser));

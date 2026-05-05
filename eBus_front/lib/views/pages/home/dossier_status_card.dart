@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 class DossierStatusCard extends StatelessWidget {
   final String? status;
+  final String? rejectionReason;
 
-  const DossierStatusCard({super.key, this.status});
+  const DossierStatusCard({super.key, this.status,this.rejectionReason});
 
-  String getDossierMessage(String? status) {
+  String getDossierMessage() {
     switch (status) {
       case "EN_ATTENTE":
         return "Votre dossier est en cours de traitement.";
@@ -14,7 +15,10 @@ class DossierStatusCard extends StatelessWidget {
       case "VALIDE":
         return "Dossier validé 🎉 Vous pouvez maintenant passer au paiement.";
       case "REJETE":
-        return "Votre dossier a été rejeté. Veuillez contacter l'administration.";
+        if (rejectionReason == null || rejectionReason!.isEmpty) {
+          return "Votre dossier a été rejeté. Veuillez contacter l'administration.";
+        }
+        return "Votre dossier a été rejeté.\nMotif : $rejectionReason";
       default:
         return "Statut du dossier en cours de récupération...";
     }
@@ -63,9 +67,9 @@ class DossierStatusCard extends StatelessWidget {
               const SizedBox(width: 15),
               Expanded(
                 child: Text(
-                  getDossierMessage(status),
+                  getDossierMessage(),
                   style: TextStyle(
-                    color: color.darken(0.2), // Utilisation du helper corrigé
+                    color: color.darken(0.2),
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),

@@ -124,6 +124,28 @@ class AuthService {
         }
       }
 
+  Future<User> updateAvatar(int id, XFile photo) async {
+    try {
+      FormData formData = FormData.fromMap({
+        'photo': await MultipartFile.fromFile(photo.path, filename: photo.name),
+      });
+
+      final response = await _dio.patch(
+        '/users/update-avatar/$id',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      return User.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.data != null) {
+        final data = e.response!.data;
+        if (data is String) throw Exception(data);
+        if (data is Map && data.containsKey('message')) throw Exception(data['message']);
+      }
+      throw Exception("Erreur lors de la mise à jour de l'avatar");
+    }
+  }
+
       Future<void> deleteUser(int id) async{
         try{
           await _dio.delete(

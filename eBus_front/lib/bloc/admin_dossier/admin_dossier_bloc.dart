@@ -30,7 +30,7 @@ class AdminDossierBloc extends Bloc<AdminDossierEvent, AdminDossierState> {
 
     on<RejeterDossierEvent>((event, emit) async {
       try {
-        await dossierService.rejeterDossier(event.id);
+        await dossierService.rejeterDossier(event.id,event.reason);
         emit(AdminDossierActionSuccess("Dossier rejeté"));
         add(LoadDossiers());
       } catch (e) {

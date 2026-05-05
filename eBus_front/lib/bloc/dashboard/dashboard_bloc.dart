@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../constants/constants.dart';
-import '../../models/SystemStatus.dart';
+import '../../models/system_status.dart';
 import '../../models/dashboard.dart';
 import 'dashboard_event.dart';
 import 'dashboard_state.dart';
