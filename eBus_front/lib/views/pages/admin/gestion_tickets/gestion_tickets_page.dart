@@ -205,15 +205,21 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
         floatingActionButton: Builder(
           builder: (context) {
             final tabController = DefaultTabController.of(context);
+
             return AnimatedBuilder(
               animation: tabController,
               builder: (context, _) {
-                // On cache le bouton d'ajout si on est sur l'onglet Tickets (index 1)
-                if (tabController.index == 1) return const SizedBox.shrink();
-                
+                final isTicketTab = tabController.index == 1;
+
                 return FloatingActionButton(
                   backgroundColor: AppColors.darkBlue,
-                  onPressed: () => _formAbonnement(),
+                  onPressed: () {
+                    if (isTicketTab) {
+                      _formTicket();
+                    } else {
+                      _formAbonnement();
+                    }
+                  },
                   child: const Icon(Icons.add, color: Colors.white, size: 30),
                 );
               },
