@@ -6,7 +6,7 @@ class Bus {
   final int ligneId;
 
   Bus({
-    this.id, // Rendu optionnel pour faciliter la création
+    this.id,
     required this.numero,
     required this.etat,
     required this.immatriculation,

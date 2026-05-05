@@ -189,6 +189,7 @@ class _GestionTicketsPageState extends State<GestionTicketsPage> {
           bottom: const TabBar(
             labelColor: Colors.white,
             indicatorColor: AppColors.green,
+            unselectedLabelColor: Colors.white70,
             indicatorWeight: 3,
             tabs: [Tab(text: "ABONNEMENTS"), Tab(text: "TICKETS")],
           ),

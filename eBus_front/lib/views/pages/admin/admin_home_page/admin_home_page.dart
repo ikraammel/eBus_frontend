@@ -105,7 +105,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  const RecentActivity(),
+                  const RecentActivity(isAdmin: true,),
                   const SizedBox(height: 30),
                 ],
               ),
