@@ -84,3 +84,13 @@ class AuthResetPasswordRequested extends AuthEvent{
   final String newPassword;
   AuthResetPasswordRequested({required this.token,required this.newPassword});
 }
+
+class AuthVerifyResetCodeRequested extends AuthEvent {
+  final String email;
+  final String code;
+
+  AuthVerifyResetCodeRequested({
+    required this.email,
+    required this.code,
+  });
+}

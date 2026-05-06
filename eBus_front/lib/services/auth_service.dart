@@ -162,47 +162,60 @@ class AuthService {
         }
       }
 
+  Future<String> verifyResetCode(String email, String code) async {
+    try {
+      final response = await _dio.post(
+        "/users/verify-reset-code",
+        data: {
+          "email": email,
+          "code": code,
+        },
+      );
+
+      final data = response.data;
+
+      if (data is Map && data["data"] != null) {
+        return data["data"]["token"];
+      }
+
+      throw Exception("Token invalide ou réponse serveur incorrecte");
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
   Future<String> forgotPassword(String email) async {
     try {
       final response = await _dio.post(
         "/users/forgot-password",
-        queryParameters: {"email": email},
+        data: {"email": email},
       );
 
-      if (response.statusCode == 200 && response.data is String) {
-        // extraire le token depuis le lien renvoyé par le backend
-        final data = response.data as String;
-        final token = data.split('token=')[1]; // récupère juste le token
-        return token;
-      } else {
-        throw Exception("Impossible de récupérer le token");
+      final data = response.data;
+
+      if (data is Map && data["message"] != null) {
+        return data["message"];
       }
+
+      return "Email envoyé avec succès";
     } on DioException catch (e) {
-      if (e.response != null && e.response!.data != null) {
-        final data = e.response!.data;
-        if (data is String) throw Exception(data);
-      }
-      throw Exception("Erreur serveur lors de la récupération du token");
+      final msg = e.response?.data?["message"] ?? "Erreur serveur";
+      throw Exception(msg);
     }
   }
 
-      Future<void> resetPassword(String token,String newPassword) async{
-        try{
-          await _dio.post(
-              "/users/reset-password",
-              queryParameters: {
-                "token": token,
-                "newPassword": newPassword
-              }
-          );
-        }on DioException catch(e){
-          if(e.response != null && e.response!.data != null){
-            final data = e.response!.data;
-
-            if(data is String){
-              throw Exception(data);
-            }
-          }
-        }
-      }
+  Future<void> resetPassword(String token, String newPassword) async {
+    try {
+      await _dio.post(
+        "/users/reset-password",
+        data: {
+          "token": token,
+          "newPassword": newPassword,
+        },
+      );
+    } on DioException catch (e) {
+      final msg = e.response?.data?["message"] ?? "Erreur serveur";
+      throw Exception(msg);
+    }
+  }
     }

@@ -21,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     on<AuthDeleteUserRequested>(_onDeleteUserRequested);
     on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
     on<AuthResetPasswordRequested>(_onResetPasswordRequested);
+    on<AuthVerifyResetCodeRequested>(_onVerifyResetCode);
   }
 
   Future<void> _onCheckRequested(AuthCheckRequested event,
@@ -146,6 +147,24 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     try {
       await _authService.resetPassword(event.token,event.newPassword);
       emit(ResetPasswordSuccess());
+    } catch (e) {
+      emit(AuthFailure(error: e.toString()));
+    }
+  }
+
+  Future<void> _onVerifyResetCode(
+      AuthVerifyResetCodeRequested event,
+      Emitter<AuthState> emit,
+      ) async {
+    emit(AuthLoading());
+
+    try {
+      final token = await _authService.verifyResetCode(
+        event.email,
+        event.code,
+      );
+
+      emit(AuthCodeVerified(token));
     } catch (e) {
       emit(AuthFailure(error: e.toString()));
     }
