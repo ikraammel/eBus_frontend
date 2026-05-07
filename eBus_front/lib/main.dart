@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,6 +23,7 @@ import 'package:smart_bus/bloc/objet_perdu/objet_perdu_event.dart';
 import 'package:smart_bus/enums/enums.dart';
 import 'package:smart_bus/services/auth_service.dart';
 import 'package:smart_bus/services/bus_service.dart';
+import 'package:smart_bus/services/horaire_service.dart';
 import 'package:smart_bus/services/ligne_service.dart';
 import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/services/reclamation_service.dart';
@@ -29,6 +31,7 @@ import 'package:smart_bus/services/reclamation_service.dart';
 // Views
 import 'package:smart_bus/views/UI/splash_screen.dart';
 import 'package:smart_bus/views/pages/admin/admin_home_page/admin_home_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_horaire/gestion_horaires_page.dart';
 import 'package:smart_bus/views/pages/claims/claims_page.dart';
 import 'package:smart_bus/views/pages/home/home_page.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
@@ -47,6 +50,11 @@ import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_objet_deta
 
 import 'bloc/dashboard/dashboard_event.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+
+import 'bloc/horaire/horaire_bloc.dart';
+
+
 final getIt = GetIt.instance;
 
 Future<void> initialDependencies() async {
@@ -60,7 +68,20 @@ Future<void> initialDependencies() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await initialDependencies();
+  await Firebase.initializeApp();
+
+  print("APP NAME: ${Firebase.app().name}");
+  print("PROJECT: ${Firebase.app().options.projectId}");
+
+  final db = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL: "https://ebus-6311b-default-rtdb.firebaseio.com",
+  );
+
+  getIt.registerSingleton<FirebaseDatabase>(db);
+
   runApp(const MyApp());
 }
 
@@ -77,6 +98,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => ObjetPerduBloc()..add(const LoadObjetsPerdus())),
         BlocProvider(create: (_) => ClaimsBloc(ReclamationService())..add(LoadClaims())),
         BlocProvider(create: (_) => DashboardBloc()..add(LoadDashboard())),
+        BlocProvider(create: (_) => HoraireBloc(HoraireService())),
       ],
       child: MaterialApp(
         title: 'Smart Bus',
@@ -100,6 +122,8 @@ class MyApp extends StatelessWidget {
           "/linesPage": (context) => const LinesPage(),
           "/resetSuccess": (context) => const ResetSuccess(),
           "/claimsPage": (context) => const ClaimsPage(),
+          "/horaireAdminPage": (context) => const GestionHorairesPage(),
+
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/admin-detail') {

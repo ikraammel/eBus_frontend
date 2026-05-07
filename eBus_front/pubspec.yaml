@@ -16,6 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
+  flutter_map_cancellable_tile_provider: 3.1.1
   lottie: ^3.3.2
   flutter_bloc: ^9.1.1
   bloc: ^9.1.1
@@ -32,6 +33,8 @@ dependencies:
   fl_chart: ^1.2.0
   intl: ^0.20.2
   flutter_svg: ^2.2.4
+  firebase_core: ^4.7.0
+  firebase_database: ^12.3.0
 
 
 dev_dependencies:
