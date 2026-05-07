@@ -8,7 +8,7 @@ import 'package:smart_bus/models/ticket.dart';
 import 'package:smart_bus/models/type_abonnement.dart';
 import 'package:smart_bus/services/ticket_service.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
-import 'dart:html' as html;
+import 'package:url_launcher/url_launcher.dart';
 
 class TicketPage extends StatefulWidget {
   /// Si true, on ouvre directement l'onglet Abonnements (depuis notif verte).
@@ -172,7 +172,11 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
     try {
       final stripeUrl = await _service.subscribe(userId, item.id!);
       if (stripeUrl != null && stripeUrl.startsWith('http')) {
-        html.window.location.href = stripeUrl;
+        final Uri url = Uri.parse(stripeUrl);
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
       } else {
         throw Exception("URL invalide");
       }
