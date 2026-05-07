@@ -9,7 +9,9 @@ class TicketService {
     baseUrl: AppConstants.baseUrl,
   ));
 
-  ───────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tickets
+  // ─────────────────────────────────────────────────────────────────────────
 
   Future<List<Ticket>> getTickets() async {
     try {
@@ -50,6 +52,9 @@ class TicketService {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Admin : CRUD TypeAbonnement (offres)
+  // ─────────────────────────────────────────────────────────────────────────
 
   Future<List<TypeAbonnement>> getTypeAbonnements() async {
     try {
@@ -88,7 +93,11 @@ class TicketService {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Abonnement utilisateur
+  // ─────────────────────────────────────────────────────────────────────────
 
+  /// Souscrit à un abonnement. Retourne l'URL Stripe ou lance une exception.
   Future<String?> subscribe(int userId, int typeId) async {
     try {
       final res = await _dio.post(
@@ -108,7 +117,10 @@ class TicketService {
     }
   }
 
-
+  /// ── MÉTHODE CLÉ ──────────────────────────────────────────────────────────
+  /// Confirme le paiement en envoyant le session_id au backend.
+  /// Le backend vérifie directement auprès de Stripe et active l'abonnement.
+  /// Retourne 'ACTIF' ou 'EN_ATTENTE'.
   Future<String> confirmPayment(int abonnementId, String sessionId) async {
     try {
       final res = await _dio.post(
@@ -122,7 +134,7 @@ class TicketService {
     }
   }
 
-
+  /// Poll simple du statut (backup si confirmPayment échoue).
   Future<String> getAbonnementStatus(int abonnementId) async {
     try {
       final res = await _dio.get('/abonnements/$abonnementId/status');
@@ -133,7 +145,7 @@ class TicketService {
     }
   }
 
-
+  /// Abonnement courant de l'utilisateur (peut être null si aucun).
   Future<Abonnement?> getCurrentAbonnement(int userId) async {
     try {
       final res = await _dio.get('/abonnements/user/$userId');
@@ -159,6 +171,9 @@ class TicketService {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Chargement combiné
+  // ─────────────────────────────────────────────────────────────────────────
 
   Future<List<dynamic>> getAllOffers() async {
     final results = await Future.wait([getTickets(), getTypeAbonnements()]);

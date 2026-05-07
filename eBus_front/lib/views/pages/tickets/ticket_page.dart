@@ -71,6 +71,8 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
 
 
   String _formatTitle(String title) {
@@ -280,6 +282,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
       ),
     );
   }
+
 
 
   @override
@@ -741,9 +744,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Historique
-  // ─────────────────────────────────────────────────────────────────────────
+
 
   Widget _buildHistoriqueSection() {
     return Column(
