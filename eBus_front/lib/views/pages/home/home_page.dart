@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         HomeHeader(currentUser: user),
-        if (user != null) 
+        if (user != null)
           FutureBuilder<Dossier?>(
             future: _dossierService.getMyDossier(user.id),
             builder: (context, snapshot) {
@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage> {
               return const SizedBox.shrink();
             },
           ),
-          
+
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -163,7 +163,11 @@ class _HomePageState extends State<HomePage> {
             if (user == null) {
               _showLoginRequiredDialog();
             } else {
-              Navigator.pushNamed(context, '/paymentPage');
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TicketPage()),
+              );
             }
           },
         ),

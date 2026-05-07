@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:smart_bus/constants/constants.dart';
+import '../models/abonnement.dart';
 import '../models/ticket.dart';
 import '../models/type_abonnement.dart';
 
@@ -8,7 +9,8 @@ class TicketService {
     baseUrl: AppConstants.baseUrl,
   ));
 
-  // --- GESTION DES TICKETS (ADMIN) ---
+  ───────────────────────────────────────────────────────────────────────
+
   Future<List<Ticket>> getTickets() async {
     try {
       final res = await _dio.get('/tickets');
@@ -25,7 +27,7 @@ class TicketService {
   Future<void> createTicket(Ticket t) async {
     try {
       final data = t.toJson();
-      data.remove('id'); // L'ID est généré par le backend
+      data.remove('id');
       await _dio.post('/tickets', data: data);
     } catch (e) {
       throw Exception("Erreur lors de la création du ticket");
@@ -48,7 +50,7 @@ class TicketService {
     }
   }
 
-  // --- GESTION DES ABONNEMENTS (ADMIN) ---
+
   Future<List<TypeAbonnement>> getTypeAbonnements() async {
     try {
       final res = await _dio.get('/types-abonnement');
@@ -64,9 +66,7 @@ class TicketService {
 
   Future<void> createAbonnement(TypeAbonnement t) async {
     try {
-      final data = t.toJson();
-      // L'ID ne doit pas être envoyé pour une création
-      await _dio.post('/types-abonnement', data: data);
+      await _dio.post('/types-abonnement', data: t.toJson());
     } catch (e) {
       throw Exception("Erreur lors de la création de l'abonnement");
     }
@@ -88,27 +88,80 @@ class TicketService {
     }
   }
 
-  // --- ACTIONS UTILISATEUR ---
-  Future<bool> subscribe(int userId, int typeId) async {
+
+  Future<String?> subscribe(int userId, int typeId) async {
     try {
       final res = await _dio.post(
-        '/abonnements',
-        queryParameters: {
-          'userId': userId,
-          'typeId': typeId,
-        },
+        '/abonnements/subscribe',
+        queryParameters: {'userId': userId, 'typeId': typeId},
       );
-      return res.statusCode == 200;
+      if (res.statusCode == 400) {
+        throw Exception(res.data.toString());
+      }
+      final url = res.data.toString();
+      return url.startsWith('http') ? url : null;
+    } on DioException catch (e) {
+      final msg = e.response?.data?.toString() ?? "Erreur réseau";
+      throw Exception(msg);
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 
+
+  Future<String> confirmPayment(int abonnementId, String sessionId) async {
+    try {
+      final res = await _dio.post(
+        '/abonnements/$abonnementId/confirm',
+        queryParameters: {'sessionId': sessionId},
+      );
+      return res.data.toString(); // "ACTIF" ou "EN_ATTENTE"
+    } catch (e) {
+      print("Erreur confirmPayment: $e");
+      return 'EN_ATTENTE';
+    }
+  }
+
+
+  Future<String> getAbonnementStatus(int abonnementId) async {
+    try {
+      final res = await _dio.get('/abonnements/$abonnementId/status');
+      return res.data.toString();
+    } catch (e) {
+      print("Erreur getAbonnementStatus: $e");
+      return 'EN_ATTENTE';
+    }
+  }
+
+
+  Future<Abonnement?> getCurrentAbonnement(int userId) async {
+    try {
+      final res = await _dio.get('/abonnements/user/$userId');
+      if (res.statusCode == 204 || res.data == null) return null;
+      return Abonnement.fromJson(res.data);
+    } catch (e) {
+      print("Erreur getCurrentAbonnement: $e");
+      return null;
+    }
+  }
+
+  /// Historique de tous les abonnements de l'utilisateur.
+  Future<List<Abonnement>> getHistoriqueAbonnements(int userId) async {
+    try {
+      final res = await _dio.get('/abonnements/user/$userId/historique');
+      if (res.statusCode == 200) {
+        return (res.data as List).map((e) => Abonnement.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      print("Erreur getHistoriqueAbonnements: $e");
+      return [];
+    }
+  }
+
+
   Future<List<dynamic>> getAllOffers() async {
-    final results = await Future.wait([
-      getTickets(),
-      getTypeAbonnements(),
-    ]);
+    final results = await Future.wait([getTickets(), getTypeAbonnements()]);
     return [...results[0], ...results[1]];
   }
 }
