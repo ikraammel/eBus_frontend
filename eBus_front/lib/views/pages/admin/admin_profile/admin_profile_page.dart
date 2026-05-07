@@ -4,6 +4,7 @@ import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/profile/contact_card.dart';
 import 'package:smart_bus/views/pages/profile/parametres/parametres_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/notifications/notifications_page.dart';
+import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos.dart';
 
 import '../../../../bloc/auth/auth_bloc.dart';
 import '../../../../bloc/auth/auth_event.dart';
@@ -14,7 +15,8 @@ import '../../../UI/splash_screen.dart';
 import '../../profile/header_page.dart';
 
 class AdminProfilePage extends StatefulWidget {
-  const AdminProfilePage({super.key});
+  final bool showBackButton;
+  const AdminProfilePage({super.key, this.showBackButton = true});
 
   @override
   State<AdminProfilePage> createState() => _AdminProfilePageState();
@@ -23,8 +25,6 @@ class AdminProfilePage extends StatefulWidget {
 class _AdminProfilePageState extends State<AdminProfilePage> {
   @override
   Widget build(BuildContext context) {
-    final storage = getIt<LocalStorageService>();
-
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (BuildContext context, state) {
         if (state is AuthAuthenticated) {
@@ -34,7 +34,11 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  HeaderPage(currentUser: user),
+                  HeaderPage(
+                    currentUser: user, 
+                    showBackButton: widget.showBackButton,
+                    allowEditAvatar: true, // Autorise la modification de l'avatar
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                     child: Column(
@@ -56,13 +60,23 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                           label: 'Email',
                         ),
                         ContactCard(
+                          value: user.cin,
+                          icon: Icons.badge,
+                          label: 'CIN',
+                        ),
+                        ContactCard(
                           value: user.tel,
                           icon: Icons.phone,
                           label: 'Téléphone',
                         ),
+                        ContactCard(
+                          value: user.adresse,
+                          icon: Icons.location_on,
+                          label: 'Adresse',
+                        ),
                         const SizedBox(height: 25),
                         Text(
-                          "Paramètres",
+                          "Paramètres & Sécurité",
                           style: TextStyle(
                             color: Colors.blueGrey[600],
                             fontSize: 13,
@@ -72,7 +86,15 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                         ),
                         const SizedBox(height: 15),
                         ParametresPage(
-                          icon: Icons.notifications,
+                          icon: Icons.person_outline,
+                          label: 'Modifier mes informations',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const PersonalInfos()),
+                          ),
+                        ),
+                        ParametresPage(
+                          icon: Icons.notifications_none,
                           label: 'Notifications',
                           onTap: () => Navigator.push(
                             context,
@@ -80,12 +102,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                           ),
                         ),
                         const ParametresPage(
-                          icon: Icons.security,
-                          label: 'Sécurité',
-                        ),
-                        const ParametresPage(
-                          icon: Icons.settings,
-                          label: 'Préférences',
+                          icon: Icons.lock_outline,
+                          label: 'Changer le mot de passe',
                         ),
                         const SizedBox(height: 30),
                         InkWell(
@@ -132,7 +150,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             ),
           );
         }
-        return const SplashScreen();
+        return const Scaffold(body: SplashScreen());
       },
     );
   }

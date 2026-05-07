@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 
 class CardItems extends StatelessWidget {
-  const CardItems({super.key});
+  final int users;
+  final int bus;
+  final int reclamations;
+  final int objets;
+  const CardItems({
+    super.key,
+    required this.users,
+    required this.bus,
+    required this.reclamations,
+    required this.objets,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +27,7 @@ class CardItems extends StatelessWidget {
           children: [
             _buildMainCard(
               title: "Utilisateurs",
-              value: "2,547",
+              value: users.toString(),
               trend: "+12%",
               icon: Icons.people_outline,
               color: const Color(0xFF3F51B5),
@@ -25,7 +35,7 @@ class CardItems extends StatelessWidget {
             ),
             _buildMainCard(
               title: "Bus actifs",
-              value: "45",
+              value: bus.toString(),
               trend: "+3",
               icon: Icons.directions_bus_filled_outlined,
               color: const Color(0xFF8DC63F),
@@ -33,15 +43,15 @@ class CardItems extends StatelessWidget {
             ),
             _buildMainCard(
               title: "Réclamations",
-              value: "18",
+              value: reclamations.toString(),
               trend: "-5%",
               icon: Icons.chat_bubble_outline,
               color: const Color(0xFF3F51B5),
               trendColor: Colors.red,
             ),
             _buildMainCard(
-              title: "Objets trouvés",
-              value: "12",
+              title: "Objets perdus",
+              value: objets.toString(),
               trend: "+2",
               icon: Icons.inventory_2_outlined,
               color: const Color(0xFF8DC63F),

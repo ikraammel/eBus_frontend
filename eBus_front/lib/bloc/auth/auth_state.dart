@@ -51,3 +51,9 @@ class ForgotPasswordSuccess extends AuthState {
 
 class ResetPasswordSuccess extends AuthState {}
 
+class AuthCodeVerified extends AuthState {
+  final String token;
+
+  AuthCodeVerified(this.token);
+}
+

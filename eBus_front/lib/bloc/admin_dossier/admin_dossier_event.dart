@@ -16,8 +16,9 @@ class ValiderDossierEvent extends AdminDossierEvent {
 }
 
 class RejeterDossierEvent extends AdminDossierEvent {
+  final String reason;
   final int id;
-  RejeterDossierEvent(this.id);
+  RejeterDossierEvent(this.id,this.reason);
 
   @override
   List<Object?> get props => [id];

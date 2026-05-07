@@ -10,7 +10,7 @@ import 'package:smart_bus/views/pages/profile/parametres/help_and_support/help_a
 import 'package:smart_bus/views/pages/profile/parametres/notifications/notifications_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/parametres_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos.dart';
-
+import 'package:smart_bus/views/pages/profile/parametres/moyens_paiement/moyens_paiement_page.dart';
 import '../../../bloc/auth/auth_bloc.dart';
 import '../../../bloc/auth/auth_event.dart';
 import '../../../bloc/auth/auth_state.dart';
@@ -26,7 +26,7 @@ class ProfilePage extends StatelessWidget {
       builder: (BuildContext context, state) {
         if (state is AuthAuthenticated) {
           final user = state.user;
-          
+
           // Vérification si l'utilisateur est étudiant/scolaire
           final bool isScolaire = user.cne != null && user.cne!.isNotEmpty;
 
@@ -52,7 +52,7 @@ class ProfilePage extends StatelessWidget {
                                 icon: Icons.account_box,
                                 label: 'CIN'
                             ),
-                            
+
                             // Affichage conditionnel de la carte scolaire (CNE)
                             if (isScolaire)
                               ContactCard(
@@ -97,9 +97,17 @@ class ProfilePage extends StatelessWidget {
                                       builder: (_) => const PersonalInfos())
                               ),
                         ),
-                        const ParametresPage(
-                            icon: Icons.credit_card_sharp,
-                            label: 'Moyens de paiement'
+                        ParametresPage(
+                          icon: Icons.credit_card_sharp,
+                          label: 'Moyens de paiement',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MoyensPaiementPage(),
+                              ),
+                            );
+                          },
                         ),
                         ParametresPage(
                             icon: Icons.notifications,

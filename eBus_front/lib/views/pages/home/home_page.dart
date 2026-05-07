@@ -7,8 +7,8 @@ import 'package:smart_bus/services/dossier_service.dart';
 import 'package:smart_bus/views/pages/home/recent_activity.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
+import '../../../models/dossier.dart';
 import '../../../models/user.dart';
-import '../../../models/Dossier.dart';
 import '../../UI/card_menu.dart';
 import '../../UI/splash_screen.dart';
 import '../map_page.dart';
@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         HomeHeader(currentUser: user),
-        if (user != null) 
+        if (user != null)
           FutureBuilder<Dossier?>(
             future: _dossierService.getMyDossier(user.id),
             builder: (context, snapshot) {
@@ -60,13 +60,16 @@ class _HomePageState extends State<HomePage> {
               if (snapshot.hasData && snapshot.data != null) {
                 final dossier = snapshot.data!;
                 if (dossier.statusDossier != "ACTIF") {
-                  return DossierStatusCard(status: dossier.statusDossier);
+                   return DossierStatusCard(
+                    status: dossier.statusDossier,
+                    rejectionReason: dossier.rejectionReason,
+                  );
                 }
               }
               return const SizedBox.shrink();
             },
           ),
-          
+
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -163,7 +166,11 @@ class _HomePageState extends State<HomePage> {
             if (user == null) {
               _showLoginRequiredDialog();
             } else {
-              Navigator.pushNamed(context, '/paymentPage');
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TicketPage()),
+              );
             }
           },
         ),

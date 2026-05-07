@@ -27,6 +27,112 @@ class AdminDossiersPage extends StatelessWidget {
 class AdminDossiersView extends StatelessWidget {
   const AdminDossiersView({super.key});
 
+  void _showRejectDialog(BuildContext context, Dossier dossier) {
+    final TextEditingController reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  "Rejeter le dossier",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Veuillez indiquer la raison du rejet :",
+                style: TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: reasonController,
+                maxLines: 4,
+                minLines: 2,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: "Ex: Documents incomplets, informations manquantes...",
+                  labelText: "Motif de refus",
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w500),
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red.shade400, width: 2),
+                  ),
+                  errorBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red, width: 1),
+                  ),
+                  helperText: "Ce motif sera visible par l'utilisateur",
+                  helperMaxLines: 1,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: const Text(
+                "Annuler",
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final reason = reasonController.text.trim();
+                if (reason.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Veuillez saisir un motif de refus"),
+                      backgroundColor: Colors.orange,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
+                context.read<AdminDossierBloc>().add(
+                  RejeterDossierEvent(dossier.id, reason),
+                );
+
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+              ),
+              child: const Text(
+                "Confirmer le rejet",
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 4,
+          actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        );
+      },
+    );
+  }
+
   void _showConfirmDialog({
     required BuildContext context,
     required String title,
@@ -203,13 +309,7 @@ class AdminDossiersView extends StatelessWidget {
                   if (dossier.statusDossier != "REJETE")
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => _showConfirmDialog(
-                          context: context,
-                          title: "Rejeter le dossier",
-                          content: "Voulez-vous rejeter ce dossier ? L'abonnement passera au statut REJETÉ.",
-                          confirmColor: Colors.red,
-                          onConfirm: () => context.read<AdminDossierBloc>().add(RejeterDossierEvent(dossier.id)),
-                        ),
+                        onPressed: () => _showRejectDialog(context, dossier),
                         icon: const Icon(Icons.close, color: Colors.red),
                         label: const Text("Rejeter", style: TextStyle(color: Colors.red)),
                         style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red)),

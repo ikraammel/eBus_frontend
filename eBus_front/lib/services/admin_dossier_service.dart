@@ -37,9 +37,14 @@ class AdminDossierService {
   }
 
   // Rejeter un dossier
-  Future<void> rejeterDossier(int id) async {
+  Future<void> rejeterDossier(int id,String reason) async {
     try {
-      await _dio.patch('/admin/dossiers/$id/rejeter');
+      await _dio.patch(
+          '/admin/dossiers/$id/rejeter',
+        data: {
+          "rejectionReason": reason,
+        },
+      );
     } catch (e) {
       throw Exception("Erreur lors du rejet: $e");
     }
