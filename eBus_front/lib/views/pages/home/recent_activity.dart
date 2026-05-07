@@ -128,7 +128,7 @@ class _RecentActivityState extends State<RecentActivity> {
   // 🎯 ICONES dynamiques
   IconData _getIcon(String type) {
     switch (type) {
-      case "Paiement":
+      case "Payment":
         return Icons.payment;
       case "Reclamation":
         return Icons.report;
@@ -146,7 +146,7 @@ class _RecentActivityState extends State<RecentActivity> {
   // 🎯 COULEURS dynamiques
   Color _getColor(String type) {
     switch (type) {
-      case "Paiement":
+      case "Payment":
         return Colors.green;
       case "Reclamation":
         return Colors.orange;

@@ -102,6 +102,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => BusBloc(BusService())..add(LoadBuses())),
         BlocProvider(create: (_) => ObjetPerduBloc()..add(const LoadObjetsPerdus())),
         BlocProvider(create: (_) => ClaimsBloc(ReclamationService())..add(LoadClaims())),
+        BlocProvider(create: (_) => DashboardBloc()..add(LoadDashboard())),
       ],
       child: MaterialApp(
         title: 'Smart Bus',
