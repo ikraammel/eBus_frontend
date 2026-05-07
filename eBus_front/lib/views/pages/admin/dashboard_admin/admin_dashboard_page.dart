@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_bus/bloc/dashboard_bloc.dart';
-import 'package:smart_bus/models/dashboard_model.dart';
+import 'package:smart_bus/models/dashboard.dart';
 import 'package:smart_bus/utils/app_snack_bar.dart';
 import 'package:smart_bus/widgets/occupancy_line_chart.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
+
+import '../../../../bloc/dashboard/dashboard_bloc.dart';
+import '../../../../bloc/dashboard/dashboard_event.dart';
+import '../../../../bloc/dashboard/dashboard_state.dart';
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});

@@ -4,8 +4,8 @@ import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
 class DossierStatusCard extends StatelessWidget {
   final String? status;
-
-  const DossierStatusCard({super.key, this.status});
+  final String? rejectionReason;
+ const DossierStatusCard({super.key, this.status, this.rejectionReason});
 
   String getDossierMessage(String? status) {
     switch (status) {
@@ -38,7 +38,7 @@ class DossierStatusCard extends StatelessWidget {
         break;
       case "EN_COURS":
         color = Colors.orange;
-        icon = Icons.hourglass_bottom_rounded;
+        icon = Icons.hourglass_bottom;
         break;
       case "EN_ATTENTE":
         color = Colors.blue;

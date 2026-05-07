@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:smart_bus/constants/constants.dart';
-import '../models/Dossier.dart';
+import '../models/dossier.dart';
 
 class DossierService {
   final Dio _dio = Dio(BaseOptions(

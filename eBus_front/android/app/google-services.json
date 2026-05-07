@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "9061511448",
+    "firebase_url": "https://ebus-6311b-default-rtdb.firebaseio.com",
+    "project_id": "ebus-6311b",
+    "storage_bucket": "ebus-6311b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9061511448:android:482386c7bb44891ab5ae6d",
+        "android_client_info": {
+          "package_name": "com.example.smart_bus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClP8t_gsihoZonB0ZAvI9HBJL5fwXZ8EI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

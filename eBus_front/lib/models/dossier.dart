@@ -12,6 +12,7 @@ class Dossier {
   final String? photoUrl;
   final String? cinUrl;
   final String? carteScolaireUrl;
+  final String? rejectionReason;
 
   Dossier({
     required this.id,
@@ -25,6 +26,7 @@ class Dossier {
     this.photoUrl,
     this.cinUrl,
     this.carteScolaireUrl,
+    this.rejectionReason,
   });
 
   factory Dossier.fromJson(Map<String, dynamic> json) {
@@ -33,8 +35,9 @@ class Dossier {
       statusDossier: json['statusDossier'] ?? "EN_ATTENTE",
       nom: json['nom'] ?? 'Inconnu',
       prenom: json['prenom'] ?? 'Inconnu',
-      cin: json['cin'],
-      cne: json['cne'],
+      cin: json['cin']?.toString(),
+      cne: json['cne']?.toString(),
+      rejectionReason: json['rejectionReason']?.toString(),
 
       dateDebutAbonnement: json['dateDebutAbonnement'],
       dateFinAbonnement: json['dateFinAbonnement'],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_bus/views/pages/admin/admin_profile/admin_profile_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_reclamation/gestion_reclamation_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_list_page.dart';
@@ -6,12 +7,13 @@ import 'package:smart_bus/views/pages/admin/gestion_tickets/gestion_tickets_page
 import 'package:smart_bus/views/pages/admin/gestion_dossiers/admin_dossiers_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_abonnements/admin_abonnements_page.dart';
 
+import '../../../../bloc/dashboard/dashboard_bloc.dart';
+import '../../../../bloc/dashboard/dashboard_state.dart';
 import '../../../../constants/app_colors.dart';
 import '../../../../models/user.dart';
 import '../../../UI/card_menu.dart';
 import '../../home/recent_activity.dart';
 import '../dashboard_admin/admin_dashboard_page.dart';
-import '../gestion_lignes_stations/gestion_lignes_page.dart';
 import 'admin_header.dart';
 import 'bottom_nav_admin.dart';
 import 'card_items.dart';
@@ -84,7 +86,33 @@ class _AdminHomePageState extends State<AdminHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CardItems(),
+                  BlocBuilder<DashboardBloc, DashboardState>(
+                    builder: (context, state) {
+                      if (state is DashboardLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (state is DashboardError) {
+                        return Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.red),
+                        );
+                      }
+
+                      if (state is DashboardLoaded) {
+                        final data = state.data;
+
+                        return CardItems(
+                          users: data.users,
+                          bus: data.bus,
+                          reclamations: data.reclamations,
+                          objets: data.objets,
+                        );
+                      }
+
+                      return const SizedBox();
+                    },
+                  ),
                   const SizedBox(height: 20),
                   const Text(
                     "Gestion rapide",
@@ -105,7 +133,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  const RecentActivity(),
+                  const RecentActivity(isAdmin: true,),
                   const SizedBox(height: 30),
                 ],
               ),
