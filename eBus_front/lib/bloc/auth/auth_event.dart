@@ -93,4 +93,22 @@ class AuthVerifyResetCodeRequested extends AuthEvent {
     required this.email,
     required this.code,
   });
+
+  @override
+  List<Object?> get props => [email, code];
+}
+
+class AuthChangePasswordRequested extends AuthEvent {
+  final int userId;
+  final String oldPassword;
+  final String newPassword;
+
+  AuthChangePasswordRequested({
+    required this.userId,
+    required this.oldPassword,
+    required this.newPassword,
+  });
+
+  @override
+  List<Object?> get props => [userId, oldPassword, newPassword];
 }

@@ -13,6 +13,7 @@ import '../../../../main.dart';
 import '../../../../services/local_storage_service.dart';
 import '../../../UI/splash_screen.dart';
 import '../../profile/header_page.dart';
+import '../../profile/parametres/change_password/change_password_page.dart';
 
 class AdminProfilePage extends StatefulWidget {
   final bool showBackButton;
@@ -35,7 +36,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
               child: Column(
                 children: [
                   HeaderPage(
-                    currentUser: user, 
+                    currentUser: user,
                     showBackButton: widget.showBackButton,
                     allowEditAvatar: true, // Autorise la modification de l'avatar
                   ),
@@ -101,9 +102,15 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                             MaterialPageRoute(builder: (_) => const NotificationsPage()),
                           ),
                         ),
-                        const ParametresPage(
+                        ParametresPage(
                           icon: Icons.lock_outline,
                           label: 'Changer le mot de passe',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordPage(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 30),
                         InkWell(
@@ -113,7 +120,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(builder: (_) => const LoginPage()),
-                                (route) => false,
+                                    (route) => false,
                               );
                             }
                           },

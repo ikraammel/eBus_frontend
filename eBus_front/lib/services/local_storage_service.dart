@@ -95,4 +95,12 @@ class LocalStorageService {
 
   Future<void> logout() async => await prefs.clear();
 
+  Future<void> saveDossierStatus(String userId, String status) async {
+    await prefs.setString('dossier_status_$userId', status);
+  }
+
+  String? getCachedDossierStatus(String userId) {
+    return prefs.getString('dossier_status_$userId');
+  }
+
 }

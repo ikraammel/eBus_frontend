@@ -218,4 +218,24 @@ class AuthService {
       throw Exception(msg);
     }
   }
+
+  Future<void> changePassword(
+      int userId,
+      String oldPassword,
+      String newPassword
+      ) async{
+    try{
+      await _dio.patch(
+        "/users/change-password",
+        data: {
+          "userId": userId,
+          "oldPassword": oldPassword,
+          "newPassword": newPassword,
+        }
+      );
+    }on DioException catch(e){
+      final msg = e.response?.data?["message"] ?? "Erreur serveur";
+      throw Exception(msg);
     }
+  }
+}

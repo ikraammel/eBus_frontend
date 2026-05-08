@@ -57,3 +57,10 @@ class AuthCodeVerified extends AuthState {
   AuthCodeVerified(this.token);
 }
 
+class AuthPasswordChanged extends AuthState {
+  final String message;
+  AuthPasswordChanged({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}

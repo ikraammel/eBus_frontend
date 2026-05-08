@@ -5,6 +5,7 @@ import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/profile/contact_card.dart';
 import 'package:smart_bus/views/pages/profile/header_page.dart';
+import 'package:smart_bus/views/pages/profile/parametres/change_password/change_password_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/confidentiality/confidentiality_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/help_and_support/help_and_support_page.dart';
 import 'package:smart_bus/views/pages/profile/parametres/notifications/notifications_page.dart';
@@ -118,6 +119,16 @@ class ProfilePage extends StatelessWidget {
                                   MaterialPageRoute(
                                       builder: (_) => const NotificationsPage())
                               ),
+                        ),
+                        ParametresPage(
+                          icon: Icons.lock_outline,
+                          label: 'Changer le mot de passe',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordPage(),
+                            ),
+                          ),
                         ),
                         ParametresPage(
                             icon: Icons.shield_outlined,

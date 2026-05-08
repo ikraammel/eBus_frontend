@@ -22,6 +22,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
     on<AuthResetPasswordRequested>(_onResetPasswordRequested);
     on<AuthVerifyResetCodeRequested>(_onVerifyResetCode);
+    on<AuthChangePasswordRequested>(_onChangePassword);
   }
 
   Future<void> _onCheckRequested(AuthCheckRequested event,
@@ -133,8 +134,8 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
       ) async {
     emit(AuthLoading());
     try {
-      final token = await _authService.forgotPassword(event.email);
-      emit(ForgotPasswordSuccess(token: token));
+      final message = await _authService.forgotPassword(event.email);
+      emit(ForgotPasswordSuccess(token: message)); // Note: existing state uses 'token' property for the message/token
     } catch (e) {
       emit(AuthFailure(error: e.toString()));
     }
@@ -170,4 +171,24 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     }
   }
 
+  Future<void> _onChangePassword(
+      AuthChangePasswordRequested event,
+      Emitter<AuthState> emit,
+      ) async {
+    emit(AuthLoading());
+    try {
+      await _authService.changePassword(
+        event.userId,
+        event.oldPassword,
+        event.newPassword,
+      );
+      emit(AuthPasswordChanged(message: "Mot de passe changé avec succès"));
+      final user = await _localStorageService.getUser();
+      if (user != null) {
+        emit(AuthAuthenticated(user: user));
+      }
+    } catch (e) {
+      emit(AuthFailure(error: e.toString().replaceFirst("Exception: ", "")));
+    }
+  }
 }
