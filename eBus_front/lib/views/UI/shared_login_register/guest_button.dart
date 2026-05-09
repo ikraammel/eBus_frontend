@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_bus/bloc/auth/auth_event.dart';
 
-import '../../../bloc/auth/auth_bloc.dart';
 import '../../../constants/app_colors.dart';
+import '../../pages/home/home_page.dart';
 
 class GuestButton extends StatelessWidget {
   const GuestButton({super.key});
@@ -22,10 +20,13 @@ class GuestButton extends StatelessWidget {
           foregroundColor: AppColors.darkBlue,
         ),
         onPressed: () {
-          Navigator.pushReplacementNamed(context, "/homePage");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
         },
         child: const Text(
-          "Continuer en tant qu’invité",
+          "Continuer en tant qu'invité",
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,

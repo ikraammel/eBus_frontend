@@ -112,3 +112,5 @@ class AuthChangePasswordRequested extends AuthEvent {
   @override
   List<Object?> get props => [userId, oldPassword, newPassword];
 }
+
+class AuthGuestRequested extends AuthEvent {}

@@ -2,14 +2,16 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smart_bus/constants/constants.dart';
 import 'package:smart_bus/models/user.dart';
 import 'package:smart_bus/models/request/register_request.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
+
+import '../utils/shared_prefs_helper.dart';
 
 
 class AuthService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final Dio _dio = DioClient.dio;
 
   Future<User> login(String email, String password) async {
     try{
@@ -20,7 +22,16 @@ class AuthService {
           'password': password,
         },
       );
-      return User.fromJson(response.data);
+
+
+      final data = response.data as Map<String, dynamic>;
+      final String token = data['token'] as String;
+      final Map<String, dynamic> userJson = data['user'] as Map<String, dynamic>;
+
+      await SharedPrefsHelper.saveToken(token);
+
+      userJson['token'] = token;
+      return User.fromJson(userJson);
     }on DioException catch(e){
       if(e.response != null && e.response!.data != null){
         final data = e.response!.data;

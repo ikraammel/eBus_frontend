@@ -1,11 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:smart_bus/constants/constants.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 import '../models/type_abonnement.dart';
 
 class TypeAbonnementService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
-  ));
+  final Dio _dio = DioClient.dio;
 
   // 📥 GET ALL
   Future<List<TypeAbonnement>> getAll() async {

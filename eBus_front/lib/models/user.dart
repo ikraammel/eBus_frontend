@@ -10,13 +10,14 @@ class User {
   final String adresse;
   final String cin;
   final String? cne;
-  final String? statusDossier; // Corrigé de statutDossier à statusDossier
+  final String? statusDossier;
 
   final String dateNaissance;
   final String? typeAbonnement;
   final String? photoUrl;
   final String? carteScolaireUrl;
   final String? cinUrl;
+  final String? token;
 
   User({
     required this.id,
@@ -34,6 +35,7 @@ class User {
     this.photoUrl,
     this.carteScolaireUrl,
     this.cinUrl,
+    this.token
   });
 
   factory User.fromJson(Map<String,dynamic> json){
@@ -56,6 +58,7 @@ class User {
       cinUrl: json['cinUrl'],
       cin: json['cin'],
       cne: json['cne']?.toString(),
+      token: json['token']?.toString(),
     );
   }
 }

@@ -1,13 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:smart_bus/constants/constants.dart';
 import '../models/abonnement.dart';
 import '../models/ticket.dart';
 import '../models/type_abonnement.dart';
+import '../utils/dio_interceptor.dart';
 
 class TicketService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
-  ));
+  final Dio _dio = DioClient.dio;
 
   // ─────────────────────────────────────────────────────────────────────────
   // Tickets
@@ -17,7 +15,13 @@ class TicketService {
     try {
       final res = await _dio.get('/tickets');
       if (res.statusCode == 200) {
-        return (res.data as List).map((e) => Ticket.fromJson(e)).toList();
+        // Gestion robuste si les données sont dans un champ 'data' ou directes
+        final List rawData = (res.data is List) 
+            ? res.data 
+            : (res.data is Map && res.data.containsKey('data')) 
+                ? res.data['data'] 
+                : [];
+        return rawData.map((e) => Ticket.fromJson(e)).toList();
       }
       return [];
     } catch (e) {
@@ -60,7 +64,12 @@ class TicketService {
     try {
       final res = await _dio.get('/types-abonnement');
       if (res.statusCode == 200) {
-        return (res.data as List).map((e) => TypeAbonnement.fromJson(e)).toList();
+        final List rawData = (res.data is List) 
+            ? res.data 
+            : (res.data is Map && res.data.containsKey('data')) 
+                ? res.data['data'] 
+                : [];
+        return rawData.map((e) => TypeAbonnement.fromJson(e)).toList();
       }
       return [];
     } catch (e) {
@@ -117,10 +126,7 @@ class TicketService {
     }
   }
 
-  /// ── MÉTHODE CLÉ ──────────────────────────────────────────────────────────
   /// Confirme le paiement en envoyant le session_id au backend.
-  /// Le backend vérifie directement auprès de Stripe et active l'abonnement.
-  /// Retourne 'ACTIF' ou 'EN_ATTENTE'.
   Future<String> confirmPayment(int abonnementId, String sessionId) async {
     try {
       final res = await _dio.post(
@@ -162,7 +168,8 @@ class TicketService {
     try {
       final res = await _dio.get('/abonnements/user/$userId/historique');
       if (res.statusCode == 200) {
-        return (res.data as List).map((e) => Abonnement.fromJson(e)).toList();
+        final List rawData = (res.data is List) ? res.data : (res.data['data'] ?? []);
+        return rawData.map((e) => Abonnement.fromJson(e)).toList();
       }
       return [];
     } catch (e) {

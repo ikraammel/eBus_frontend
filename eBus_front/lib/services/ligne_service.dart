@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:smart_bus/models/station.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 
-import '../constants/constants.dart';
 import '../models/ligne.dart';
 
 class LigneService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final Dio _dio = DioClient.dio;
 
   Future<List<Ligne>> getLignes() async {
     final response = await _dio.get('/lignes');

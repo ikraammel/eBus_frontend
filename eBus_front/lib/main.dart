@@ -10,7 +10,7 @@ import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/bloc/bus/bus_bloc.dart';
-import 'package:smart_bus/bloc/bus/bus_event.dart'; // Import ajouté
+import 'package:smart_bus/bloc/bus/bus_event.dart';
 import 'package:smart_bus/bloc/claims/claims_bloc.dart';
 import 'package:smart_bus/bloc/claims/claims_event.dart';
 import 'package:smart_bus/bloc/dashboard/dashboard_bloc.dart';
@@ -72,10 +72,7 @@ Future<void> main() async {
 
   await initialDependencies();
 
-      // Pour Android/iOS, il utilise les fichiers json/plist
-      await Firebase.initializeApp();
-
-
+  await Firebase.initializeApp();
 
   print("APP NAME: ${Firebase.app().name}");
   print("PROJECT: ${Firebase.app().options.projectId}");
@@ -186,6 +183,8 @@ class MyApp extends StatelessWidget {
                   ? const AdminHomePage()
                   : const HomePage();
             }
+            // AJOUT : mode invité → HomePage sans utilisateur connecté
+            if (state is AuthGuest) return const HomePage();
             return const LoginPage();
           },
         ),

@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:smart_bus/constants/constants.dart';
 import 'package:smart_bus/models/activity.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 
 class ActivityService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final Dio _dio = DioClient.dio;
 
   Future<List<Activity>> getRecentActivities(int userId) async{
     try{

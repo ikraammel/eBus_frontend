@@ -166,11 +166,8 @@ class _HomePageState extends State<HomePage> {
             if (user == null) {
               _showLoginRequiredDialog();
             } else {
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TicketPage()),
-              );
+              // Redirection vers l'onglet Paiement (Tickets) au lieu d'une nouvelle page
+              setState(() => _selectedIndex = 2);
             }
           },
         ),

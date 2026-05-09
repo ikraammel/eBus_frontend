@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../constants/constants.dart';
 import '../models/horaire.dart';
+import '../utils/dio_interceptor.dart';
 
 class HoraireService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final Dio _dio = DioClient.dio;
 
   /// Récupère tous les horaires d'une ligne
   Future<List<Horaire>> getHorairesByLigne(int ligneId) async {

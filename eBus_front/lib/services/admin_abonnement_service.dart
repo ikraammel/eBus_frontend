@@ -1,13 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:smart_bus/constants/constants.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 import '../models/abonnement.dart';
 
 class AdminAbonnementService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
+  final Dio _dio = DioClient.dio;
 
   // Récupérer tous les abonnements pour le monitoring admin
   Future<List<Abonnement>> getAllAbonnements() async {

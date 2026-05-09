@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../constants/constants.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 import '../models/reclamation.dart';
 
 class ReclamationService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final Dio _dio = DioClient.dio;
 
   Future<List<Reclamation>> getReclamations() async {
     final response = await _dio.get('/reclamations/all');

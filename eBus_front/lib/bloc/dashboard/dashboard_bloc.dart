@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 
-import '../../constants/constants.dart';
 import '../../models/system_status.dart';
 import '../../models/dashboard.dart';
 import 'dashboard_event.dart';
@@ -11,11 +11,7 @@ import 'dashboard_state.dart';
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   SystemStatus? systemStatus;
 
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
+  final Dio _dio = DioClient.dio;
 
   DashboardBloc() : super(DashboardInitial()) {
     on<LoadDashboard>(_onLoad);

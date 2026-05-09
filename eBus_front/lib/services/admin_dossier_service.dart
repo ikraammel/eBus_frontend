@@ -1,14 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:smart_bus/constants/constants.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 import '../models/dossier.dart';
 
 class AdminDossierService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
+  final Dio _dio = DioClient.dio;
 
   // Récupérer TOUS les dossiers (en attente ou déjà traités)
   Future<List<Dossier>> getAllDossiers() async {

@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 
-import '../constants/constants.dart';
 import '../models/bus.dart';
 
 class BusService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
+  final Dio _dio = DioClient.dio;
 
   Future<Bus> createBus(Bus bus) async {
     final response = await _dio.post('/bus/new', data: bus.toJson());

@@ -23,6 +23,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     on<AuthResetPasswordRequested>(_onResetPasswordRequested);
     on<AuthVerifyResetCodeRequested>(_onVerifyResetCode);
     on<AuthChangePasswordRequested>(_onChangePassword);
+    on<AuthGuestRequested>(_onGuestRequested);
   }
 
   Future<void> _onCheckRequested(AuthCheckRequested event,
@@ -175,6 +176,8 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
       AuthChangePasswordRequested event,
       Emitter<AuthState> emit,
       ) async {
+    final currentUser = await _localStorageService.getUser();
+
     emit(AuthLoading());
     try {
       await _authService.changePassword(
@@ -183,12 +186,23 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
         event.newPassword,
       );
       emit(AuthPasswordChanged(message: "Mot de passe changé avec succès"));
-      final user = await _localStorageService.getUser();
-      if (user != null) {
-        emit(AuthAuthenticated(user: user));
+      if (currentUser != null) {
+        emit(AuthAuthenticated(user: currentUser));
       }
     } catch (e) {
       emit(AuthFailure(error: e.toString().replaceFirst("Exception: ", "")));
+
+      if (currentUser != null) {
+        emit(AuthAuthenticated(user: currentUser));
+      }
     }
+  }
+
+  Future<void> _onGuestRequested(
+      AuthGuestRequested event,
+      Emitter<AuthState> emit,
+      ) async {
+    await _localStorageService.logout();
+    emit(AuthGuest());
   }
 }

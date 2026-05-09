@@ -25,43 +25,32 @@ class LocalStorageService {
   static const String keyCin = 'cin';
   static const String keyCne = 'cne';
 
-  Future<void> saveUser(User user) async{
-    await Future.wait([
-      prefs.setInt(keyUserId,user.id),
-      prefs.setString(keyNom,user.nom),
-      prefs.setString(keyPrenom,user.prenom),
-      prefs.setString(keyEmail,user.email),
-      prefs.setString(keyRole,user.role.name),
-      prefs.setString(keyTel,user.tel),
-      prefs.setString(keyAdresse,user.adresse),
-      prefs.setBool(keyIsLoggedIn,true),
-      prefs.setString(keyDateNaissance,user.dateNaissance),
-      prefs.setString(
-        keyTypeAbonnement,
-        user.typeAbonnement ?? '',
-      ),
-      prefs.setString(
-        keyPhotoUrl,
-        user.photoUrl ?? '',
-      ),
-      prefs.setString(
-          keyCinUrl,
-          user.cinUrl ?? ''
-      ),
-      prefs.setString(
-          keyCarteScolaireUrl,
-          user.carteScolaireUrl ?? ''
-      ),
-      prefs.setString(
-          keyCin,
-          user.cin
-      ),
-      prefs.setString(
-          keyCne,
-          user.cne ?? ''
-      ),
-    ]);
+  static const String keyToken = 'jwt_token';
 
+  Future<void> saveUser(User user) async {
+    final futures = <Future>[
+      prefs.setInt(keyUserId, user.id),
+      prefs.setString(keyNom, user.nom),
+      prefs.setString(keyPrenom, user.prenom),
+      prefs.setString(keyEmail, user.email),
+      prefs.setString(keyRole, user.role.name),
+      prefs.setString(keyTel, user.tel),
+      prefs.setString(keyAdresse, user.adresse),
+      prefs.setBool(keyIsLoggedIn, true),
+      prefs.setString(keyDateNaissance, user.dateNaissance),
+      prefs.setString(keyTypeAbonnement, user.typeAbonnement ?? ''),
+      prefs.setString(keyPhotoUrl, user.photoUrl ?? ''),
+      prefs.setString(keyCinUrl, user.cinUrl ?? ''),
+      prefs.setString(keyCarteScolaireUrl, user.carteScolaireUrl ?? ''),
+      prefs.setString(keyCin, user.cin),
+      prefs.setString(keyCne, user.cne ?? ''),
+    ];
+
+    if (user.token != null && user.token!.isNotEmpty) {
+      futures.add(prefs.setString(keyToken, user.token!));
+    }
+
+    await Future.wait(futures);
   }
 
   User? getUser(){
@@ -87,6 +76,7 @@ class LocalStorageService {
         carteScolaireUrl: prefs.getString(keyCarteScolaireUrl),
         cin: prefs.getString(keyCin) ?? '',
         cne: prefs.getString(keyCne) ?? '',
+        token: prefs.getString(keyToken),
       );
     }
   }

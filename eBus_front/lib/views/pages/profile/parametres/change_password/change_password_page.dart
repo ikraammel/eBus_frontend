@@ -22,6 +22,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   bool _obscureNew = true;
   bool _obscureConfirm = true;
 
+  // CORRECTION : stocker le userId dès l'init pour ne pas le perdre
+  // quand AuthBloc émet AuthLoading (qui n'a pas de champ user).
+  int? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      _userId = authState.user.id;
+    }
+  }
+
   @override
   void dispose() {
     _oldPasswordController.dispose();
@@ -52,7 +65,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
           title: const Text(
             "Changer le mot de passe",
-            style: TextStyle(color: AppColors.darkBlue, fontWeight: FontWeight.bold, fontSize: 18),
+            style: TextStyle(
+                color: AppColors.darkBlue,
+                fontWeight: FontWeight.bold,
+                fontSize: 18),
           ),
         ),
         body: SingleChildScrollView(
@@ -71,17 +87,21 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   controller: _oldPasswordController,
                   label: "Ancien mot de passe",
                   obscure: _obscureOld,
-                  onToggle: () => setState(() => _obscureOld = !_obscureOld),
+                  onToggle: () =>
+                      setState(() => _obscureOld = !_obscureOld),
                 ),
                 const SizedBox(height: 20),
                 _buildPasswordField(
                   controller: _newPasswordController,
                   label: "Nouveau mot de passe",
                   obscure: _obscureNew,
-                  onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                  onToggle: () =>
+                      setState(() => _obscureNew = !_obscureNew),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return "Veuillez entrer un nouveau mot de passe";
-                    if (value.length < 6) return "Le mot de passe doit contenir au moins 6 caractères";
+                    if (value == null || value.isEmpty)
+                      return "Veuillez entrer un nouveau mot de passe";
+                    if (value.length < 6)
+                      return "Le mot de passe doit contenir au moins 6 caractères";
                     return null;
                   },
                 ),
@@ -90,30 +110,38 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   controller: _confirmPasswordController,
                   label: "Confirmer le nouveau mot de passe",
                   obscure: _obscureConfirm,
-                  onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                  onToggle: () =>
+                      setState(() => _obscureConfirm = !_obscureConfirm),
                   validator: (value) {
-                    if (value != _newPasswordController.text) return "Les mots de passe ne correspondent pas";
+                    if (value != _newPasswordController.text)
+                      return "Les mots de passe ne correspondent pas";
                     return null;
                   },
                 ),
                 const SizedBox(height: 40),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
+                    final isLoading = state is AuthLoading;
                     return SizedBox(
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: state is AuthLoading ? null : _submit,
+                        onPressed: isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.darkBlue,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: state is AuthLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                            color: Colors.white)
                             : const Text(
-                                "Mettre à jour le mot de passe",
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
+                          "Mettre à jour le mot de passe",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
+                        ),
                       ),
                     );
                   },
@@ -136,21 +164,28 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
-      validator: validator ?? (value) => value == null || value.isEmpty ? "Ce champ est obligatoire" : null,
+      validator: validator ??
+              (value) => value == null || value.isEmpty
+              ? "Ce champ est obligatoire"
+              : null,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey, fontSize: 14),
         suffixIcon: IconButton(
-          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+          icon: Icon(
+              obscure ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey),
           onPressed: onToggle,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+          borderSide:
+          BorderSide(color: Colors.grey.shade200, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.darkBlue, width: 1.5),
+          borderSide:
+          const BorderSide(color: AppColors.darkBlue, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -165,27 +200,27 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   }
 
   void _submit() {
-    if (_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
 
-      if (_oldPasswordController.text == _newPasswordController.text) {
-        AppSnackBar.showError(
-          context,
-          "Le nouveau mot de passe doit être différent de l'ancien",
-        );
-        return;
-      }
-
-      final authState = context.read<AuthBloc>().state;
-
-      if (authState is AuthAuthenticated) {
-        context.read<AuthBloc>().add(
-          AuthChangePasswordRequested(
-            userId: authState.user.id,
-            oldPassword: _oldPasswordController.text,
-            newPassword: _newPasswordController.text,
-          ),
-        );
-      }
+    if (_oldPasswordController.text == _newPasswordController.text) {
+      AppSnackBar.showError(
+        context,
+        "Le nouveau mot de passe doit être différent de l'ancien",
+      );
+      return;
     }
+
+    if (_userId == null) {
+      AppSnackBar.showError(context, "Session expirée, veuillez vous reconnecter.");
+      return;
+    }
+
+    context.read<AuthBloc>().add(
+      AuthChangePasswordRequested(
+        userId: _userId!,
+        oldPassword: _oldPasswordController.text,
+        newPassword: _newPasswordController.text,
+      ),
+    );
   }
 }

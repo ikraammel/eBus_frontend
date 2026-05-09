@@ -40,7 +40,7 @@ class Reclamation {
       'titre': titre,
       'description': description,
       'status': status != null ? status.toString().split('.').last : null,
-      'date': date?.toIso8601String().split('T').first, // yyyy-MM-dd
+      'date': date?.toIso8601String(), // yyyy-MM-dd
       'userId': userId,
       'ligneId': ligneId,
     };

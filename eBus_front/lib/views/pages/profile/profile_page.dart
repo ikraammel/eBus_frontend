@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_bus/main.dart';
-import 'package:smart_bus/services/local_storage_service.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/profile/contact_card.dart';
 import 'package:smart_bus/views/pages/profile/header_page.dart';

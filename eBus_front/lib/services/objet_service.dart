@@ -1,16 +1,11 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
-import '../constants/constants.dart';
+import 'package:smart_bus/utils/dio_interceptor.dart';
 import '../models/objet_perdu.dart';
 import '../models/statut_objet.dart';
 
 class ObjetService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
+  final Dio _dio = DioClient.dio;
 
   // ---------------- GET ALL ----------------
   Future<List<ObjetPerdu>> getAll() async {
