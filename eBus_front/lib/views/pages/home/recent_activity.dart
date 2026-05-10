@@ -4,6 +4,7 @@ import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/models/activity.dart';
 import 'package:smart_bus/services/activity_service.dart';
+import 'package:smart_bus/models/user.dart';
 import '../../../constants/app_colors.dart';
 
 class RecentActivity extends StatefulWidget {
@@ -25,9 +26,14 @@ class _RecentActivityState extends State<RecentActivity> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        User? user;
         if (state is AuthAuthenticated) {
-          final user = state.user;
+          user = state.user;
+        } else if (state is AuthProfileUpdated) {
+          user = state.user;
+        }
 
+        if (user != null) {
           return FutureBuilder<List<Activity>>(
             future: widget.isAdmin
               ? ActivityService().getRecentActivitiesAdmin()
@@ -70,7 +76,8 @@ class _RecentActivityState extends State<RecentActivity> {
           );
         }
 
-        return const Text("Utilisateur non connecté");
+        // Pour les invités ou non-connectés, on ne renvoie rien
+        return const SizedBox.shrink();
       },
     );
   }

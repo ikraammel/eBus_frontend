@@ -82,13 +82,17 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 15),
                 _buildGrid(user),
-                const SizedBox(height: 25),
-                const Text(
-                  "Activité récente",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
-                ),
-                const SizedBox(height: 15),
-                const RecentActivity(),
+                
+                // On n'affiche l'activité récente QUE si l'utilisateur est connecté
+                if (user != null) ...[
+                  const SizedBox(height: 25),
+                  const Text(
+                    "Activité récente",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
+                  ),
+                  const SizedBox(height: 15),
+                  const RecentActivity(),
+                ],
               ],
             ),
           ),
@@ -104,11 +108,14 @@ class _HomePageState extends State<HomePage> {
         User? currentUser;
         if (state is AuthAuthenticated) {
           currentUser = state.user;
-        } else if (state is AuthUnauthenticated) {
+        } else if (state is AuthProfileUpdated) {
+          currentUser = state.user;
+        } else if (state is AuthUnauthenticated || state is AuthGuest) {
           currentUser = null;
-        } else {
+        } else if (state is AuthInitial || state is AuthLoading) {
           return const Scaffold(body: SplashScreen());
         }
+
         return Scaffold(
           backgroundColor: const Color(0xFFF8F9FB),
           body: _getSelectedPage(currentUser),
@@ -166,7 +173,6 @@ class _HomePageState extends State<HomePage> {
             if (user == null) {
               _showLoginRequiredDialog();
             } else {
-              // Redirection vers l'onglet Paiement (Tickets) au lieu d'une nouvelle page
               setState(() => _selectedIndex = 2);
             }
           },
