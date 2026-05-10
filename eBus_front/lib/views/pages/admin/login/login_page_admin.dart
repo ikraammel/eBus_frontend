@@ -21,7 +21,7 @@ class LoginPageAdmin extends StatefulWidget {
 class _LoginPageAdminState extends State<LoginPageAdmin> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _showHidePassword = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose(){
@@ -39,92 +39,93 @@ class _LoginPageAdminState extends State<LoginPageAdmin> {
             AppSnackBar.showSuccess(context, "Connexion réussie !");
             Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => AdminHomePage())
+                MaterialPageRoute(builder: (_) => const AdminHomePage())
             );
           }
         }
         else if(state is AuthFailure){
-          return AppSnackBar.showError(context, state.error);
+          AppSnackBar.showError(context, state.error);
         }
 
       },
       builder: (context,state){
         return Scaffold(
-          backgroundColor: Color(0xFF1A222D),
+          backgroundColor: const Color(0xFF1A222D),
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
               children: [
+                const SizedBox(height: 20),
                 Center(
                   child: Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                        color: Color(0xFF2C353F),
+                        color: const Color(0xFF2C353F),
                         borderRadius: BorderRadius.circular(20)
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.shield_outlined,
                       size: 60,
                       color: AppColors.green,
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
-                Center(
+                const SizedBox(height: 15),
+                const Center(
                   child: Text(
                     "Espace Admin",
                     style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 25
+                        fontSize: 26
                     ),
                   ),
                 ),
-                Center(
+                const Center(
                   child: Text(
                     "Connexion sécurisée",
                     style: TextStyle(
                         color: Colors.grey,
-                        fontSize: 15
+                        fontSize: 14
                     ),
                   ),
                 ),
-                SizedBox(height: 35),
+                const SizedBox(height: 40),
                 CustomTextField(
                   controller: _emailController,
                   hint: "admin@ebus.com",
                   label: "Identifiant Admin",
                   textColor: Colors.white,
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 10),
                 CustomTextField(
                   controller: _passwordController,
                   hint: "......",
                   label: "Mot de passe",
                   textColor: Colors.white,
-                  obscureText: _showHidePassword,
+                  obscureText: _obscurePassword,
                   suffixIcon: IconButton(
                       onPressed:(){
                         setState(() {
-                          _showHidePassword = !_showHidePassword;
+                          _obscurePassword = !_obscurePassword;
                         });
                       },
                       icon: Icon(
-                        _showHidePassword
+                        _obscurePassword
                             ? Icons.visibility_off
                             : Icons.visibility,
+                        color: Colors.white,
                       )),
                 ),
-                SizedBox(height: 15,),
+                const SizedBox(height: 25),
                 Center(
                   child: AppButton(
                     color: AppColors.green,
@@ -140,27 +141,30 @@ class _LoginPageAdminState extends State<LoginPageAdmin> {
                     },
                   ),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 35),
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 15),
+                  padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orangeAccent.withOpacity(0.5)),
-                    color: Color(0xFF232B35),
+                    border: Border.all(color: Colors.orangeAccent.withOpacity(0.3)),
+                    color: const Color(0xFF232B35),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 18),
-                      SizedBox(width: 10),
-                      Text(
-                        "Accès réservé aux administrateurs autorisés",
-                        style: TextStyle(color: Colors.orangeAccent, fontSize: 12),
+                      SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          "Accès réservé aux administrateurs autorisés",
+                          style: TextStyle(color: Colors.orangeAccent, fontSize: 12),
+                        ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),

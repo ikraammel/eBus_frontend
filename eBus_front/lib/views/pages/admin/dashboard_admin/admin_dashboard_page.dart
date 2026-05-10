@@ -131,63 +131,57 @@ class _Body extends StatelessWidget {
     return RefreshIndicator(
       color: _kBlue,
       onRefresh: () async => context.read<AdminStatsBloc>().add(LoadAdminStats()),
-      child: SingleChildScrollView(
+      child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(14, 18, 14, 36),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Section('Vue générale'),
-            const SizedBox(height: 10),
-            _KpiGrid(stats: stats),
+        children: [
+          _Section('Vue générale'),
+          const SizedBox(height: 10),
+          _KpiGrid(stats: stats),
 
-            const SizedBox(height: 22),
-            _Section('Revenus & Paiements'),
-            const SizedBox(height: 10),
-            _RevenueSection(stats: stats),
+          const SizedBox(height: 22),
+          _Section('Revenus & Paiements'),
+          const SizedBox(height: 10),
+          _RevenueSection(stats: stats),
 
-            const SizedBox(height: 22),
-            _Section('Abonnements'),
-            const SizedBox(height: 10),
-            _TwoCol(
-              left: _AbonStatusCard(stats: stats),
-              right: _AbonTypesCard(stats: stats),
-            ),
+          const SizedBox(height: 22),
+          _Section('Abonnements'),
+          const SizedBox(height: 10),
+          _TwoCol(
+            left: _AbonStatusCard(stats: stats),
+            right: _AbonTypesCard(stats: stats),
+          ),
 
-            const SizedBox(height: 22),
-            _Section("Dossiers d'inscription"),
-            const SizedBox(height: 10),
-            _DossiersCard(stats: stats),
+          const SizedBox(height: 22),
+          _Section("Dossiers d'inscription"),
+          const SizedBox(height: 10),
+          _DossiersCard(stats: stats),
 
-            const SizedBox(height: 22),
-            _Section('Réclamations'),
-            const SizedBox(height: 10),
-            _ReclamationsCard(stats: stats),
+          const SizedBox(height: 22),
+          _Section('Réclamations'),
+          const SizedBox(height: 10),
+          _ReclamationsCard(stats: stats),
 
-            const SizedBox(height: 22),
-            _Section('Nouveaux inscrits — 12 derniers mois'),
-            const SizedBox(height: 10),
-            _InscriptionsChart(data: stats.inscriptionsParMois),
+          const SizedBox(height: 22),
+          _Section('Nouveaux inscrits — 12 derniers mois'),
+          const SizedBox(height: 10),
+          _InscriptionsChart(data: stats.inscriptionsParMois),
 
-            const SizedBox(height: 22),
-            _Section('Flotte & Réseau'),
-            const SizedBox(height: 10),
-            _TwoCol(
-              left: _FlotteBusCard(stats: stats),
-              right: _ReseauCard(stats: stats),
-            ),
+          const SizedBox(height: 22),
+          _Section('Flotte & Réseau'),
+          const SizedBox(height: 10),
+          _TwoCol(
+            left: _FlotteBusCard(stats: stats),
+            right: _ReseauCard(stats: stats),
+          ),
 
-            const SizedBox(height: 8),
-          ],
-        ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section label
-// ─────────────────────────────────────────────────────────────────────────────
 class _Section extends StatelessWidget {
   final String text;
   const _Section(this.text);
@@ -204,9 +198,6 @@ class _Section extends StatelessWidget {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// KPI Grid  (2 cols always — safe on any phone width)
-// ─────────────────────────────────────────────────────────────────────────────
 class _KpiGrid extends StatelessWidget {
   final AdminStatsModel stats;
   const _KpiGrid({required this.stats});
@@ -227,7 +218,7 @@ class _KpiGrid extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        childAspectRatio: 1.7,
+        childAspectRatio: 1.6,
       ),
       itemCount: items.length,
       itemBuilder: (_, i) => _KpiCard(d: items[i]),
@@ -261,7 +252,7 @@ class _KpiCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: d.color.withValues(alpha: 0.1),
+              color: d.color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(d.icon, color: d.color, size: 15),
@@ -269,21 +260,18 @@ class _KpiCard extends StatelessWidget {
           const Spacer(),
           Text(
             d.value,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: d.color, height: 1),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: d.color, height: 1),
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(d.label,  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _kDark), overflow: TextOverflow.ellipsis),
-          Text(d.sub,    style: const TextStyle(fontSize: 10, color: _kSub), overflow: TextOverflow.ellipsis),
+          Text(d.sub,    style: const TextStyle(fontSize: 9, color: _kSub), overflow: TextOverflow.ellipsis),
         ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Revenue section
-// ─────────────────────────────────────────────────────────────────────────────
 class _RevenueSection extends StatelessWidget {
   final AdminStatsModel stats;
   const _RevenueSection({required this.stats});
@@ -292,7 +280,6 @@ class _RevenueSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Grand total — full width
         _RevCard(
           label: 'Revenu total',
           amount: stats.revenuTotal,
@@ -302,7 +289,6 @@ class _RevenueSection extends StatelessWidget {
           large: true,
         ),
         const SizedBox(height: 10),
-        // Two sub-cards side by side
         Row(
           children: [
             Expanded(
@@ -362,7 +348,7 @@ class _RevCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: large ? 20 : 17),
@@ -376,7 +362,7 @@ class _RevCard extends StatelessWidget {
                 const SizedBox(height: 1),
                 Text(
                   '${amount.toStringAsFixed(2)} DH',
-                  style: TextStyle(fontSize: large ? 19 : 15, fontWeight: FontWeight.w800, color: color, height: 1.15),
+                  style: TextStyle(fontSize: large ? 18 : 14, fontWeight: FontWeight.w800, color: color, height: 1.15),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(sub, style: const TextStyle(fontSize: 10, color: _kSub), overflow: TextOverflow.ellipsis),
@@ -389,9 +375,6 @@ class _RevCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Abonnements — statuts
-// ─────────────────────────────────────────────────────────────────────────────
 class _AbonStatusCard extends StatelessWidget {
   final AdminStatsModel stats;
   const _AbonStatusCard({required this.stats});
@@ -420,9 +403,6 @@ class _AbonStatusCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Abonnements — par type
-// ─────────────────────────────────────────────────────────────────────────────
 class _AbonTypesCard extends StatelessWidget {
   final AdminStatsModel stats;
   const _AbonTypesCard({required this.stats});
@@ -467,7 +447,7 @@ class _AbonTypesCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(value: pct, backgroundColor: color.withValues(alpha: 0.1), valueColor: AlwaysStoppedAnimation(color), minHeight: 5),
+                      child: LinearProgressIndicator(value: pct, backgroundColor: color.withOpacity(0.1), valueColor: AlwaysStoppedAnimation(color), minHeight: 5),
                     ),
                   ],
                 ),
@@ -479,9 +459,6 @@ class _AbonTypesCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dossiers
-// ─────────────────────────────────────────────────────────────────────────────
 class _DossiersCard extends StatelessWidget {
   final AdminStatsModel stats;
   const _DossiersCard({required this.stats});
@@ -528,9 +505,9 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
+        color: color.withOpacity(0.06),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,16 +516,13 @@ class _StatTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text('$count', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color, height: 1)),
           const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 10, color: color.withValues(alpha: 0.85)), overflow: TextOverflow.ellipsis),
+          Text(label, style: TextStyle(fontSize: 10, color: color.withOpacity(0.85)), overflow: TextOverflow.ellipsis),
         ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Réclamations
-// ─────────────────────────────────────────────────────────────────────────────
 class _ReclamationsCard extends StatelessWidget {
   final AdminStatsModel stats;
   const _ReclamationsCard({required this.stats});
@@ -558,7 +532,8 @@ class _ReclamationsCard extends StatelessWidget {
     final total    = stats.reclamationsTotal;
     final ouvertes = stats.reclamationsOuvertes;
     final resolues = stats.reclamationsResolues;
-    final autres   = (total - ouvertes - resolues).clamp(0, total);
+    final num autresNum = (total - ouvertes - resolues).clamp(0, total);
+    final int autres = autresNum.toInt();
     final taux     = total > 0 ? (resolues / total * 100) : 0.0;
 
     return _Card(
@@ -572,31 +547,28 @@ class _ReclamationsCard extends StatelessWidget {
             badge: _Badge('Total: $total', _kRed),
           ),
           const SizedBox(height: 14),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+          Row(
+              crossAxisAlignment: CrossAxisAlignment.center, // CORRECTION ICI
               children: [
-                // Bars
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _Bar(label: 'En attente', count: ouvertes,        total: total, color: _kAmber),
+                      _Bar(label: 'En attente', count: ouvertes, total: total, color: _kAmber),
                       const SizedBox(height: 8),
-                      _Bar(label: 'Traitées',   count: resolues,        total: total, color: _kGreen),
+                      _Bar(label: 'Traitées',   count: resolues, total: total, color: _kGreen),
                       const SizedBox(height: 8),
-                      _Bar(label: 'Autres',     count: autres as int,   total: total, color: _kSub),
+                      _Bar(label: 'Autres',     count: autres,   total: total, color: _kSub),
                     ],
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Circular indicator
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 64,
-                      height: 64,
+                      width: 54,
+                      height: 54,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
@@ -609,7 +581,7 @@ class _ReclamationsCard extends StatelessWidget {
                           Center(
                             child: Text(
                               '${taux.toStringAsFixed(0)}%',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: _kDark),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: _kDark),
                             ),
                           ),
                         ],
@@ -621,29 +593,20 @@ class _ReclamationsCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
         ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Inscriptions chart  — horizontal scroll, bar per month
-// ─────────────────────────────────────────────────────────────────────────────
 class _InscriptionsChart extends StatelessWidget {
   final List<MonthlyCountModel> data;
   const _InscriptionsChart({required this.data});
 
-  // Each bar column width
   static const double _colW = 32;
-  // Max bar height
   static const double _maxH = 80;
-  // Label zone height
   static const double _labelH = 16;
-  // Count label height
   static const double _countH = 14;
-  // Total widget height
   static const double _totalH = _maxH + _labelH + _countH + 8;
 
   @override
@@ -652,7 +615,7 @@ class _InscriptionsChart extends StatelessWidget {
       return _Card(child: const _Empty('Aucune donnée'));
     }
 
-    final maxVal = data.map((e) => e.count).reduce((a, b) => a > b ? a : b);
+    final maxVal = data.map((e) => e.count).fold(0, (a, b) => a > b ? a : b);
     final totalInscrits = data.fold(0, (s, e) => s + e.count);
 
     return _Card(
@@ -666,7 +629,6 @@ class _InscriptionsChart extends StatelessWidget {
             badge: _Badge('Total: $totalInscrits', _kBlue),
           ),
           const SizedBox(height: 14),
-          // Horizontal scrollable bar chart
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
@@ -677,14 +639,13 @@ class _InscriptionsChart extends StatelessWidget {
                   final frac   = maxVal > 0 ? item.count / maxVal : 0.0;
                   final barH   = (_maxH * frac).clamp(3.0, _maxH);
                   final isMax  = item.count == maxVal && maxVal > 0;
-                  final color  = isMax ? _kBlue : _kBlue.withValues(alpha: 0.32);
+                  final color  = isMax ? _kBlue : _kBlue.withOpacity(0.32);
 
                   return SizedBox(
                     width: _colW,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Count above bar
                         SizedBox(
                           height: _countH,
                           child: item.count > 0
@@ -700,7 +661,6 @@ class _InscriptionsChart extends StatelessWidget {
                               : const SizedBox.shrink(),
                         ),
                         const SizedBox(height: 2),
-                        // Bar
                         Container(
                           height: barH,
                           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -710,7 +670,6 @@ class _InscriptionsChart extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 3),
-                        // Month label
                         SizedBox(
                           height: _labelH,
                           child: Text(
@@ -733,9 +692,6 @@ class _InscriptionsChart extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Flotte bus
-// ─────────────────────────────────────────────────────────────────────────────
 class _FlotteBusCard extends StatelessWidget {
   final AdminStatsModel stats;
   const _FlotteBusCard({required this.stats});
@@ -761,9 +717,6 @@ class _FlotteBusCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Réseau
-// ─────────────────────────────────────────────────────────────────────────────
 class _ReseauCard extends StatelessWidget {
   final AdminStatsModel stats;
   const _ReseauCard({required this.stats});
@@ -808,11 +761,6 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared primitives
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// White card container
 class _Card extends StatelessWidget {
   final Widget child;
   const _Card({required this.child});
@@ -830,7 +778,6 @@ class _Card extends StatelessWidget {
   );
 }
 
-/// Card header row: icon + title + optional badge
 class _CardHead extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -854,7 +801,6 @@ class _CardHead extends StatelessWidget {
   }
 }
 
-/// Labelled progress bar
 class _Bar extends StatelessWidget {
   final String label;
   final int count, total;
@@ -879,7 +825,7 @@ class _Bar extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: pct,
-            backgroundColor: color.withValues(alpha: 0.1),
+            backgroundColor: color.withOpacity(0.1),
             valueColor: AlwaysStoppedAnimation(color),
             minHeight: 5,
           ),
@@ -889,7 +835,6 @@ class _Bar extends StatelessWidget {
   }
 }
 
-/// Bottom key-value row inside a card
 class _FootRow extends StatelessWidget {
   final String left, right;
   const _FootRow({required this.left, required this.right});
@@ -903,7 +848,6 @@ class _FootRow extends StatelessWidget {
   );
 }
 
-/// Pill badge
 class _Badge extends StatelessWidget {
   final String text;
   final Color color;
@@ -912,12 +856,11 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+    decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
     child: Text(text, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
   );
 }
 
-/// Empty state
 class _Empty extends StatelessWidget {
   final String msg;
   const _Empty(this.msg);
@@ -929,7 +872,6 @@ class _Empty extends StatelessWidget {
   );
 }
 
-/// Error view with retry
 class _ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -958,7 +900,6 @@ class _ErrorView extends StatelessWidget {
   );
 }
 
-/// Responsive 2-column layout
 class _TwoCol extends StatelessWidget {
   final Widget left, right;
   const _TwoCol({required this.left, required this.right});
