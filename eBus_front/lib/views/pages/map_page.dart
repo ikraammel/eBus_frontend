@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:get_it/get_it.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
+import 'package:smart_bus/bloc/ligne/ligne_event.dart';
 import 'package:smart_bus/bloc/ligne/ligne_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/models/bus_position.dart';
@@ -34,12 +35,13 @@ class _MapPageState extends State<MapPage> {
 
   List<BusPosition> _busPositions = [];
   StreamSubscription? _busSub;
+  bool _simulatorStarted = false;
 
   Ligne? _selectedLigne;
   List<Horaire> _horaires = [];
   bool _loadingHoraires = false;
 
-  // Centre sur Safi (ou ta ville réelle selon les données)
+  // Centre sur Safi
   static const _defaultCenter = LatLng(32.2994, -9.2372);
 
   @override
@@ -51,10 +53,14 @@ class _MapPageState extends State<MapPage> {
       if (mounted) setState(() => _busPositions = buses);
     });
 
-    // Lance le simulateur
+    // Démarre le simulateur avec les lignes déjà chargées
     final ligneState = context.read<LigneBloc>().state;
-    if (ligneState is LigneLoaded) {
+    if (ligneState is LigneLoaded && !_simulatorStarted) {
+      _simulatorStarted = true;
       _simulator.startAll(ligneState.lignes);
+    } else if (ligneState is! LigneLoaded) {
+      // Déclenche le chargement des lignes si pas encore fait
+      context.read<LigneBloc>().add(LoadLignes());
     }
   }
 
@@ -90,6 +96,9 @@ class _MapPageState extends State<MapPage> {
     if (stationsWithCoords.isNotEmpty) {
       final first = stationsWithCoords.first;
       _mapController.move(LatLng(first.latitude!, first.longitude!), 13.5);
+    } else {
+      // Même sans coords dans les stations, centre sur Safi
+      _mapController.move(_defaultCenter, 13.0);
     }
   }
 
@@ -99,7 +108,7 @@ class _MapPageState extends State<MapPage> {
       ? _busPositions
       : _busPositions.where((b) => b.ligneId == _selectedLigne!.id).toList();
 
-  // ─── Tap sur un bus → ouvre BusDetailSheet ───────────────────────────────────
+  // ─── Tap sur un bus → ouvre BusDetailSheet ────────────────────────────────
 
   void _onBusTapped(BusPosition bus) {
     showModalBottomSheet(
@@ -117,7 +126,7 @@ class _MapPageState extends State<MapPage> {
       final color = _busColor(bus.statut);
       final label = bus.immatriculation.isNotEmpty
           ? bus.immatriculation
-          : bus.numero;
+          : 'L${bus.numero}';
 
       return Marker(
         point: LatLng(bus.latitude, bus.longitude),
@@ -128,7 +137,7 @@ class _MapPageState extends State<MapPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Indicateur "en direct" si récent
+              // Point vert "en direct" si mis à jour récemment
               if (bus.isRecent)
                 Container(
                   width: 8,
@@ -141,8 +150,7 @@ class _MapPageState extends State<MapPage> {
                 ),
               Icon(Icons.directions_bus, color: color, size: 36),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(4),
@@ -165,7 +173,7 @@ class _MapPageState extends State<MapPage> {
     }).toList();
   }
 
-  // ─── Couleur selon statut ────────────────────────────────────────────────────
+  // ─── COULEUR : vert pour en_service ─────────────────────────────────────────
 
   Color _busColor(String statut) {
     switch (statut) {
@@ -173,8 +181,9 @@ class _MapPageState extends State<MapPage> {
         return Colors.orange;
       case 'inactif':
         return Colors.grey;
+      case 'en_service':
       default:
-        return Colors.red;
+        return Colors.green; // ✅ VERT pour les bus actifs
     }
   }
 
@@ -235,8 +244,7 @@ class _MapPageState extends State<MapPage> {
 
     return [
       Polyline(
-        points:
-        points.map((s) => LatLng(s.latitude!, s.longitude!)).toList(),
+        points: points.map((s) => LatLng(s.latitude!, s.longitude!)).toList(),
         color: AppColors.darkBlue,
         strokeWidth: 3.5,
       ),
@@ -256,67 +264,75 @@ class _MapPageState extends State<MapPage> {
               color: AppColors.darkBlue, fontWeight: FontWeight.w600),
         ),
         actions: [
-          // Badge nombre de bus actifs
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
               avatar: const Icon(Icons.directions_bus,
                   size: 16, color: Colors.white),
               label: Text(
-                '${_visibleBuses.length}',
+                '${_visibleBuses.length} bus',
                 style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.green,
               padding: EdgeInsets.zero,
             ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // ── Légende statuts ─────────────────────────────────────────────────
-          _StatusLegend(busPositions: _busPositions),
+      body: BlocListener<LigneBloc, LigneState>(
+        // ⬇️ Démarre le simulateur dès que les lignes sont chargées
+        listener: (context, state) {
+          if (state is LigneLoaded && !_simulatorStarted) {
+            _simulatorStarted = true;
+            _simulator.startAll(state.lignes);
+          }
+        },
+        child: Column(
+          children: [
+            // ── Légende statuts ──────────────────────────────────────────────
+            _StatusLegend(busPositions: _busPositions),
 
-          // ── Sélecteur de ligne ──────────────────────────────────────────────
-          _LigneFilterBar(
-            selectedLigne: _selectedLigne,
-            onSelected: _onLigneSelected,
-          ),
+            // ── Sélecteur de ligne ───────────────────────────────────────────
+            _LigneFilterBar(
+              selectedLigne: _selectedLigne,
+              onSelected: _onLigneSelected,
+            ),
 
-          // ── Carte ───────────────────────────────────────────────────────────
-          Expanded(
-            flex: _selectedLigne != null ? 3 : 5,
-            child: FlutterMap(
-              mapController: _mapController,
-              options: const MapOptions(
-                initialCenter: _defaultCenter,
-                initialZoom: 13.0,
+            // ── Carte ────────────────────────────────────────────────────────
+            Expanded(
+              flex: _selectedLigne != null ? 3 : 5,
+              child: FlutterMap(
+                mapController: _mapController,
+                options: const MapOptions(
+                  initialCenter: _defaultCenter,
+                  initialZoom: 13.0,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.ebus.smart_bus',
+                  ),
+                  PolylineLayer(polylines: _buildPolylines()),
+                  MarkerLayer(
+                    markers: [
+                      ..._buildStationMarkers(),
+                      ..._buildBusMarkers(),
+                    ],
+                  ),
+                ],
               ),
-              children: [
-                TileLayer(
-                  urlTemplate:
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.ebus.smart_bus',
-                ),
-                PolylineLayer(polylines: _buildPolylines()),
-                MarkerLayer(
-                  markers: [
-                    ..._buildStationMarkers(),
-                    ..._buildBusMarkers(),
-                  ],
-                ),
-              ],
             ),
-          ),
 
-          // ── Panel horaires ──────────────────────────────────────────────────
-          if (_selectedLigne != null)
-            _HorairesPanel(
-              ligne: _selectedLigne!,
-              horaires: _horaires,
-              loading: _loadingHoraires,
-            ),
-        ],
+            // ── Panel horaires ───────────────────────────────────────────────
+            if (_selectedLigne != null)
+              _HorairesPanel(
+                ligne: _selectedLigne!,
+                horaires: _horaires,
+                loading: _loadingHoraires,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -334,21 +350,23 @@ class _StatusLegend extends StatelessWidget {
         busPositions.where((b) => b.statut == 'en_service').length;
     final enRetard =
         busPositions.where((b) => b.statut == 'en_retard').length;
+    final inactifs =
+        busPositions.where((b) => b.statut == 'inactif').length;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       color: Colors.grey.shade50,
       child: Row(
         children: [
-          _LegendDot(color: Colors.red, label: 'En service ($enService)'),
-          const SizedBox(width: 16),
-          _LegendDot(color: Colors.orange, label: 'En retard ($enRetard)'),
-          const SizedBox(width: 16),
-          _LegendDot(color: Colors.grey, label: 'Inactif'),
+          _LegendDot(color: Colors.green, label: 'En service ($enService)'),
+          const SizedBox(width: 12),
+          _LegendDot(color: Colors.orange, label: 'Retard ($enRetard)'),
+          const SizedBox(width: 12),
+          _LegendDot(color: Colors.grey, label: 'Inactif ($inactifs)'),
           const Spacer(),
           const Icon(Icons.touch_app, size: 13, color: Colors.grey),
           const SizedBox(width: 3),
-          const Text('Tapez un bus',
+          const Text('Tap = détails',
               style: TextStyle(fontSize: 11, color: Colors.grey)),
         ],
       ),
@@ -368,10 +386,10 @@ class _LegendDot extends StatelessWidget {
         Container(
             width: 10,
             height: 10,
-            decoration:
-            BoxDecoration(color: color, shape: BoxShape.circle)),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+        Text(label,
+            style: const TextStyle(fontSize: 11, color: Colors.black54)),
       ],
     );
   }
@@ -392,14 +410,24 @@ class _LigneFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LigneBloc, LigneState>(
       builder: (context, state) {
-        if (state is! LigneLoaded) return const SizedBox(height: 44);
+        if (state is! LigneLoaded) {
+          return const SizedBox(
+            height: 44,
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
 
         return SizedBox(
           height: 44,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             children: [
               _Chip(
                 label: 'Tous',
@@ -442,8 +470,7 @@ class _Chip extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(right: 8),
-        padding:
-        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: selected ? AppColors.darkBlue : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(20),
@@ -454,16 +481,14 @@ class _Chip extends StatelessWidget {
             if (icon != null) ...[
               Icon(icon,
                   size: 14,
-                  color:
-                  selected ? Colors.white : Colors.black54),
+                  color: selected ? Colors.white : Colors.black54),
               const SizedBox(width: 4),
             ],
             Text(
               label,
               style: TextStyle(
                 color: selected ? Colors.white : Colors.black87,
-                fontWeight:
-                selected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 13,
               ),
             ),
@@ -495,17 +520,15 @@ class _HorairesPanel extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, -2))
+              color: Colors.black12, blurRadius: 6, offset: Offset(0, -2))
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 8),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Row(
               children: [
                 const Icon(Icons.schedule,
@@ -523,8 +546,8 @@ class _HorairesPanel extends StatelessWidget {
                 ),
                 Text(
                   '${ligne.stations.length} arrêts',
-                  style: const TextStyle(
-                      color: Colors.grey, fontSize: 11),
+                  style:
+                  const TextStyle(color: Colors.grey, fontSize: 11),
                 ),
               ],
             ),
@@ -566,7 +589,7 @@ Future<void> seedFirebaseBuses(List<Ligne> lignes) async {
     await db.ref('buses/bus_${ligne.id}').set({
       'ligneId': ligne.id,
       'numero': ligne.numero,
-      'immatriculation': '',
+      'immatriculation': 'BUS-L${ligne.numero}',
       'latitude': firstStation.latitude,
       'longitude': firstStation.longitude,
       'updatedAt': DateTime.now().millisecondsSinceEpoch,
@@ -600,11 +623,10 @@ class _HoraireCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                   color: AppColors.darkBlue)),
-          const Icon(Icons.arrow_downward,
-              size: 14, color: Colors.grey),
+          const Icon(Icons.arrow_downward, size: 14, color: Colors.grey),
           Text(h.heureArrivee,
-              style: const TextStyle(
-                  fontSize: 13, color: Colors.black87)),
+              style:
+              const TextStyle(fontSize: 13, color: Colors.black87)),
           const SizedBox(height: 4),
           Text(
             h.jours,
