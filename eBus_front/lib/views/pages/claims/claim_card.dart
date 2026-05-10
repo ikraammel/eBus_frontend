@@ -22,26 +22,28 @@ class ClaimCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isProcessed = claim.status == ReclamationStatus.TRAITEE;
 
-    return BlocSelector<AuthBloc, AuthState, bool>(
-      selector: (state) {
-        // L'utilisateur est admin
-        if (state is AuthAuthenticated) {
-          return state.user.role == Role.ADMIN;
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        bool isAdmin = false;
+        bool isOwner = false;
+
+        if (authState is AuthAuthenticated) {
+          isAdmin = authState.user.role == Role.ADMIN;
+          isOwner = authState.user.id == claim.userId;
         }
-        return false;
-      },
-      builder: (context, isAdmin) {
+
+        final canDelete = isAdmin || isOwner;
+
         return BlocListener<ClaimsBloc, ClaimsState>(
           listener: (context, state) {
-            if (state is ClaimsDeleted) {
+            if (state is ClaimsDeleted && state.id == claim.id) {
               AppSnackBar.showSuccess(context, "Réclamation supprimée avec succès");
-              // Recharge la liste après suppression
               context.read<ClaimsBloc>().add(LoadClaims());
             } else if (state is ClaimsUpdated) {
-              AppSnackBar.showSuccess(context, "Statut mis à jour avec succès");
-              context.read<ClaimsBloc>().add(LoadClaims());
+              // Note: ClaimsUpdated doesn't always mean THIS claim was updated, 
+              // but the Bloc handles refreshing the list usually.
             } else if (state is ClaimsError) {
-              AppSnackBar.showError(context, state.error);
+              // AppSnackBar.showError(context, state.error);
             }
           },
           child: Stack(
@@ -185,7 +187,7 @@ class ClaimCard extends StatelessWidget {
                 ),
               ),
 
-              if (isAdmin)
+              if (canDelete)
                 Positioned(
                   top: 4,
                   right: 4,

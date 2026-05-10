@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:smart_bus/bloc/auth/auth_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/bloc/ligne/ligne_bloc.dart';
 import 'package:smart_bus/bloc/ligne/ligne_state.dart';
 import 'package:smart_bus/bloc/objet_perdu/objet_perdu_bloc.dart';
@@ -25,7 +27,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
   final _formKey = GlobalKey<FormState>();
   final _nomCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  final _contactCtrl = TextEditingController(); // Changé de _emailCtrl à _contactCtrl
+  final _contactCtrl = TextEditingController(); 
 
   int? _selectedLigneId;
   Bus? _selectedBus;
@@ -43,7 +45,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
   void dispose() {
     _nomCtrl.dispose();
     _descCtrl.dispose();
-    _contactCtrl.dispose(); // Mis à jour
+    _contactCtrl.dispose(); 
     super.dispose();
   }
 
@@ -62,7 +64,6 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
     });
     try {
       final buses = await _busService.getBusesByLigne(ligneId);
-      debugPrint("BUSES LOADED: ${buses.length}");
       if (mounted) {
         setState(() {
           _availableBuses = buses;
@@ -70,13 +71,12 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
         });
       }
     } catch (e) {
-      debugPrint("ERROR BUS: $e");
       if (mounted) setState(() => _loadingBuses = false);
     }
   }
 
   Color get _activeColor {
-    return _typeSelectionne == TypeAnnonce.PERTE ? AppColors.darkBlue : AppColors.primaryColor;
+    return _typeSelectionne == TypeAnnonce.PERTE ? AppColors.darkBlue : AppColors.green;
   }
 
   @override
@@ -85,7 +85,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
       resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.lightGreenBg,
       appBar: AppBar(
-        backgroundColor: AppColors.darkBlue,
+        backgroundColor: AppColors.green,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
@@ -114,7 +114,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
               const SizedBox(height: 20),
               _buildTextField("Description", _descCtrl, Icons.description_outlined, 'Décrivez l\'objet...', maxLines: 3),
               const SizedBox(height: 20),
-              _buildTextField("Contact (Téléphone)", _contactCtrl, Icons.phone_outlined, 'Votre numéro de téléphone', isPhone: true), // Mis à jour
+              _buildTextField("Contact (Téléphone)", _contactCtrl, Icons.phone_outlined, 'Votre numéro de téléphone', isPhone: true), 
               const SizedBox(height: 40),
               _buildSubmitButton(),
             ],
@@ -123,6 +123,8 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
       ),
     );
   }
+
+  // ... (Widgets de sélection identiques)
 
   Widget _buildTypeSelector() {
     return Row(
@@ -150,12 +152,12 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: _typeSelectionne == TypeAnnonce.TROUVE ? AppColors.primaryColor : Colors.white,
+                color: _typeSelectionne == TypeAnnonce.TROUVE ? AppColors.green : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _typeSelectionne == TypeAnnonce.TROUVE ? AppColors.primaryColor : Colors.grey.shade300),
+                border: Border.all(color: _typeSelectionne == TypeAnnonce.TROUVE ? AppColors.green : Colors.grey.shade300),
               ),
               child: Text("J'ai trouvé", textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold, color: _typeSelectionne == TypeAnnonce.TROUVE ? Colors.white : AppColors.primaryColor),
+                style: TextStyle(fontWeight: FontWeight.bold, color: _typeSelectionne == TypeAnnonce.TROUVE ? Colors.white : AppColors.green),
               ),
             ),
           ),
@@ -205,9 +207,9 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
           keyboardType: isPhone ? TextInputType.phone : (isEmail ? TextInputType.emailAddress : TextInputType.text),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: AppColors.primaryColor),
+            prefixIcon: const Icon(Icons.info_outline, color: AppColors.green),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primaryColor)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.green)),
           ),
           validator: (v) {
             if (v == null || v.isEmpty) return 'Champ requis';
@@ -233,7 +235,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
                 hint: const Text('Sélectionner la ligne'),
                 decoration: InputDecoration(
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: Icon(Icons.directions_bus_outlined, color: AppColors.primaryColor),
+                  prefixIcon: const Icon(Icons.directions_bus_outlined, color: AppColors.green),
                 ),
                 items: state.lignes.map((l) => DropdownMenuItem(value: l.id, child: Text("Ligne ${l.numero}"))).toList(),
                 onChanged: (id) {
@@ -267,7 +269,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
             disabledHint: const Text('Sélectionnez d\'abord une ligne'),
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: Icon(Icons.directions_bus, color: AppColors.primaryColor),
+              prefixIcon: const Icon(Icons.directions_bus, color: AppColors.green),
             ),
             items: _availableBuses.map((b) => DropdownMenuItem(value: b, child: Text("${b.numero} - ${b.immatriculation}"))).toList(),
             onChanged: _selectedLigneId == null ? null : (Bus? bus) => setState(() => _selectedBus = bus),
@@ -287,7 +289,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
           controller: TextEditingController(text: _date == null ? '' : '${_date!.day}/${_date!.month}/${_date!.year}'),
           decoration: InputDecoration(
             hintText: 'Cliquer pour choisir une date',
-            prefixIcon: Icon(Icons.calendar_today_outlined, color: AppColors.primaryColor),
+            prefixIcon: const Icon(Icons.calendar_today_outlined, color: AppColors.green),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onTap: _pickDate,
@@ -325,6 +327,14 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez vous connecter'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     final objetData = {
       'nom': _nomCtrl.text,
       'description': _descCtrl.text,
@@ -334,7 +344,7 @@ class _DeclareObjetPageState extends State<DeclareObjetPage> {
       'type': _typeSelectionne.name,
       'statut': StatutObjet.EN_ATTENTE.name,
       'dateDeclaration': (_date ?? DateTime.now()).toIso8601String(),
-      'userId': 1,
+      'userId': authState.user.id, // Utilisation de l'ID réel
     };
 
     context.read<ObjetPerduBloc>().add(AddObjetPerdu(

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_state.dart';
+import 'package:smart_bus/bloc/objet_perdu/objet_perdu_bloc.dart';
+import 'package:smart_bus/bloc/objet_perdu/objet_perdu_event.dart';
 import 'package:smart_bus/models/objet_perdu.dart';
 import 'package:smart_bus/models/statut_objet.dart';
+import 'package:smart_bus/utils/app_snack_bar.dart';
 import 'package:smart_bus/views/UI/statut_badge.dart';
 import 'package:smart_bus/enums/enums.dart';
 import 'package:smart_bus/constants/constants.dart';
@@ -25,6 +31,31 @@ class UserObjetDetailPage extends StatelessWidget {
     return "${AppConstants.baseUrl}/$cleanPath";
   }
 
+  Future<void> _deleteObjet(BuildContext context, ObjetPerdu objet) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Supprimer mon annonce'),
+        content: const Text('Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && objet.id != null) {
+      context.read<ObjetPerduBloc>().add(DeleteObjetPerdu(id: objet.id!));
+      AppSnackBar.showSuccess(context, "Annonce supprimée");
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (objet != null) return _buildPage(context, objet!);
@@ -35,7 +66,7 @@ class UserObjetDetailPage extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) return const SplashScreen();
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Erreur"), backgroundColor: AppColors.darkBlue),
+            appBar: AppBar(title: const Text("Erreur"), backgroundColor: AppColors.green),
             body: const Center(child: Text("Impossible de charger les détails")),
           );
         }
@@ -46,7 +77,7 @@ class UserObjetDetailPage extends StatelessWidget {
 
   Widget _buildPage(BuildContext context, ObjetPerdu currentObjet) {
     final bool isPerte = currentObjet.type == TypeAnnonce.PERTE;
-    final Color themeColor = isPerte ? AppColors.accentColor : AppColors.primaryColor;
+    const Color themeColor = AppColors.green;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
@@ -57,6 +88,7 @@ class UserObjetDetailPage extends StatelessWidget {
             pinned: true,
             backgroundColor: themeColor,
             elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
             leading: Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
@@ -67,6 +99,24 @@ class UserObjetDetailPage extends StatelessWidget {
                 ),
               ),
             ),
+            actions: [
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthAuthenticated) {
+                    final bool isOwner = state.user.id.toString() == currentObjet.userId?.toString();
+                    final bool isAdmin = state.user.role == Role.ADMIN;
+                    
+                    if (isOwner || isAdmin) {
+                      return IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.white),
+                        onPressed: () => _deleteObjet(context, currentObjet),
+                      );
+                    }
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: _buildHeaderImage(context, currentObjet, themeColor),
             ),

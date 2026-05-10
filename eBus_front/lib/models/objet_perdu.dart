@@ -33,13 +33,25 @@ class ObjetPerdu {
   });
 
   factory ObjetPerdu.fromJson(Map<String, dynamic> json) {
+    // Parsing robuste des IDs (supporte int ou String)
+    int? parsedId = json['id'] != null ? int.tryParse(json['id'].toString()) : null;
+    
+    int? parsedUserId;
+    if (json['userId'] != null) {
+      parsedUserId = int.tryParse(json['userId'].toString());
+    } else if (json['user_id'] != null) {
+      parsedUserId = int.tryParse(json['user_id'].toString());
+    } else if (json['user'] != null && json['user'] is Map) {
+      parsedUserId = int.tryParse(json['user']['id'].toString());
+    }
+
     return ObjetPerdu(
-      id: json['id'] as int?,
+      id: parsedId,
       nom: json['nom'] ?? 'Sans nom',
       busImmatriculation: json['busImmatriculation'] as String?,
       description: json['description'] ?? '',
-      ligneId: json['ligneId'] as int?, 
-      ligneNom: json['ligneNom'] as String?, // Alignement avec le Response DTO
+      ligneId: json['ligneId'] != null ? int.tryParse(json['ligneId'].toString()) : null, 
+      ligneNom: json['ligneNom'] as String?,
       contact: json['contact'],
       dateDeclaration: json['dateDeclaration'] != null
           ? DateTime.parse(json['dateDeclaration'])
@@ -47,7 +59,7 @@ class ObjetPerdu {
       statut: _parseStatut(json['statut']),
       type: _parseType(json['type']),
       userNom: json['userNom'] as String?,
-      userId: json['userId'] as int?,
+      userId: parsedUserId,
       imageUrl: json['imageUrl'] as String?,
     );
   }

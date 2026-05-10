@@ -59,7 +59,7 @@ class _AdminObjetDetailPageState extends State<AdminObjetDetailPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.green),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Confirmer', style: TextStyle(color: Colors.white)),
           ),
@@ -73,12 +73,41 @@ class _AdminObjetDetailPageState extends State<AdminObjetDetailPage> {
         UpdateObjetPerduStatus(id: objet.id!, newStatus: nouveauStatut.name),
       );
       
-      // Petit délai pour laisser le temps au backend de traiter
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         context.read<ObjetPerduBloc>().add(const LoadObjetsPerdus());
         AppSnackBar.showSuccess(context, "Statut mis à jour");
         setState(() => _isUpdating = false);
+      }
+    }
+  }
+
+  Future<void> _deleteObjet(ObjetPerdu objet) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Supprimer l\'annonce'),
+        content: const Text('Êtes-vous sûr de vouloir supprimer définitivement cet objet ? Cette action est irréversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && objet.id != null) {
+      setState(() => _isUpdating = true);
+      context.read<ObjetPerduBloc>().add(DeleteObjetPerdu(id: objet.id!));
+      
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        AppSnackBar.showSuccess(context, "Objet supprimé avec succès");
+        Navigator.pop(context);
       }
     }
   }
@@ -95,7 +124,7 @@ class _AdminObjetDetailPageState extends State<AdminObjetDetailPage> {
 
         if (currentObjet == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Détail Admin")),
+            appBar: AppBar(title: const Text("Détail Admin"), backgroundColor: AppColors.green),
             body: const Center(child: Text("Objet introuvable")),
           );
         }
@@ -107,7 +136,7 @@ class _AdminObjetDetailPageState extends State<AdminObjetDetailPage> {
 
   Widget _buildPage(BuildContext context, ObjetPerdu currentObjet) {
     final bool isPerte = currentObjet.type == TypeAnnonce.PERTE;
-    final Color themeColor = isPerte ? AppColors.accentColor : AppColors.primaryColor;
+    const Color themeColor = AppColors.green;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
@@ -118,6 +147,13 @@ class _AdminObjetDetailPageState extends State<AdminObjetDetailPage> {
             pinned: true,
             backgroundColor: themeColor,
             elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                onPressed: () => _deleteObjet(currentObjet),
+              ),
+            ],
             leading: Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
