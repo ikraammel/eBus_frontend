@@ -1000,7 +1000,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              "${ticket.prix.toStringAsFixed(0)} MAD",
+              "${ticket.prix} MAD",
               style: const TextStyle(
                   color: AppColors.green,
                   fontWeight: FontWeight.bold,
