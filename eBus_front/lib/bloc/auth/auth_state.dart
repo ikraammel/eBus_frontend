@@ -32,6 +32,15 @@ class AuthProfileUpdated extends AuthState {
   List<Object> get props => [user];
 }
 
+/// Émis après re-soumission réussie du dossier rejeté
+class AuthDossierResubmitted extends AuthState {
+  final User user;
+  AuthDossierResubmitted({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}
+
 class AuthFailure extends AuthState {
   final String error;
 

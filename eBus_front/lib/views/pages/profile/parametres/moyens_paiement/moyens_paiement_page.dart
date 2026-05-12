@@ -1,25 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_bloc.dart';
+import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
-
-// ─── Modèle local ────────────────────────────────────────────────────────────
-
-class _CardInfo {
-  String number;
-  String holder;
-  String expiry;
-  bool isMain;
-  int colorIndex;
-
-  _CardInfo({
-    required this.number,
-    required this.holder,
-    required this.expiry,
-    required this.isMain,
-    required this.colorIndex,
-  });
-}
-
+import 'package:smart_bus/models/bank_card.dart';
+import 'package:smart_bus/services/bank_card_service.dart';
 
 class MoyensPaiementPage extends StatefulWidget {
   const MoyensPaiementPage({super.key});
@@ -31,18 +17,17 @@ class MoyensPaiementPage extends StatefulWidget {
 class _MoyensPaiementPageState extends State<MoyensPaiementPage>
     with TickerProviderStateMixin {
   late AnimationController _listController;
+  final BankCardService _service = BankCardService();
 
-
-  final List<_CardInfo> _cards = [
-    _CardInfo(number: "4242", holder: "Mohamed Alami", expiry: "12/27", isMain: true,  colorIndex: 0),
-    _CardInfo(number: "8888", holder: "Mohamed Alami", expiry: "08/26", isMain: false, colorIndex: 1),
-  ];
+  List<BankCard> _cards = [];
+  bool _isLoading = true;
+  int? _userId;
 
   final List<List<Color>> _cardGradients = [
-    [const Color(0xFF1A367C), const Color(0xFF2A50B0)],   // bleu
-    [const Color(0xFF1B8A5A), const Color(0xFF8DC63F)],   // vert
-    [const Color(0xFF6A0DAD), const Color(0xFFAA60D9)],   // violet
-    [const Color(0xFFB5451B), const Color(0xFFE07040)],   // orange
+    [const Color(0xFF1A367C), const Color(0xFF2A50B0)],  // bleu
+    [const Color(0xFF1B8A5A), const Color(0xFF8DC63F)],  // vert
+    [const Color(0xFF6A0DAD), const Color(0xFFAA60D9)],  // violet
+    [const Color(0xFFB5451B), const Color(0xFFE07040)],  // orange
   ];
 
   @override
@@ -52,6 +37,7 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     )..forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCards());
   }
 
   @override
@@ -60,37 +46,91 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
     super.dispose();
   }
 
-  void _setMain(int index) {
-    setState(() {
-      for (int i = 0; i < _cards.length; i++) {
-        _cards[i].isMain = (i == index);
+  Future<void> _loadCards() async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+
+    final userId = authState.user.id;
+    _userId = userId;
+
+    try {
+      final cards = await _service.getCards(userId);
+      if (mounted) {
+        setState(() {
+          _cards = cards;
+          _isLoading = false;
+        });
+        _listController
+          ..reset()
+          ..forward();
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showError('Erreur de chargement des cartes');
+      }
+    }
   }
 
-  void _deleteCard(int index) {
-    showDialog(
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red[700]),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Future<void> _setMain(int index) async {
+    final card = _cards[index];
+    if (card.id == null) return;
+    try {
+      await _service.setMain(card.id!);
+      setState(() {
+        _cards = _cards
+            .map((c) => c.copyWith(isMain: c.id == card.id))
+            .toList();
+      });
+    } catch (_) {
+      _showError('Impossible de définir la carte principale');
+    }
+  }
+
+  Future<void> _deleteCard(int index) async {
+    final card = _cards[index];
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text("Supprimer la carte"),
-        content: Text("Voulez-vous supprimer la carte se terminant par ${_cards[index].number} ?"),
+        content: Text(
+            "Voulez-vous supprimer la carte se terminant par ${card.last4} ?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Annuler")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Annuler")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() => _cards.removeAt(index));
-            },
-            child: const Text("Supprimer", style: TextStyle(color: Colors.white)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Supprimer",
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
+    if (confirm != true) return;
+
+    try {
+      await _service.deleteCard(card.id!);
+      await _loadCards(); // recharger pour récupérer la nouvelle principale
+    } catch (_) {
+      _showError('Impossible de supprimer la carte');
+    }
   }
 
-  void _openCardForm({_CardInfo? existing, int? existingIndex}) {
+  void _openCardForm({BankCard? existing}) {
+    if (_userId == null) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -98,19 +138,26 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
       builder: (ctx) => _CardFormSheet(
         card: existing,
         gradients: _cardGradients,
-        onSave: (card) {
-          setState(() {
-            if (existingIndex != null) {
-              _cards[existingIndex] = card;
+        userId: _userId!,
+        onSave: (card) async {
+          try {
+            if (existing?.id != null) {
+              await _service.updateCard(existing!.id!, card);
             } else {
-              if (_cards.isEmpty) card.isMain = true;
-              _cards.add(card);
+              await _service.addCard(card);
             }
-          });
+            await _loadCards();
+          } catch (e) {
+            _showError(e.toString().replaceFirst('Exception: ', ''));
+          }
         },
       ),
     );
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Build
+  // ─────────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -120,15 +167,18 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
         backgroundColor: AppColors.darkBlue,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text("Mes cartes bancaires",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             onPressed: () => _openCardForm(),
-            icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 28),
+            icon: const Icon(Icons.add_circle_outline_rounded,
+                color: Colors.white, size: 28),
             tooltip: "Ajouter une carte",
           ),
         ],
@@ -141,27 +191,36 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             decoration: const BoxDecoration(
               color: AppColors.darkBlue,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+              borderRadius:
+                  BorderRadius.vertical(bottom: Radius.circular(28)),
             ),
             child: Text(
-              "${_cards.length} carte${_cards.length > 1 ? 's' : ''} enregistrée${_cards.length > 1 ? 's' : ''}",
-              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+              _isLoading
+                  ? "Chargement..."
+                  : "${_cards.length} carte${_cards.length > 1 ? 's' : ''} enregistrée${_cards.length > 1 ? 's' : ''}",
+              style:
+                  TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
             ),
           ),
 
           Expanded(
-            child: _cards.isEmpty
-                ? _buildEmpty()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: _cards.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == _cards.length) {
-                        return _buildAddButton();
-                      }
-                      return _buildCardTile(index);
-                    },
-                  ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _cards.isEmpty
+                    ? _buildEmpty()
+                    : RefreshIndicator(
+                        onRefresh: _loadCards,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(20),
+                          itemCount: _cards.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == _cards.length) {
+                              return _buildAddButton();
+                            }
+                            return _buildCardTile(index);
+                          },
+                        ),
+                      ),
           ),
         ],
       ),
@@ -180,15 +239,13 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
           end: Offset.zero,
         ).animate(CurvedAnimation(
           parent: _listController,
-          curve: Interval(index * 0.15, 1.0, curve: Curves.easeOut),
+          curve:
+              Interval(index * 0.15, 1.0, curve: Curves.easeOut),
         )),
-        child: FadeTransition(
-          opacity: _listController,
-          child: child,
-        ),
+        child: FadeTransition(opacity: _listController, child: child),
       ),
       child: GestureDetector(
-        onTap: () => _openCardForm(existing: card, existingIndex: index),
+        onTap: () => _openCardForm(existing: card),
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
           height: 190,
@@ -211,11 +268,9 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
             children: [
               // Pattern décoratif
               Positioned(
-                top: -30,
-                right: -30,
+                top: -30, right: -30,
                 child: Container(
-                  width: 140,
-                  height: 140,
+                  width: 140, height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.06),
@@ -223,11 +278,9 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
                 ),
               ),
               Positioned(
-                bottom: -20,
-                left: 30,
+                bottom: -20, left: 30,
                 child: Container(
-                  width: 100,
-                  height: 100,
+                  width: 100, height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.04),
@@ -240,14 +293,14 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header: chip type + badge principal + actions
                     Row(
                       children: [
                         _buildChipIcon(),
                         const Spacer(),
                         if (card.isMain)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 3),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -255,22 +308,22 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.star_rounded, color: Colors.amber, size: 14),
+                                Icon(Icons.star_rounded,
+                                    color: Colors.amber, size: 14),
                                 SizedBox(width: 4),
                                 Text("Principale",
-                                    style: TextStyle(color: Colors.white, fontSize: 11)),
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 11)),
                               ],
                             ),
                           ),
                         const SizedBox(width: 8),
-                        // Menu contextuel
                         _buildCardMenu(index),
                       ],
                     ),
                     const Spacer(),
-                    // Numéro masqué
                     Text(
-                      "•••• •••• •••• ${card.number}",
+                      "•••• •••• •••• ${card.last4}",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -279,7 +332,6 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // Titulaire et expiration
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -300,27 +352,39 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
 
   Widget _buildCardMenu(int index) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
+      icon: const Icon(Icons.more_vert_rounded,
+          color: Colors.white, size: 20),
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: (value) {
-        if (value == 'edit')   _openCardForm(existing: _cards[index], existingIndex: index);
-        if (value == 'main')   _setMain(index);
+        if (value == 'edit') _openCardForm(existing: _cards[index]);
+        if (value == 'main') _setMain(index);
         if (value == 'delete') _deleteCard(index);
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'edit',   child: _MenuItem(icon: Icons.edit_outlined,         label: "Modifier")),
+        const PopupMenuItem(
+            value: 'edit',
+            child: _MenuItem(
+                icon: Icons.edit_outlined, label: "Modifier")),
         if (!_cards[index].isMain)
-          const PopupMenuItem(value: 'main', child: _MenuItem(icon: Icons.star_outline_rounded,  label: "Définir principale")),
-        const PopupMenuItem(value: 'delete', child: _MenuItem(icon: Icons.delete_outline_rounded, label: "Supprimer", isRed: true)),
+          const PopupMenuItem(
+              value: 'main',
+              child: _MenuItem(
+                  icon: Icons.star_outline_rounded,
+                  label: "Définir principale")),
+        const PopupMenuItem(
+            value: 'delete',
+            child: _MenuItem(
+                icon: Icons.delete_outline_rounded,
+                label: "Supprimer",
+                isRed: true)),
       ],
     );
   }
 
   Widget _buildChipIcon() {
     return Container(
-      width: 40,
-      height: 28,
+      width: 40, height: 28,
       decoration: BoxDecoration(
         color: Colors.amber.withOpacity(0.8),
         borderRadius: BorderRadius.circular(6),
@@ -329,13 +393,15 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
     );
   }
 
-  Widget _buildCardLabel(String label, String value, {bool isVisa = false}) {
+  Widget _buildCardLabel(String label, String value,
+      {bool isVisa = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label.isNotEmpty)
           Text(label,
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10)),
+              style: TextStyle(
+                  color: Colors.white.withOpacity(0.6), fontSize: 10)),
         const SizedBox(height: 2),
         Text(
           value,
@@ -360,15 +426,13 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppColors.darkBlue.withOpacity(0.2),
-            style: BorderStyle.solid,
-          ),
+              color: AppColors.darkBlue.withOpacity(0.2),
+              style: BorderStyle.solid),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
@@ -380,16 +444,16 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
                 shape: BoxShape.circle,
                 color: AppColors.darkBlue.withOpacity(0.08),
               ),
-              child: const Icon(Icons.add_rounded, color: AppColors.darkBlue, size: 22),
+              child: const Icon(Icons.add_rounded,
+                  color: AppColors.darkBlue, size: 22),
             ),
             const SizedBox(width: 10),
             const Text(
               "Ajouter une nouvelle carte",
               style: TextStyle(
-                color: AppColors.darkBlue,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-              ),
+                  color: AppColors.darkBlue,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15),
             ),
           ],
         ),
@@ -413,10 +477,12 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
           ),
           const SizedBox(height: 20),
           const Text("Aucune carte enregistrée",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              style:
+                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text("Ajoutez une carte pour faciliter vos paiements",
-              style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+              style:
+                  TextStyle(color: Colors.grey[600], fontSize: 14)),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () => _openCardForm(),
@@ -425,8 +491,10 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.darkBlue,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -435,37 +503,20 @@ class _MoyensPaiementPageState extends State<MoyensPaiementPage>
   }
 }
 
-
-
-class _MenuItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isRed;
-  const _MenuItem({required this.icon, required this.label, this.isRed = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isRed ? Colors.red : Colors.grey[800]!;
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 18),
-        const SizedBox(width: 10),
-        Text(label, style: TextStyle(color: color)),
-      ],
-    );
-  }
-}
-
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Formulaire (BottomSheet)
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _CardFormSheet extends StatefulWidget {
-  final _CardInfo? card;
+  final BankCard? card;
   final List<List<Color>> gradients;
-  final void Function(_CardInfo card) onSave;
+  final int userId;
+  final Future<void> Function(BankCard card) onSave;
 
   const _CardFormSheet({
     this.card,
     required this.gradients,
+    required this.userId,
     required this.onSave,
   });
 
@@ -483,18 +534,21 @@ class _CardFormSheetState extends State<_CardFormSheet> {
   late int _colorIndex;
   late bool _isMain;
   bool _showCvv = false;
+  bool _saving = false;
 
   bool get _isEditing => widget.card != null;
 
   @override
   void initState() {
     super.initState();
-    _numberCtrl = TextEditingController(text: _isEditing ? '•••• •••• •••• ${widget.card!.number}' : '');
-    _holderCtrl = TextEditingController(text: widget.card?.holder ?? '');
-    _expiryCtrl = TextEditingController(text: widget.card?.expiry ?? '');
-    _cvvCtrl    = TextEditingController();
+    _numberCtrl = TextEditingController();
+    _holderCtrl =
+        TextEditingController(text: widget.card?.holder ?? '');
+    _expiryCtrl =
+        TextEditingController(text: widget.card?.expiry ?? '');
+    _cvvCtrl = TextEditingController();
     _colorIndex = widget.card?.colorIndex ?? 0;
-    _isMain     = widget.card?.isMain ?? false;
+    _isMain = widget.card?.isMain ?? false;
   }
 
   @override
@@ -508,27 +562,39 @@ class _CardFormSheetState extends State<_CardFormSheet> {
 
   String _extractLast4(String input) {
     final digits = input.replaceAll(RegExp(r'\D'), '');
-    return digits.length >= 4 ? digits.substring(digits.length - 4) : digits;
+    return digits.length >= 4
+        ? digits.substring(digits.length - 4)
+        : digits;
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final card = _CardInfo(
-      number:     _isEditing ? widget.card!.number : _extractLast4(_numberCtrl.text),
-      holder:     _holderCtrl.text.trim().toUpperCase(),
-      expiry:     _expiryCtrl.text.trim(),
-      isMain:     _isMain,
+    setState(() => _saving = true);
+
+    final card = BankCard(
+      id: widget.card?.id,
+      last4: _isEditing
+          ? widget.card!.last4
+          : _extractLast4(_numberCtrl.text),
+      holder: _holderCtrl.text.trim().toUpperCase(),
+      expiry: _expiryCtrl.text.trim(),
+      isMain: _isMain,
       colorIndex: _colorIndex,
+      userId: widget.userId,
     );
 
-    widget.onSave(card);
-    Navigator.pop(context);
+    await widget.onSave(card);
+    if (mounted) {
+      setState(() => _saving = false);
+      Navigator.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final gradColors = widget.gradients[_colorIndex % widget.gradients.length];
+    final gradColors =
+        widget.gradients[_colorIndex % widget.gradients.length];
 
     return Container(
       decoration: const BoxDecoration(
@@ -550,8 +616,7 @@ class _CardFormSheetState extends State<_CardFormSheet> {
               // Handle
               Center(
                 child: Container(
-                  width: 36,
-                  height: 4,
+                  width: 36, height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(4),
@@ -559,10 +624,12 @@ class _CardFormSheetState extends State<_CardFormSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-
               Text(
-                _isEditing ? "Modifier la carte" : "Nouvelle carte bancaire",
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                _isEditing
+                    ? "Modifier la carte"
+                    : "Nouvelle carte bancaire",
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
@@ -571,18 +638,19 @@ class _CardFormSheetState extends State<_CardFormSheet> {
               ),
               const SizedBox(height: 24),
 
-              // Aperçu de la carte
+              // Aperçu
               _buildCardPreview(gradColors),
               const SizedBox(height: 24),
 
-              // Couleur de la carte
+              // Couleur
               const Text("Couleur de la carte",
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 13)),
               const SizedBox(height: 10),
               _buildColorPicker(),
               const SizedBox(height: 20),
 
-              // Numéro de carte
+              // Numéro (ajout uniquement)
               if (!_isEditing) ...[
                 _buildLabel("Numéro de carte"),
                 _buildField(
@@ -596,7 +664,9 @@ class _CardFormSheetState extends State<_CardFormSheet> {
                   ],
                   validator: (v) {
                     final digits = v?.replaceAll(' ', '') ?? '';
-                    if (digits.length < 16) return "Numéro invalide (16 chiffres requis)";
+                    if (digits.length < 16) {
+                      return "Numéro invalide (16 chiffres requis)";
+                    }
                     return null;
                   },
                 ),
@@ -617,7 +687,6 @@ class _CardFormSheetState extends State<_CardFormSheet> {
 
               Row(
                 children: [
-                  // Expiration
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,16 +701,15 @@ class _CardFormSheetState extends State<_CardFormSheet> {
                             FilteringTextInputFormatter.digitsOnly,
                             _ExpiryFormatter(),
                           ],
-                          validator: (v) {
-                            if (v == null || v.length < 5) return "Format MM/YY";
-                            return null;
-                          },
+                          validator: (v) =>
+                              (v == null || v.length < 5)
+                                  ? "Format MM/YY"
+                                  : null,
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 14),
-                  // CVV
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,14 +727,18 @@ class _CardFormSheetState extends State<_CardFormSheet> {
                           ],
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _showCvv ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              _showCvv
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                               size: 18,
                               color: Colors.grey,
                             ),
-                            onPressed: () => setState(() => _showCvv = !_showCvv),
+                            onPressed: () =>
+                                setState(() => _showCvv = !_showCvv),
                           ),
                           validator: (v) {
-                            if (!_isEditing && (v == null || v.length < 3)) {
+                            if (!_isEditing &&
+                                (v == null || v.length < 3)) {
                               return "3-4 chiffres";
                             }
                             return null;
@@ -689,9 +761,11 @@ class _CardFormSheetState extends State<_CardFormSheet> {
                   value: _isMain,
                   onChanged: (v) => setState(() => _isMain = v),
                   title: const Text("Définir comme carte principale",
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                      style: TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w500)),
                   activeColor: AppColors.darkBlue,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 4),
                 ),
               ),
               const SizedBox(height: 24),
@@ -700,15 +774,26 @@ class _CardFormSheetState extends State<_CardFormSheet> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _save,
-                  icon: Icon(_isEditing ? Icons.save_outlined : Icons.add_card_rounded),
-                  label: Text(_isEditing ? "Enregistrer les modifications" : "Ajouter la carte"),
+                  onPressed: _saving ? null : _save,
+                  icon: _saving
+                      ? const SizedBox(
+                          width: 18, height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Icon(_isEditing
+                          ? Icons.save_outlined
+                          : Icons.add_card_rounded),
+                  label: Text(_isEditing
+                      ? "Enregistrer les modifications"
+                      : "Ajouter la carte"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.darkBlue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    textStyle: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
                     elevation: 0,
                   ),
                 ),
@@ -721,11 +806,15 @@ class _CardFormSheetState extends State<_CardFormSheet> {
   }
 
   Widget _buildCardPreview(List<Color> colors) {
-    final number  = _isEditing
-        ? "•••• •••• •••• ${widget.card!.number}"
-        : (_numberCtrl.text.isEmpty ? "•••• •••• •••• ••••" : _numberCtrl.text.padRight(19, '•'));
-    final holder  = _holderCtrl.text.isEmpty ? "TITULAIRE" : _holderCtrl.text.toUpperCase();
-    final expiry  = _expiryCtrl.text.isEmpty ? "MM/YY"     : _expiryCtrl.text;
+    final number = _isEditing
+        ? "•••• •••• •••• ${widget.card!.last4}"
+        : (_numberCtrl.text.isEmpty
+            ? "•••• •••• •••• ••••"
+            : _numberCtrl.text.padRight(19, '•'));
+    final holder =
+        _holderCtrl.text.isEmpty ? "TITULAIRE" : _holderCtrl.text.toUpperCase();
+    final expiry =
+        _expiryCtrl.text.isEmpty ? "MM/YY" : _expiryCtrl.text;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -739,10 +828,9 @@ class _CardFormSheetState extends State<_CardFormSheet> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: colors[0].withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
+              color: colors[0].withOpacity(0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 6)),
         ],
       ),
       padding: const EdgeInsets.all(20),
@@ -752,8 +840,7 @@ class _CardFormSheetState extends State<_CardFormSheet> {
           Row(
             children: [
               Container(
-                width: 34,
-                height: 24,
+                width: 34, height: 24,
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(4),
@@ -762,46 +849,44 @@ class _CardFormSheetState extends State<_CardFormSheet> {
               const Spacer(),
               const Text("VISA",
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: 1.5,
-                  )),
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: 1.5)),
             ],
           ),
           const Spacer(),
           Text(number,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                letterSpacing: 2.5,
-                fontWeight: FontWeight.w500,
-              )),
+                  color: Colors.white,
+                  fontSize: 16,
+                  letterSpacing: 2.5,
+                  fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("TITULAIRE",
-                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9)),
-                  Text(holder,
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("EXPIRE",
-                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9)),
-                  Text(expiry,
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                ],
-              ),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text("TITULAIRE",
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.6), fontSize: 9)),
+                Text(holder,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+              ]),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text("EXPIRE",
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.6), fontSize: 9)),
+                Text(expiry,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+              ]),
             ],
           ),
         ],
@@ -822,16 +907,22 @@ class _CardFormSheetState extends State<_CardFormSheet> {
             height: selected ? 36 : 30,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(colors: widget.gradients[i]),
+              gradient:
+                  LinearGradient(colors: widget.gradients[i]),
               border: selected
                   ? Border.all(color: Colors.white, width: 3)
                   : null,
               boxShadow: selected
-                  ? [BoxShadow(color: widget.gradients[i][0].withOpacity(0.5), blurRadius: 8)]
+                  ? [
+                      BoxShadow(
+                          color: widget.gradients[i][0].withOpacity(0.5),
+                          blurRadius: 8)
+                    ]
                   : null,
             ),
             child: selected
-                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                ? const Icon(Icons.check_rounded,
+                    color: Colors.white, size: 16)
                 : null,
           ),
         );
@@ -843,7 +934,8 @@ class _CardFormSheetState extends State<_CardFormSheet> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(text,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          style: const TextStyle(
+              fontWeight: FontWeight.w600, fontSize: 13)),
     );
   }
 
@@ -879,7 +971,8 @@ class _CardFormSheetState extends State<_CardFormSheet> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.darkBlue, width: 1.5),
+          borderSide:
+              const BorderSide(color: AppColors.darkBlue, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -889,20 +982,49 @@ class _CardFormSheetState extends State<_CardFormSheet> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 14, horizontal: 14),
       ),
     );
   }
 }
 
-// ─── Formatters ──────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Widgets helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MenuItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isRed;
+  const _MenuItem(
+      {required this.icon, required this.label, this.isRed = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isRed ? Colors.red : Colors.grey[800]!;
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 10),
+        Text(label, style: TextStyle(color: color)),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Formatters
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _CardNumberFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue old, TextEditingValue newValue) {
     final digits = newValue.text.replaceAll(' ', '');
-    final limited = digits.length > 16 ? digits.substring(0, 16) : digits;
-    final buffer  = StringBuffer();
+    final limited =
+        digits.length > 16 ? digits.substring(0, 16) : digits;
+    final buffer = StringBuffer();
     for (int i = 0; i < limited.length; i++) {
       if (i > 0 && i % 4 == 0) buffer.write(' ');
       buffer.write(limited[i]);
@@ -917,10 +1039,12 @@ class _CardNumberFormatter extends TextInputFormatter {
 
 class _ExpiryFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue old, TextEditingValue newValue) {
     final digits = newValue.text.replaceAll('/', '');
-    final limited = digits.length > 4 ? digits.substring(0, 4) : digits;
-    final buffer  = StringBuffer();
+    final limited =
+        digits.length > 4 ? digits.substring(0, 4) : digits;
+    final buffer = StringBuffer();
     for (int i = 0; i < limited.length; i++) {
       if (i == 2) buffer.write('/');
       buffer.write(limited[i]);
@@ -932,4 +1056,3 @@ class _ExpiryFormatter extends TextInputFormatter {
     );
   }
 }
-

@@ -16,10 +16,10 @@ class TicketService {
       final res = await _dio.get('/tickets');
       if (res.statusCode == 200) {
         // Gestion robuste si les données sont dans un champ 'data' ou directes
-        final List rawData = (res.data is List) 
-            ? res.data 
-            : (res.data is Map && res.data.containsKey('data')) 
-                ? res.data['data'] 
+        final List rawData = (res.data is List)
+            ? res.data
+            : (res.data is Map && res.data.containsKey('data'))
+                ? res.data['data']
                 : [];
         return rawData.map((e) => Ticket.fromJson(e)).toList();
       }
@@ -64,10 +64,10 @@ class TicketService {
     try {
       final res = await _dio.get('/types-abonnement');
       if (res.statusCode == 200) {
-        final List rawData = (res.data is List) 
-            ? res.data 
-            : (res.data is Map && res.data.containsKey('data')) 
-                ? res.data['data'] 
+        final List rawData = (res.data is List)
+            ? res.data
+            : (res.data is Map && res.data.containsKey('data'))
+                ? res.data['data']
                 : [];
         return rawData.map((e) => TypeAbonnement.fromJson(e)).toList();
       }
@@ -119,8 +119,21 @@ class TicketService {
       final url = res.data.toString();
       return url.startsWith('http') ? url : null;
     } on DioException catch (e) {
-      final msg = e.response?.data?.toString() ?? "Erreur réseau";
-      throw Exception(msg);
+
+        final msg = e.response?.data?.toString() ?? "Erreur réseau";
+
+        // dossier rejeté
+        if(msg.contains("rejeté")){
+          throw Exception("DOSSIER_REJETE");
+        }
+
+        // dossier attente
+        if(msg.contains("attente")){
+          throw Exception("DOSSIER_EN_ATTENTE");
+        }
+
+        throw Exception(msg);
+
     } catch (e) {
       rethrow;
     }

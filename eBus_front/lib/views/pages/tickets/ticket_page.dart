@@ -8,6 +8,8 @@ import 'package:smart_bus/models/ticket.dart';
 import 'package:smart_bus/models/type_abonnement.dart';
 import 'package:smart_bus/services/ticket_service.dart';
 import 'package:smart_bus/views/UI/splash_screen.dart';
+import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos.dart';
+import 'package:smart_bus/services/dossier_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TicketPage extends StatefulWidget {
@@ -21,6 +23,7 @@ class TicketPage extends StatefulWidget {
 
 class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
   final TicketService _service = TicketService();
+  final DossierService _dossierService = DossierService();
 
   late Future<List<dynamic>> _offersFuture;
   Future<Abonnement?>? _currentAboFuture;
@@ -163,38 +166,219 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
   }
 
   Future<void> _handleSubscribe(TypeAbonnement item) async {
-    final userId =
-        (context.read<AuthBloc>().state as AuthAuthenticated).user.id;
+    final authState = context.read<AuthBloc>().state;
+
+    if (authState is! AuthAuthenticated) return;
+
+    final user = authState.user;
+
+
+    final dossier = await _dossierService.getMyDossier(user.id);
+    final statusDossier = dossier?.statusDossier ?? user.statusDossier ?? "";
+
+    // 🚨 DOSSIER REJETÉ
+    if (statusDossier == "REJETE") {
+      await showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red.withOpacity(0.1),
+                  ),
+                  child: const Icon(
+                    Icons.cancel_rounded,
+                    color: Colors.red,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Dossier rejeté",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Votre dossier a été rejeté. Veuillez mettre à jour vos informations et documents.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text("Annuler"),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PersonalInfos(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text(
+                          "Mettre à jour",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // 🚨 DOSSIER EN ATTENTE
+    if (statusDossier == "EN_ATTENTE" ||
+        statusDossier == "EN_COURS") {
+      showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.orange.withOpacity(0.1),
+                  ),
+                  child: const Icon(
+                    Icons.hourglass_top_rounded,
+                    color: Colors.orange,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Dossier en attente",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Votre dossier est en cours de traitement.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: const Text(
+                      "Compris",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      return;
+    }
+
+
+
+
+    if (statusDossier != "VALIDE") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Votre dossier doit être validé avant abonnement.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      return;
+    }
+
+
     final confirmed = await _showConfirmDialog(item);
+
     if (confirmed != true) return;
 
     setState(() => _isLoading = true);
+
     try {
-      final stripeUrl = await _service.subscribe(userId, item.id!);
-      if (stripeUrl != null && stripeUrl.startsWith('http')) {
-        final Uri url = Uri.parse(stripeUrl);
+      final stripeUrl = await _service.subscribe(
+        user.id,
+        item.id!,
+      );
+
+      if (stripeUrl != null &&
+          stripeUrl.startsWith('http')) {
         await launchUrl(
-          url,
+          Uri.parse(stripeUrl),
           mode: LaunchMode.externalApplication,
         );
       } else {
         throw Exception("URL invalide");
       }
     } catch (e) {
-      if (mounted) {
-        // Afficher le message métier (ex: "Vous avez déjà un abonnement actif")
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceFirst("Exception: ", "")),
-            backgroundColor: Colors.red[700],
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst("Exception: ", ""),
           ),
-        );
-      }
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
-
   Future<bool?> _showConfirmDialog(TypeAbonnement item) {
     return showDialog<bool>(
       context: context,
@@ -467,7 +651,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
           const SizedBox(height: 4),
         ],
 
-        // ── Abonnement actif courant ────────────────────────────────────────
+
         if (!isGuest && _currentAboFuture != null)
           FutureBuilder<Abonnement?>(
             future: _currentAboFuture,
@@ -484,13 +668,13 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
             },
           ),
 
-        // ── Offres disponibles ─────────────────────────────────────────────
+
         if (items.isEmpty)
           _buildEmpty("Aucun abonnement disponible")
         else
           ...items.map((item) => _buildAbonnementCard(item, isGuest)),
 
-        // ── Historique ─────────────────────────────────────────────────────
+
         if (!isGuest && _historiqueFuture != null) ...[
           const SizedBox(height: 8),
           _buildHistoriqueSection(),
@@ -499,7 +683,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
     );
   }
 
-  /// Bannière verte/orange/rouge indiquant l'état de l'abonnement courant
+
   Widget _buildCurrentAbonnementBanner(Abonnement abo) {
     Color color;
     IconData icon;

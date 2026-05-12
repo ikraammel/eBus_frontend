@@ -17,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     on<AuthRegisterRequested>(_onRegisterRequested);
     on<AuthUpdateUserRequested>(_onUpdateUserRequested);
     on<AuthUpdateAvatarRequested>(_onUpdateAvatarRequested);
+    on<AuthResubmitDossierRequested>(_onResubmitDossierRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthDeleteUserRequested>(_onDeleteUserRequested);
     on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
@@ -111,6 +112,52 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     }
   }
 
+  /// Re-soumettre le dossier après rejet :
+  /// 1. Met à jour les infos perso (nom, prenom, email, tel, adresse, dateNaissance)
+  /// 2. Upload la nouvelle photo CIN si fournie
+  /// 3. Upload la nouvelle carte scolaire si fournie
+  /// 4. Remet le statut du dossier à EN_ATTENTE via resubmitDossier
+  Future<void> _onResubmitDossierRequested(
+      AuthResubmitDossierRequested event,
+      Emitter<AuthState> emit,
+      ) async {
+    emit(AuthLoading());
+    try {
+      // 1. Mettre à jour les infos perso si changées
+      final Map<String, dynamic> data = {};
+      if (event.nom != null) data['nom'] = event.nom;
+      if (event.prenom != null) data['prenom'] = event.prenom;
+      if (event.email != null) data['email'] = event.email;
+      if (event.tel != null) data['tel'] = event.tel;
+      if (event.adresse != null) data['adresse'] = event.adresse;
+      if (event.dateNaissance != null) data['dateNaissance'] = event.dateNaissance;
+
+      User updatedUser;
+      if (data.isNotEmpty) {
+        updatedUser = await _authService.updateUser(event.userId, data);
+      } else {
+        updatedUser = (await _localStorageService.getUser())!;
+      }
+
+      // 2. Re-soumettre le dossier (CIN + carte scolaire optionnels)
+      updatedUser = await _authService.resubmitDossier(
+        userId: event.userId,
+        newCinFile: event.newCinFile,
+        newCarteScolaireFile: event.newCarteScolaireFile,
+      );
+
+      await _localStorageService.saveUser(updatedUser);
+      emit(AuthDossierResubmitted(user: updatedUser));
+      emit(AuthAuthenticated(user: updatedUser));
+    } catch (e) {
+      final currentUser = await _localStorageService.getUser();
+      emit(AuthFailure(error: e.toString()));
+      if (currentUser != null) {
+        emit(AuthAuthenticated(user: currentUser));
+      }
+    }
+  }
+
   Future<void> _onLogoutRequested(AuthLogoutRequested event,
       Emitter<AuthState> emit,) async {
     await _localStorageService.logout();
@@ -136,7 +183,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     emit(AuthLoading());
     try {
       final message = await _authService.forgotPassword(event.email);
-      emit(ForgotPasswordSuccess(token: message)); // Note: existing state uses 'token' property for the message/token
+      emit(ForgotPasswordSuccess(token: message));
     } catch (e) {
       emit(AuthFailure(error: e.toString()));
     }

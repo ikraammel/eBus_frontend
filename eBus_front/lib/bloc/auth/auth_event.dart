@@ -67,6 +67,34 @@ class AuthUpdateAvatarRequested extends AuthEvent {
   List<Object?> get props => [id, photo];
 }
 
+/// Resoumettre le dossier après rejet : met à jour infos + photos CIN + carte scolaire
+class AuthResubmitDossierRequested extends AuthEvent {
+  final int userId;
+  final String? nom;
+  final String? prenom;
+  final String? email;
+  final String? tel;
+  final String? adresse;
+  final String? dateNaissance;
+  final XFile? newCinFile;
+  final XFile? newCarteScolaireFile;
+
+  AuthResubmitDossierRequested({
+    required this.userId,
+    this.nom,
+    this.prenom,
+    this.email,
+    this.tel,
+    this.adresse,
+    this.dateNaissance,
+    this.newCinFile,
+    this.newCarteScolaireFile,
+  });
+
+  @override
+  List<Object?> get props => [userId, nom, prenom, email, tel, adresse, dateNaissance, newCinFile, newCarteScolaireFile];
+}
+
 class AuthLogoutRequested extends AuthEvent{}
 
 class AuthDeleteUserRequested extends AuthEvent{
