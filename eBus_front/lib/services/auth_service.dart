@@ -107,6 +107,7 @@ class AuthService {
       throw Exception("Erreur inattendue: ${e.toString()}");
     }
   }
+
   Future<bool> isLoggedIn() async {
     return true;
   }
@@ -132,8 +133,8 @@ class AuthService {
         }
       }
       throw Exception("Erreur lors de la connexion");
-        }
-      }
+    }
+  }
 
   Future<User> updateAvatar(int id, XFile photo) async {
     try {
@@ -157,21 +158,63 @@ class AuthService {
     }
   }
 
-      Future<void> deleteUser(int id) async{
-        try{
-          await _dio.delete(
-            '/users/$id',
-          );
-        }on DioException catch(e){
-          if(e.response != null && e.response!.data != null){
-            final data = e.response!.data;
+  /// Re-soumettre le dossier après rejet.
+  /// Envoie les nouvelles photos CIN et/ou carte scolaire si fournies.
+  /// Le backend remet le statusDossier à EN_ATTENTE.
+  Future<User> resubmitDossier({
+    required int userId,
+    XFile? newCinFile,
+    XFile? newCarteScolaireFile,
+  }) async {
+    try {
+      final Map<String, dynamic> fields = {};
 
-            if(data is String){
-              throw Exception(data);
-            }
-          }
+      if (newCinFile != null) {
+        fields['cinPhoto'] = await MultipartFile.fromFile(
+          newCinFile.path,
+          filename: newCinFile.name,
+        );
+      }
+      if (newCarteScolaireFile != null) {
+        fields['carteScolaire'] = await MultipartFile.fromFile(
+          newCarteScolaireFile.path,
+          filename: newCarteScolaireFile.name,
+        );
+      }
+
+      FormData formData = FormData.fromMap(fields);
+
+      final response = await _dio.patch(
+        '/users/resubmit-dossier/$userId',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      return User.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.data != null) {
+        final data = e.response!.data;
+        if (data is String) throw Exception(data);
+        if (data is Map && data.containsKey('message')) throw Exception(data['message']);
+      }
+      throw Exception("Erreur lors de la re-soumission du dossier");
+    }
+  }
+
+  Future<void> deleteUser(int id) async{
+    try{
+      await _dio.delete(
+        '/users/$id',
+      );
+    }on DioException catch(e){
+      if(e.response != null && e.response!.data != null){
+        final data = e.response!.data;
+
+        if(data is String){
+          throw Exception(data);
         }
       }
+    }
+  }
 
   Future<String> verifyResetCode(String email, String code) async {
     try {

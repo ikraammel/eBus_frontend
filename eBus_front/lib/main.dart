@@ -53,9 +53,6 @@ import 'bloc/dashboard/dashboard_event.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 
-import 'bloc/horaire/horaire_bloc.dart';
-
-
 final getIt = GetIt.instance;
 
 Future<void> initialDependencies() async {
@@ -72,10 +69,9 @@ Future<void> main() async {
 
   await initialDependencies();
 
-  await Firebase.initializeApp();
 
-  print("APP NAME: ${Firebase.app().name}");
-  print("PROJECT: ${Firebase.app().options.projectId}");
+    await Firebase.initializeApp();
+
 
   final db = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
