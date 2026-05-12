@@ -35,7 +35,7 @@ class AdminDossierService {
   // Rejeter un dossier
   Future<void> rejeterDossier(int id,String reason) async {
     try {
-      await _dio.patch(
+      await _dio.post(
           '/admin/dossiers/$id/rejeter',
         data: {
           "rejectionReason": reason,
