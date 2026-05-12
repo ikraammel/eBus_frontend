@@ -123,7 +123,6 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
       ) async {
     emit(AuthLoading());
     try {
-      // 1. Mettre à jour les infos perso si changées
       final Map<String, dynamic> data = {};
       if (event.nom != null) data['nom'] = event.nom;
       if (event.prenom != null) data['prenom'] = event.prenom;
@@ -131,6 +130,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
       if (event.tel != null) data['tel'] = event.tel;
       if (event.adresse != null) data['adresse'] = event.adresse;
       if (event.dateNaissance != null) data['dateNaissance'] = event.dateNaissance;
+      if (event.cin != null) data['cin'] = event.cin; // ← AJOUTÉ
 
       User updatedUser;
       if (data.isNotEmpty) {
@@ -139,9 +139,9 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
         updatedUser = (await _localStorageService.getUser())!;
       }
 
-      // 2. Re-soumettre le dossier (CIN + carte scolaire optionnels)
       updatedUser = await _authService.resubmitDossier(
         userId: event.userId,
+        newPhotoFile: event.newPhotoFile,
         newCinFile: event.newCinFile,
         newCarteScolaireFile: event.newCarteScolaireFile,
       );
@@ -152,9 +152,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
     } catch (e) {
       final currentUser = await _localStorageService.getUser();
       emit(AuthFailure(error: e.toString()));
-      if (currentUser != null) {
-        emit(AuthAuthenticated(user: currentUser));
-      }
+      if (currentUser != null) emit(AuthAuthenticated(user: currentUser));
     }
   }
 

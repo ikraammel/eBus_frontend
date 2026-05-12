@@ -9,8 +9,6 @@ import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal
 import '../../../../bloc/auth/auth_bloc.dart';
 import '../../../../bloc/auth/auth_event.dart';
 import '../../../../bloc/auth/auth_state.dart';
-import '../../../../main.dart';
-import '../../../../services/local_storage_service.dart';
 import '../../../UI/splash_screen.dart';
 import '../../profile/header_page.dart';
 import '../../profile/parametres/change_password/change_password_page.dart';

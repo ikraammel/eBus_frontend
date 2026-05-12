@@ -76,6 +76,8 @@ class AuthResubmitDossierRequested extends AuthEvent {
   final String? tel;
   final String? adresse;
   final String? dateNaissance;
+  final String? cin;
+  final XFile? newPhotoFile;
   final XFile? newCinFile;
   final XFile? newCarteScolaireFile;
 
@@ -87,12 +89,17 @@ class AuthResubmitDossierRequested extends AuthEvent {
     this.tel,
     this.adresse,
     this.dateNaissance,
+    this.cin,
+    this.newPhotoFile,
     this.newCinFile,
     this.newCarteScolaireFile,
   });
 
   @override
-  List<Object?> get props => [userId, nom, prenom, email, tel, adresse, dateNaissance, newCinFile, newCarteScolaireFile];
+  List<Object?> get props => [
+    userId, nom, prenom, email, tel, adresse, dateNaissance,
+    cin, newPhotoFile, newCinFile, newCarteScolaireFile,
+  ];
 }
 
 class AuthLogoutRequested extends AuthEvent{}

@@ -37,6 +37,7 @@ class Dossier {
       prenom: json['prenom'] ?? 'Inconnu',
       cin: json['cin']?.toString(),
       cne: json['cne']?.toString(),
+      // On essaie plusieurs clés au cas où le backend renverrait un nom différent
       rejectionReason: json['rejectionReason']?.toString(),
 
       dateDebutAbonnement: json['dateDebutAbonnement'],

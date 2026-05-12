@@ -163,12 +163,19 @@ class AuthService {
   /// Le backend remet le statusDossier à EN_ATTENTE.
   Future<User> resubmitDossier({
     required int userId,
+    XFile? newPhotoFile,          // ← AJOUTÉ
     XFile? newCinFile,
     XFile? newCarteScolaireFile,
   }) async {
     try {
       final Map<String, dynamic> fields = {};
 
+      if (newPhotoFile != null) {
+        fields['photo'] = await MultipartFile.fromFile(
+          newPhotoFile.path,
+          filename: newPhotoFile.name,
+        );
+      }
       if (newCinFile != null) {
         fields['cinPhoto'] = await MultipartFile.fromFile(
           newCinFile.path,

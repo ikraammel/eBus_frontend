@@ -37,6 +37,7 @@ import 'package:smart_bus/views/pages/home/home_page.dart';
 import 'package:smart_bus/views/pages/login/login_page.dart';
 import 'package:smart_bus/views/pages/login/forgot_password/reset_success.dart';
 import 'package:smart_bus/views/pages/map_page.dart';
+import 'package:smart_bus/views/pages/profile/parametres/personal_infos/personal_infos.dart';
 import 'package:smart_bus/views/pages/profile/profile_page.dart';
 import 'package:smart_bus/views/pages/register/register_page.dart';
 import 'package:smart_bus/views/pages/lines/lines_page.dart';
@@ -120,8 +121,9 @@ class MyApp extends StatelessWidget {
           "/resetSuccess": (context) => const ResetSuccess(),
           "/claimsPage": (context) => const ClaimsPage(),
           "/horaireAdminPage": (context) => const GestionHorairesPage(),
-
-
+          '/personalInfos': (context) => PersonalInfos(
+            rejectionReason: ModalRoute.of(context)?.settings.arguments as String?,
+          ),
 
         },
         onGenerateRoute: (settings) {

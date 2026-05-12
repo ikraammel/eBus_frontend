@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,7 +15,8 @@ import '../../../../UI/buttons/app_button.dart';
 import '../../../../UI/splash_screen.dart';
 
 class PersonalInfos extends StatefulWidget {
-  const PersonalInfos({super.key});
+  final String? rejectionReason;
+  const PersonalInfos({super.key, this.rejectionReason});
 
   @override
   State<PersonalInfos> createState() => _PersonalInfosState();
@@ -26,28 +29,28 @@ class _PersonalInfosState extends State<PersonalInfos> {
   late TextEditingController telController;
   late TextEditingController adresseController;
   late TextEditingController dateController;
+  late TextEditingController cinController;
 
   User? currentUser;
-
   String? selectedAbonnement;
 
-  XFile? _newCinFile;
+  XFile? _newPhotoFile;
+  XFile? _newCinPhotoFile;
   XFile? _newCarteScolaireFile;
 
   final ImagePicker _picker = ImagePicker();
-
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-
     nomController = TextEditingController();
     prenomController = TextEditingController();
     emailController = TextEditingController();
     telController = TextEditingController();
     adresseController = TextEditingController();
     dateController = TextEditingController();
+    cinController = TextEditingController();
   }
 
   @override
@@ -58,33 +61,26 @@ class _PersonalInfosState extends State<PersonalInfos> {
     telController.dispose();
     adresseController.dispose();
     dateController.dispose();
+    cinController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  bool get _isDossierRejete =>
-      currentUser?.statusDossier?.toUpperCase() == "REJETE";
+  bool get _isDossierRejete {
+    final s = currentUser?.statusDossier?.toUpperCase().trim() ?? "";
+    return s == "REJETE" || s == "REJETÉ";
+  }
 
   bool get _isEtudiant =>
-      currentUser?.typeAbonnement
-              ?.toUpperCase()
-              .contains('SCOLAIRE') ==
-          true ||
-      currentUser?.cne != null;
+      currentUser?.typeAbonnement?.toUpperCase().contains('SCOLAIRE') == true ||
+          currentUser?.cne != null;
 
-  Future<void> _pickFile(bool isCin) async {
-    final XFile? file =
-        await _picker.pickImage(source: ImageSource.gallery);
-
-    if (file != null) {
-      setState(() {
-        if (isCin) {
-          _newCinFile = file;
-        } else {
-          _newCarteScolaireFile = file;
-        }
-      });
-    }
+  Future<void> _pickImage(Function(XFile) onPicked) async {
+    final XFile? file = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file != null) setState(() => onPicked(file));
   }
 
   @override
@@ -92,56 +88,30 @@ class _PersonalInfosState extends State<PersonalInfos> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthProfileUpdated) {
-          AppSnackBar.showSuccess(
-            context,
-            "Profil mis à jour avec succès !",
-          );
-
+          AppSnackBar.showSuccess(context, "Profil mis à jour avec succès !");
           Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              Navigator.pop(context);
-            }
+            if (mounted) Navigator.pop(context);
           });
         }
-
         if (state is AuthDossierResubmitted) {
           AppSnackBar.showSuccess(
-            context,
-            "Dossier re-soumis avec succès ! En attente de validation.",
-          );
-
+              context, "Dossier re-soumis avec succès ! En attente de validation.");
           Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              Navigator.pop(context);
-            }
+            if (mounted) Navigator.pop(context);
           });
         }
-
         if (state is AuthFailure) {
-          String friendlyMessage = "Une erreur est survenue";
-
-          final error = state.error.toLowerCase();
-
-          if (error.contains("email")) {
-            friendlyMessage = "Cet email est déjà utilisé.";
-          } else if (error.contains("tel")) {
-            friendlyMessage =
-                "Ce numéro de téléphone est déjà utilisé.";
-          } else if (error.contains("cin")) {
-            friendlyMessage = "Cette CIN est déjà utilisée.";
-          }
-
-          AppSnackBar.showError(context, friendlyMessage);
+          String msg = "Une erreur est survenue";
+          final err = state.error.toLowerCase();
+          if (err.contains("email")) msg = "Cet email est déjà utilisé.";
+          else if (err.contains("tel")) msg = "Ce numéro de téléphone est déjà utilisé.";
+          else if (err.contains("cin")) msg = "Cette CIN est déjà utilisée.";
+          AppSnackBar.showError(context, msg);
         }
       },
       builder: (context, state) {
-        if (state is AuthAuthenticated) {
-          currentUser = state.user;
-        }
-
-        if (currentUser == null) {
-          return const SplashScreen();
-        }
+        if (state is AuthAuthenticated) currentUser = state.user;
+        if (currentUser == null) return const SplashScreen();
 
         nomController.text = currentUser!.nom;
         prenomController.text = currentUser!.prenom;
@@ -149,21 +119,18 @@ class _PersonalInfosState extends State<PersonalInfos> {
         telController.text = currentUser!.tel;
         adresseController.text = currentUser!.adresse;
         dateController.text = currentUser!.dateNaissance;
+        cinController.text = currentUser!.cin;
 
-        selectedAbonnement =
-            (currentUser!.typeAbonnement?.isNotEmpty ?? false)
-                ? currentUser!.typeAbonnement
-                : null;
+        selectedAbonnement = (currentUser!.typeAbonnement?.isNotEmpty ?? false)
+            ? currentUser!.typeAbonnement
+            : null;
 
         return Scaffold(
           appBar: AppBar(
             backgroundColor: AppColors.darkBlue,
             title: const Text(
               "Informations personnelles",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
           body: Padding(
@@ -177,7 +144,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    // ───────── BANNIÈRE DOSSIER REJETÉ ─────────
+                    // ───────── BANNIÈRE REJET ─────────
                     if (_isDossierRejete) ...[
                       Container(
                         width: double.infinity,
@@ -186,28 +153,29 @@ class _PersonalInfosState extends State<PersonalInfos> {
                         decoration: BoxDecoration(
                           color: Colors.red.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.3),
-                          ),
+                          border: Border.all(color: Colors.red.withOpacity(0.3)),
                         ),
                         child: Row(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.warning_amber_rounded,
-                              color: Colors.red,
-                            ),
+                            const Icon(Icons.warning_amber_rounded, color: Colors.red),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                "Votre dossier a été rejeté. "
-                                "Veuillez modifier vos informations "
-                                "et re-soumettre vos documents.",
-                                style: TextStyle(
-                                  color: Colors.red.shade700,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Votre dossier a été rejeté. Veuillez modifier vos informations et re-soumettre vos documents.",
+                                    style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.w500),
+                                  ),
+                                  if (widget.rejectionReason != null && widget.rejectionReason!.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Motif : ${widget.rejectionReason}",
+                                      style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 13),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                           ],
@@ -215,75 +183,82 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       ),
                     ],
 
-                    // ───────── INFORMATIONS ─────────
-
-                    PersonalInfosItems(
-                      label: 'Nom',
-                      controller: nomController,
-                      suffixIcon: Icons.edit,
+                    // ───────── PHOTO DE PROFIL ─────────
+                    const Text(
+                      "Photo de profil",
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                     ),
-
-                    PersonalInfosItems(
-                      label: 'Prénom',
-                      controller: prenomController,
-                      suffixIcon: Icons.edit,
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 55,
+                            backgroundColor: Colors.grey.shade200,
+                            backgroundImage: _newPhotoFile != null
+                                ? FileImage(File(_newPhotoFile!.path))
+                                : (currentUser!.photoUrl != null && currentUser!.photoUrl!.isNotEmpty
+                                ? NetworkImage(currentUser!.photoUrl!) as ImageProvider
+                                : null),
+                            child: (_newPhotoFile == null &&
+                                (currentUser!.photoUrl == null || currentUser!.photoUrl!.isEmpty))
+                                ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                                : null,
+                          ),
+                          if (_isDossierRejete)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () => _pickImage((f) => _newPhotoFile = f),
+                                child: Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.darkBlue,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 24),
 
-                    PersonalInfosItems(
-                      label: 'Email',
-                      controller: emailController,
-                      suffixIcon: Icons.edit,
-                    ),
-
-                    PersonalInfosItems(
-                      label: 'Téléphone',
-                      controller: telController,
-                      suffixIcon: Icons.edit,
-                    ),
-
-                    // IMPORTANT : CIN MODIFIABLE SI REJETE
-
+                    // ───────── CHAMPS TEXTE ─────────
+                    PersonalInfosItems(label: 'Nom', controller: nomController, suffixIcon: Icons.edit),
+                    PersonalInfosItems(label: 'Prénom', controller: prenomController, suffixIcon: Icons.edit),
+                    PersonalInfosItems(label: 'Email', controller: emailController, suffixIcon: Icons.edit),
+                    PersonalInfosItems(label: 'Téléphone', controller: telController, suffixIcon: Icons.edit),
                     PersonalInfosItems(
                       label: 'CIN',
-                      value: currentUser!.cin,
+                      controller: _isDossierRejete ? cinController : null,
+                      value: _isDossierRejete ? null : currentUser!.cin,
                       readOnly: !_isDossierRejete,
-                      suffixIcon:
-                          _isDossierRejete ? Icons.edit : null,
+                      suffixIcon: _isDossierRejete ? Icons.edit : null,
                     ),
-
                     PersonalInfosItems(
                       label: 'Date de naissance',
                       controller: dateController,
                       suffixIcon: Icons.calendar_month,
                       onTap: () async {
-                        final DateTime? picked =
-                            await showDatePicker(
+                        final DateTime? picked = await showDatePicker(
                           context: context,
-                          initialDate:
-                              DateTime.tryParse(
-                                    dateController.text,
-                                  ) ??
-                                  DateTime(2005),
+                          initialDate: DateTime.tryParse(dateController.text) ?? DateTime(2005),
                           firstDate: DateTime(1950),
                           lastDate: DateTime.now(),
                           locale: const Locale('fr', 'FR'),
                         );
-
                         if (picked != null) {
                           dateController.text =
-                              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                         }
                       },
                     ),
-
-                    PersonalInfosItems(
-                      label: 'Adresse',
-                      controller: adresseController,
-                      suffixIcon: Icons.edit,
-                    ),
-
+                    PersonalInfosItems(label: 'Adresse', controller: adresseController, suffixIcon: Icons.edit),
                     const SizedBox(height: 16),
-
                     PersonalInfosItems(
                       label: 'Type abonnement',
                       value: selectedAbonnement ?? "-",
@@ -291,91 +266,73 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       suffixIcon: Icons.card_membership,
                     ),
 
-                    // ───────── DOCUMENTS ─────────
-
-                    if (_isDossierRejete) ...[
-                      const SizedBox(height: 24),
-
-                      Text(
-                        "Documents du dossier",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkBlue,
+                    // ───────── SECTION DOCUMENTS (toujours visible) ─────────
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Documents du dossier",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
+                    ),
+                    const SizedBox(height: 6),
+                    if (!_isDossierRejete)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          "Vos documents actuels (non modifiables)",
+                          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                         ),
                       ),
+                    const SizedBox(height: 10),
 
-                      const SizedBox(height: 14),
+                    // ─── PHOTO CIN ───
+                    _buildDocumentRow(
+                      label: "Photo CIN",
+                      icon: Icons.credit_card,
+                      existingUrl: currentUser!.cinUrl,
+                      newFile: _newCinPhotoFile,
+                      canEdit: _isDossierRejete,
+                      onTap: () => _pickImage((f) => _newCinPhotoFile = f),
+                      onClear: () => setState(() => _newCinPhotoFile = null),
+                    ),
 
-                      _buildDocumentPickerRow(
-                        label: "Photo CIN",
-                        icon: Icons.credit_card,
-                        fileName: _newCinFile?.name,
-                        existingUrl: currentUser!.cinUrl,
-                        onTap: () => _pickFile(true),
-                        onClear: () {
-                          setState(() {
-                            _newCinFile = null;
-                          });
-                        },
+                    const SizedBox(height: 14),
+
+                    // ─── CARTE SCOLAIRE (si étudiant) ───
+                    if (_isEtudiant) ...[
+                      _buildDocumentRow(
+                        label: "Carte scolaire",
+                        icon: Icons.school,
+                        existingUrl: currentUser!.carteScolaireUrl,
+                        newFile: _newCarteScolaireFile,
+                        canEdit: _isDossierRejete,
+                        onTap: () => _pickImage((f) => _newCarteScolaireFile = f),
+                        onClear: () => setState(() => _newCarteScolaireFile = null),
                       ),
-
                       const SizedBox(height: 14),
-
-                      if (_isEtudiant)
-                        _buildDocumentPickerRow(
-                          label: "Carte scolaire",
-                          icon: Icons.school,
-                          fileName:
-                              _newCarteScolaireFile?.name,
-                          existingUrl:
-                              currentUser!.carteScolaireUrl,
-                          onTap: () => _pickFile(false),
-                          onClear: () {
-                            setState(() {
-                              _newCarteScolaireFile = null;
-                            });
-                          },
-                        ),
                     ],
 
                     const SizedBox(height: 30),
 
                     // ───────── BOUTON ─────────
-
                     SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: _isDossierRejete
                           ? ElevatedButton.icon(
-                              onPressed: _handleResubmit,
-                              icon: const Icon(Icons.send),
-                              label: const Text(
-                                "Enregistrer et re-soumettre",
-                                style: TextStyle(
-                                  fontWeight:
-                                      FontWeight.bold,
-                                ),
-                              ),
-                              style:
-                                  ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Colors.orange.shade700,
-                                foregroundColor:
-                                    Colors.white,
-                                shape:
-                                    RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                          12),
-                                ),
-                              ),
-                            )
+                        onPressed: _handleResubmit,
+                        icon: const Icon(Icons.send),
+                        label: const Text("Enregistrer et re-soumettre",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade700,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                      )
                           : AppButton(
-                              text:
-                                  "Enregistrer les modifications",
-                              onPressed: _handleSave,
-                            ),
+                        text: "Enregistrer les modifications",
+                        onPressed: _handleSave,
+                      ),
                     ),
                   ],
                 ),
@@ -389,124 +346,123 @@ class _PersonalInfosState extends State<PersonalInfos> {
 
   void _handleSave() {
     if (currentUser == null) return;
-
-    context.read<AuthBloc>().add(
-          AuthUpdateUserRequested(
-            id: currentUser!.id,
-            nom: nomController.text.trim(),
-            prenom: prenomController.text.trim(),
-            email: emailController.text.trim(),
-            tel: telController.text.trim(),
-            adresse: adresseController.text.trim(),
-            dateNaissance:
-                dateController.text.trim(),
-          ),
-        );
+    context.read<AuthBloc>().add(AuthUpdateUserRequested(
+      id: currentUser!.id,
+      nom: nomController.text.trim(),
+      prenom: prenomController.text.trim(),
+      email: emailController.text.trim(),
+      tel: telController.text.trim(),
+      adresse: adresseController.text.trim(),
+      dateNaissance: dateController.text.trim(),
+    ));
   }
 
   void _handleResubmit() {
     if (currentUser == null) return;
-
-    context.read<AuthBloc>().add(
-          AuthResubmitDossierRequested(
-            userId: currentUser!.id,
-            nom: nomController.text.trim(),
-            prenom: prenomController.text.trim(),
-            email: emailController.text.trim(),
-            tel: telController.text.trim(),
-            adresse: adresseController.text.trim(),
-            dateNaissance:
-                dateController.text.trim(),
-            newCinFile: _newCinFile,
-            newCarteScolaireFile:
-                _newCarteScolaireFile,
-          ),
-        );
+    context.read<AuthBloc>().add(AuthResubmitDossierRequested(
+      userId: currentUser!.id,
+      nom: nomController.text.trim(),
+      prenom: prenomController.text.trim(),
+      email: emailController.text.trim(),
+      tel: telController.text.trim(),
+      adresse: adresseController.text.trim(),
+      dateNaissance: dateController.text.trim(),
+      newPhotoFile: _newPhotoFile,
+      newCinFile: _newCinPhotoFile,
+      newCarteScolaireFile: _newCarteScolaireFile,
+    ));
   }
 
-  Widget _buildDocumentPickerRow({
+  // ─── Widget document : affiche toujours, modifiable seulement si rejeté ───
+  Widget _buildDocumentRow({
     required String label,
     required IconData icon,
-    required String? fileName,
     required String? existingUrl,
+    required XFile? newFile,
+    required bool canEdit,
     required VoidCallback onTap,
     required VoidCallback onClear,
   }) {
-    final bool hasNew = fileName != null;
-
-    final bool hasExisting =
-        existingUrl != null && existingUrl.isNotEmpty;
+    final bool hasNew = newFile != null;
+    final bool hasExisting = existingUrl != null && existingUrl.isNotEmpty;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: canEdit ? onTap : null,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: hasNew
                 ? AppColors.green
+                : canEdit
+                ? Colors.orange.shade300
                 : Colors.grey.shade300,
           ),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
           children: [
-
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: hasNew
-                    ? AppColors.green.withOpacity(0.1)
-                    : AppColors.darkBlue
-                        .withOpacity(0.08),
-                shape: BoxShape.circle,
+            // ── Miniature si photo existante ──
+            if (hasNew)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.file(File(newFile!.path), width: 48, height: 48, fit: BoxFit.cover),
+              )
+            else if (hasExisting)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  existingUrl!,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.darkBlue.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: AppColors.darkBlue),
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: Colors.grey),
               ),
-              child: Icon(
-                icon,
-                color: hasNew
-                    ? AppColors.green
-                    : AppColors.darkBlue,
-              ),
-            ),
 
             const SizedBox(width: 12),
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-
+                  Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-
                   Text(
                     hasNew
-                        ? fileName
+                        ? newFile!.name
                         : hasExisting
-                            ? "Document actuel (appuyer pour changer)"
-                            : "Appuyer pour sélectionner",
+                        ? canEdit
+                        ? "Document actuel (appuyer pour changer)"
+                        : "Document actuel"
+                        : canEdit
+                        ? "Appuyer pour sélectionner"
+                        : "Aucun document",
                     style: TextStyle(
                       fontSize: 12,
-                      color: hasNew
-                          ? AppColors.green
-                          : Colors.grey[600],
+                      color: hasNew ? AppColors.green : Colors.grey[600],
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -515,18 +471,11 @@ class _PersonalInfosState extends State<PersonalInfos> {
             ),
 
             if (hasNew)
-              GestureDetector(
-                onTap: onClear,
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.red,
-                ),
-              )
+              GestureDetector(onTap: onClear, child: const Icon(Icons.close, color: Colors.red))
+            else if (canEdit)
+              Icon(Icons.upload_file, color: Colors.orange.shade400)
             else
-              Icon(
-                Icons.upload_file,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.lock_outline, color: Colors.grey[400]),
           ],
         ),
       ),
