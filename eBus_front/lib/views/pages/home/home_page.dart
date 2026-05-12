@@ -59,12 +59,13 @@ class _HomePageState extends State<HomePage> {
               }
               if (snapshot.hasData && snapshot.data != null) {
                 final dossier = snapshot.data!;
-                if (dossier.statusDossier != "VALIDE" && dossier.statusDossier != "ACTIF") {
-                   return DossierStatusCard(
-                    status: dossier.statusDossier,
-                    rejectionReason: dossier.rejectionReason,
-                  );
-                }
+                // Toujours afficher la carte (VALIDE, REJETE, EN_ATTENTE)
+                // userId permet de charger le statut abonnement réel
+                return DossierStatusCard(
+                  status: dossier.statusDossier,
+                  rejectionReason: dossier.rejectionReason,
+                  userId: user.id,
+                );
               }
               return const SizedBox.shrink();
             },

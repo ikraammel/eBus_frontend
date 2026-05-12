@@ -1,53 +1,155 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/constants/app_colors.dart';
+import 'package:smart_bus/models/abonnement.dart';
+import 'package:smart_bus/services/ticket_service.dart';
 import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
 class DossierStatusCard extends StatelessWidget {
   final String? status;
   final String? rejectionReason;
-  const DossierStatusCard({super.key, this.status, this.rejectionReason});
+  final int? userId; // pour charger le statut abonnement en temps réel
 
-  String getDossierMessage(String? status) {
-    final s = status?.toUpperCase().trim() ?? "";
-    switch (s) {
-      case "EN_ATTENTE":
-        return "Votre dossier est en cours de traitement.";
-      case "EN_COURS":
-        return "Votre dossier est en cours de vérification par l'administration.";
-      case "VALIDE":
-      case "VALIDÉ":
-      case "ACTIF":
-        return "Dossier validé 🎉 Vous pouvez maintenant souscrire à un abonnement.";
-      case "REJETE":
-        if (rejectionReason == null || rejectionReason!.isEmpty) {
-          return "Votre dossier a été rejeté. Veuillez contacter l'administration.";
-        }
-        return "Votre dossier a été rejeté.\nMotif : $rejectionReason";
-      default:
-        return "Statut du dossier : $status";
-    }
-  }
+  const DossierStatusCard({
+    super.key,
+    this.status,
+    this.rejectionReason,
+    this.userId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Color color;
-    IconData icon;
     final s = status?.toUpperCase().trim() ?? "";
 
-    if (s == "VALIDE" || s == "VALIDÉ" || s == "ACTIF") {
-      color = AppColors.green;
-      icon = Icons.check_circle_rounded;
-    } else if (s == "REJETE" || s == "REJETÉ") {
-      color = Colors.red;
-      icon = Icons.cancel_rounded;
-    } else if (s == "EN_COURS") {
-      color = Colors.orange;
-      icon = Icons.hourglass_bottom;
-    } else {
-      color = Colors.blue;
-      icon = Icons.info_rounded;
+    // ── Dossier VALIDE → charger l'abonnement actuel ──────────────────────
+    if ((s == "VALIDE" || s == "VALIDÉ") && userId != null) {
+      return FutureBuilder<Abonnement?>(
+        future: TicketService().getCurrentAbonnement(userId!),
+        builder: (ctx, snap) {
+          // Pendant le chargement, on affiche un indicateur léger
+          if (snap.connectionState == ConnectionState.waiting) {
+            return _buildShell(
+              context,
+              color: AppColors.green,
+              icon: Icons.check_circle_rounded,
+              message: "Dossier validé 🎉",
+              actionButton: null,
+              showLoader: true,
+            );
+          }
+          final abo = snap.data;
+
+          // ── Abonnement ACTIF : ne plus afficher le bouton paiement ───────
+          if (abo != null && abo.isActif) {
+            final jours = abo.joursRestants;
+            return _buildShell(
+              context,
+              color: AppColors.green,
+              icon: Icons.verified_rounded,
+              message:
+                  "🎉 Votre abonnement ${_fmt(abo.typeNom)} est actif !\n"
+                  "Expire dans $jours jour${jours > 1 ? 's' : ''}.",
+              actionButton: null, // ✅ Pas de bouton quand déjà actif
+            );
+          }
+
+          // ── Paiement EN_ATTENTE : bouton "Finaliser" ─────────────────────
+          if (abo != null && abo.isEnAttente) {
+            return _buildShell(
+              context,
+              color: Colors.blue,
+              icon: Icons.hourglass_top_rounded,
+              message:
+                  "⏳ Votre paiement est en attente de confirmation.\n"
+                  "Cliquez ci-dessous pour finaliser ou réessayer.",
+              actionButton: _btn(
+                context,
+                label: "Finaliser le paiement",
+                icon: Icons.payment_rounded,
+                color: Colors.blue,
+              ),
+            );
+          }
+
+          // ── Pas encore d'abonnement ou abonnement expiré/refusé ──────────
+          return _buildShell(
+            context,
+            color: AppColors.green,
+            icon: Icons.check_circle_rounded,
+            message:
+                "Dossier validé 🎉 Vous pouvez maintenant souscrire à un abonnement.",
+            actionButton: _btn(
+              context,
+              label: "Procéder au paiement",
+              icon: Icons.card_membership_rounded,
+              color: AppColors.green,
+            ),
+          );
+        },
+      );
     }
 
+    // ── Dossier REJETE ────────────────────────────────────────────────────
+    if (s == "REJETE" || s == "REJETÉ") {
+      return _buildShell(
+        context,
+        color: Colors.red,
+        icon: Icons.cancel_rounded,
+        message: "Votre dossier a été rejeté.",
+        rejectionReason: rejectionReason,
+        actionButton: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.pushNamed(context, '/personalInfos'),
+            icon: const Icon(Icons.edit_document, size: 18),
+            label: const Text(
+              "Modifier mes informations",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              elevation: 0,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ── EN_COURS ──────────────────────────────────────────────────────────
+    if (s == "EN_COURS") {
+      return _buildShell(
+        context,
+        color: Colors.orange,
+        icon: Icons.hourglass_bottom,
+        message:
+            "Votre dossier est en cours de vérification par l'administration.",
+        actionButton: null,
+      );
+    }
+
+    // ── EN_ATTENTE (dossier pas encore validé) ────────────────────────────
+    return _buildShell(
+      context,
+      color: Colors.blue,
+      icon: Icons.info_rounded,
+      message: "Votre dossier est en cours de traitement.",
+      actionButton: null,
+    );
+  }
+
+  // ── Shell commun ──────────────────────────────────────────────────────────
+  Widget _buildShell(
+    BuildContext context, {
+    required Color color,
+    required IconData icon,
+    required String message,
+    required Widget? actionButton,
+    String? rejectionReason,
+    bool showLoader = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -60,6 +162,7 @@ class DossierStatusCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(icon, color: color, size: 28),
               const SizedBox(width: 15),
@@ -68,15 +171,16 @@ class DossierStatusCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      getDossierMessage(status),
+                      message,
                       style: TextStyle(
                         color: color.darken(0.15),
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
                     ),
-                    // Affichage du motif si le dossier est rejeté
-                    if ((s == "REJETE" || s == "REJETÉ") && rejectionReason != null && rejectionReason!.trim().isNotEmpty) ...[
+                    // Motif rejet
+                    if (rejectionReason != null &&
+                        rejectionReason!.trim().isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.all(8),
@@ -94,76 +198,69 @@ class DossierStatusCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                    if (showLoader) ...[
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 2,
+                        child: LinearProgressIndicator(
+                          color: color,
+                          backgroundColor: color.withOpacity(0.2),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          if (s == "VALIDE" || s == "VALIDÉ") ...[
+          if (actionButton != null) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TicketPage(openAbonnementsTab: true),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.card_membership_rounded, size: 18),
-                label: const Text(
-                  "Procéder au paiement",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  elevation: 0,
-                ),
-              ),
-            ),
-          ],
-
-          if (s == "REJETE") ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                 onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/personalInfos',
-                    arguments: rejectionReason,
-                  );
-                },
-                icon: const Icon(Icons.edit_document, size: 18),
-                label: const Text(
-                  "Modifier mes informations",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  elevation: 0,
-                ),
-              ),
-            ),
+            actionButton,
           ],
         ],
       ),
     );
   }
+
+  Widget _btn(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const TicketPage(openAbonnementsTab: true),
+          ),
+        ),
+        icon: Icon(icon, size: 18),
+        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          elevation: 0,
+        ),
+      ),
+    );
+  }
+
+  String _fmt(String nom) {
+    return nom
+        .toLowerCase()
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : w)
+        .join(' ');
+  }
 }
+
 
 extension ColorExtension on Color {
   Color darken([double amount = .1]) {

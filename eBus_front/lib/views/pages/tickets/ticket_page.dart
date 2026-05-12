@@ -701,8 +701,8 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
     } else if (abo.isEnAttente) {
       color = Colors.blue;
       icon = Icons.hourglass_top_rounded;
-      title = "Paiement en attente de confirmation";
-      subtitle = "Vous recevrez une confirmation dès validation de Stripe.";
+      title = "Paiement en attente";
+      subtitle = "Cliquez sur 'S'abonner' ci-dessous pour reprendre votre paiement.";
     } else if (abo.isRefuse) {
       color = Colors.red;
       icon = Icons.cancel_rounded;

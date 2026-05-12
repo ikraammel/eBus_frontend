@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/views/UI/personal_infos_items.dart';
+import 'package:smart_bus/services/ticket_service.dart';
+import 'package:smart_bus/models/abonnement.dart';
 
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
@@ -30,6 +32,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
   late TextEditingController adresseController;
   late TextEditingController dateController;
   late TextEditingController cinController;
+  late TextEditingController cneController;
 
   User? currentUser;
   String? selectedAbonnement;
@@ -51,6 +54,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
     adresseController = TextEditingController();
     dateController = TextEditingController();
     cinController = TextEditingController();
+    cneController = TextEditingController();
   }
 
   @override
@@ -62,6 +66,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
     adresseController.dispose();
     dateController.dispose();
     cinController.dispose();
+    cneController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -120,10 +125,11 @@ class _PersonalInfosState extends State<PersonalInfos> {
         adresseController.text = currentUser!.adresse;
         dateController.text = currentUser!.dateNaissance;
         cinController.text = currentUser!.cin;
+        cneController.text = currentUser!.cne ?? '';
 
         selectedAbonnement = (currentUser!.typeAbonnement?.isNotEmpty ?? false)
             ? currentUser!.typeAbonnement
-            : null;
+            : null; // peut être null si cache pas à jour
 
         return Scaffold(
           appBar: AppBar(
@@ -239,6 +245,15 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       readOnly: !_isDossierRejete,
                       suffixIcon: _isDossierRejete ? Icons.edit : null,
                     ),
+                    // ─── CNE (visible si étudiant ou si valeur existante) ───
+                    if (_isEtudiant || (currentUser!.cne != null && currentUser!.cne!.isNotEmpty))
+                      PersonalInfosItems(
+                        label: 'CNE',
+                        controller: _isDossierRejete ? cneController : null,
+                        value: _isDossierRejete ? null : (currentUser!.cne ?? '-'),
+                        readOnly: !_isDossierRejete,
+                        suffixIcon: _isDossierRejete ? Icons.edit : null,
+                      ),
                     PersonalInfosItems(
                       label: 'Date de naissance',
                       controller: dateController,
@@ -259,11 +274,21 @@ class _PersonalInfosState extends State<PersonalInfos> {
                     ),
                     PersonalInfosItems(label: 'Adresse', controller: adresseController, suffixIcon: Icons.edit),
                     const SizedBox(height: 16),
-                    PersonalInfosItems(
-                      label: 'Type abonnement',
-                      value: selectedAbonnement ?? "-",
-                      readOnly: true,
-                      suffixIcon: Icons.card_membership,
+                    // Type abonnement : FutureBuilder si non disponible dans le cache
+                    FutureBuilder<String>(
+                      future: selectedAbonnement != null
+                          ? Future.value(selectedAbonnement!)
+                          : TicketService()
+                              .getCurrentAbonnement(currentUser!.id)
+                              .then((a) => a?.typeNom ?? '-'),
+                      builder: (ctx, snap) {
+                        return PersonalInfosItems(
+                          label: 'Type abonnement',
+                          value: snap.data ?? '-',
+                          readOnly: true,
+                          suffixIcon: Icons.card_membership,
+                        );
+                      },
                     ),
 
                     // ───────── SECTION DOCUMENTS (toujours visible) ─────────
@@ -367,6 +392,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
       tel: telController.text.trim(),
       adresse: adresseController.text.trim(),
       dateNaissance: dateController.text.trim(),
+      cin: cinController.text.trim().isNotEmpty ? cinController.text.trim() : null,
       newPhotoFile: _newPhotoFile,
       newCinFile: _newCinPhotoFile,
       newCarteScolaireFile: _newCarteScolaireFile,
