@@ -27,8 +27,8 @@ const Map<int, List<double>> _stationCoords = {
   16: [32.2810,  -9.2556], // av belkhadir Panorama A
   17: [32.2796,  -9.2568], // av belkhadir a coté ENSA A
   18: [32.2781,  -9.2580], // Terminus faculté
-  19: [32.2950,  -9.2700], // Terminus LO1 Plage
-  20: [32.2960,  -9.2680], // arret a coté port R
+  19: [32.2920, -9.2400],  // Terminus LO1 Plage
+  20: [32.2980, -9.2390],  //arret a coté port R
   21: [32.2870,  -9.2510], // Quartier Oued El Bacha R
   22: [32.2855,  -9.2495], // Quartier Moulay El Hassan R
   23: [32.2872,  -9.2488], // Lycée Khawarizmi R

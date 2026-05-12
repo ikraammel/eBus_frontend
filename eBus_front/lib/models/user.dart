@@ -11,6 +11,7 @@ class User {
   final String cin;
   final String? cne;
   final String? statusDossier;
+  final String? motifRejet; // Nouveau champ
 
   final String dateNaissance;
   final String? typeAbonnement;
@@ -31,6 +32,7 @@ class User {
     required this.cin,
     this.cne,
     this.statusDossier,
+    this.motifRejet,
     this.typeAbonnement,
     this.photoUrl,
     this.carteScolaireUrl,
@@ -51,7 +53,8 @@ class User {
       tel: json['tel'],
       adresse: json['adresse'],
       dateNaissance: json['dateNaissance'],
-      statusDossier: json['statusDossier']?.toString() ?? "EN_ATTENTE", // Corrigé ici
+      statusDossier: json['statusDossier']?.toString() ?? "EN_ATTENTE",
+      motifRejet: json['motifRejet']?.toString(),
       typeAbonnement: json['typeAbonnement']?.toString(),
       photoUrl: json['photoUrl'],
       carteScolaireUrl: json['carteScolaireUrl'],

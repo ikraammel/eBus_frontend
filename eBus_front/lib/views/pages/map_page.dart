@@ -303,9 +303,17 @@ class _MapPageState extends State<MapPage> {
               flex: _selectedLigne != null ? 3 : 5,
               child: FlutterMap(
                 mapController: _mapController,
-                options: const MapOptions(
+                options: MapOptions(
                   initialCenter: _defaultCenter,
                   initialZoom: 13.0,
+                  minZoom: 12.0,   // Ne pas quitter Safi en dézoomant
+                  maxZoom: 18.0,   // Zoom suffisant pour voir les rues en détail
+                  cameraConstraint: CameraConstraint.containCenter(
+                    bounds: LatLngBounds(
+                      const LatLng(32.2400, -9.3200), // Sud-Ouest
+                      const LatLng(32.3500, -9.1800), // Nord-Est
+                    ),
+                  ),
                 ),
                 children: [
                   TileLayer(

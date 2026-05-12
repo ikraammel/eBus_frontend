@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:smart_bus/constants/constants.dart';
 
 class BusPositionApiService {
-  static const String _baseUrl = AppConstants.baseUrl;
+  static final String _baseUrl = AppConstants.baseUrl;
 
   /// Envoie la position GPS d'un bus au backend Spring Boot.
   ///

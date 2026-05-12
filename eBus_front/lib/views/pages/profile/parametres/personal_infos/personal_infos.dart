@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/views/UI/personal_infos_items.dart';
 import 'package:smart_bus/services/ticket_service.dart';
-import 'package:smart_bus/models/abonnement.dart';
 
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
@@ -15,6 +14,7 @@ import '../../../../../models/user.dart';
 import '../../../../../utils/app_snack_bar.dart';
 import '../../../../UI/buttons/app_button.dart';
 import '../../../../UI/splash_screen.dart';
+import '../../../../../constants/constants.dart';
 
 class PersonalInfos extends StatefulWidget {
   final String? rejectionReason;
@@ -35,7 +35,6 @@ class _PersonalInfosState extends State<PersonalInfos> {
   late TextEditingController cneController;
 
   User? currentUser;
-  String? selectedAbonnement;
 
   XFile? _newPhotoFile;
   XFile? _newCinPhotoFile;
@@ -73,12 +72,13 @@ class _PersonalInfosState extends State<PersonalInfos> {
 
   bool get _isDossierRejete {
     final s = currentUser?.statusDossier?.toUpperCase().trim() ?? "";
-    return s == "REJETE" || s == "REJETÉ";
+    return s == "REJETE" || s == "REJETÉ" || s == "REJECTED";
   }
 
-  bool get _isEtudiant =>
-      currentUser?.typeAbonnement?.toUpperCase().contains('SCOLAIRE') == true ||
-          currentUser?.cne != null;
+  bool get _isEtudiant {
+    final type = currentUser?.typeAbonnement?.toUpperCase() ?? "";
+    return type.contains('SCOLAIRE') || type.contains('ETUDIANT') || (currentUser?.cne != null && currentUser!.cne!.isNotEmpty);
+  }
 
   Future<void> _pickImage(Function(XFile) onPicked) async {
     final XFile? file = await _picker.pickImage(
@@ -86,6 +86,107 @@ class _PersonalInfosState extends State<PersonalInfos> {
       imageQuality: 85,
     );
     if (file != null) setState(() => onPicked(file));
+  }
+
+  String _buildFullUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    final cleanPath = path.startsWith('/') ? path : '/$path';
+    return '${AppConstants.baseUrl}$cleanPath';
+  }
+
+  void _showFullScreenImage(BuildContext context, String url, String title) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Center(
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  },
+                  errorBuilder: (context, error, stackTrace) => const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.broken_image, color: Colors.white, size: 50),
+                        SizedBox(height: 10),
+                        Text("Impossible de charger l'image", style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              left: 20,
+              child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: CircleAvatar(
+                backgroundColor: Colors.black45,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFullScreenFile(BuildContext context, File file, String title) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Center(
+                child: Image.file(
+                  file,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              left: 20,
+              child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: CircleAvatar(
+                backgroundColor: Colors.black45,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -99,19 +200,13 @@ class _PersonalInfosState extends State<PersonalInfos> {
           });
         }
         if (state is AuthDossierResubmitted) {
-          AppSnackBar.showSuccess(
-              context, "Dossier re-soumis avec succès ! En attente de validation.");
+          AppSnackBar.showSuccess(context, "Dossier re-soumis avec succès !");
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) Navigator.pop(context);
           });
         }
         if (state is AuthFailure) {
-          String msg = "Une erreur est survenue";
-          final err = state.error.toLowerCase();
-          if (err.contains("email")) msg = "Cet email est déjà utilisé.";
-          else if (err.contains("tel")) msg = "Ce numéro de téléphone est déjà utilisé.";
-          else if (err.contains("cin")) msg = "Cette CIN est déjà utilisée.";
-          AppSnackBar.showError(context, msg);
+          AppSnackBar.showError(context, state.error);
         }
       },
       builder: (context, state) {
@@ -127,13 +222,13 @@ class _PersonalInfosState extends State<PersonalInfos> {
         cinController.text = currentUser!.cin;
         cneController.text = currentUser!.cne ?? '';
 
-        selectedAbonnement = (currentUser!.typeAbonnement?.isNotEmpty ?? false)
-            ? currentUser!.typeAbonnement
-            : null; // peut être null si cache pas à jour
+        final String? currentMotif = currentUser!.motifRejet ?? widget.rejectionReason;
 
         return Scaffold(
           appBar: AppBar(
             backgroundColor: AppColors.darkBlue,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
             title: const Text(
               "Informations personnelles",
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -154,36 +249,54 @@ class _PersonalInfosState extends State<PersonalInfos> {
                     if (_isDossierRejete) ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        margin: const EdgeInsets.only(bottom: 20),
+                        padding: const EdgeInsets.all(16),
+                        margin: const EdgeInsets.only(bottom: 24),
                         decoration: BoxDecoration(
                           color: Colors.red.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.red.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.red.withOpacity(0.3), width: 1.5),
                         ),
-                        child: Row(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.warning_amber_rounded, color: Colors.red),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Votre dossier a été rejeté. Veuillez modifier vos informations et re-soumettre vos documents.",
-                                    style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.w500),
-                                  ),
-                                  if (widget.rejectionReason != null && widget.rejectionReason!.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      "Motif : ${widget.rejectionReason}",
-                                      style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 13),
-                                    ),
-                                  ],
-                                ],
-                              ),
+                            Row(
+                              children: [
+                                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+                                const SizedBox(width: 12),
+                                Text(
+                                  "Dossier rejeté",
+                                  style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Veuillez corriger les informations signalées et re-soumettre votre dossier pour validation.",
+                              style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                            ),
+                            if (currentMotif != null && currentMotif.isNotEmpty) ...[
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Divider(color: Colors.red, thickness: 0.5),
+                              ),
+                              const Text(
+                                "Motif du rejet :",
+                                style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  currentMotif,
+                                  style: TextStyle(color: Colors.red.shade800, fontSize: 14, fontStyle: FontStyle.italic, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -198,25 +311,34 @@ class _PersonalInfosState extends State<PersonalInfos> {
                     Center(
                       child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 55,
-                            backgroundColor: Colors.grey.shade200,
-                            backgroundImage: _newPhotoFile != null
-                                ? FileImage(File(_newPhotoFile!.path))
-                                : (currentUser!.photoUrl != null && currentUser!.photoUrl!.isNotEmpty
-                                ? NetworkImage(currentUser!.photoUrl!) as ImageProvider
-                                : null),
-                            child: (_newPhotoFile == null &&
-                                (currentUser!.photoUrl == null || currentUser!.photoUrl!.isEmpty))
-                                ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                                : null,
+                          GestureDetector(
+                            onTap: () {
+                              if (_newPhotoFile != null) {
+                                _showFullScreenFile(context, File(_newPhotoFile!.path), "Nouvelle photo");
+                              } else if (currentUser!.photoUrl != null && currentUser!.photoUrl!.isNotEmpty) {
+                                _showFullScreenImage(context, _buildFullUrl(currentUser!.photoUrl!), "Photo de profil");
+                              }
+                            },
+                            child: CircleAvatar(
+                              radius: 55,
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage: _newPhotoFile != null
+                                  ? FileImage(File(_newPhotoFile!.path))
+                                  : (currentUser!.photoUrl != null && currentUser!.photoUrl!.isNotEmpty
+                                  ? NetworkImage(_buildFullUrl(currentUser!.photoUrl!)) as ImageProvider
+                                  : null),
+                              child: (_newPhotoFile == null &&
+                                  (currentUser!.photoUrl == null || currentUser!.photoUrl!.isEmpty))
+                                  ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                                  : null,
+                            ),
                           ),
                           if (_isDossierRejete)
                             Positioned(
                               bottom: 0,
                               right: 0,
                               child: GestureDetector(
-                                onTap: () => _pickImage((f) => _newPhotoFile = f),
+                                onTap: () => _pickImage((f) => setState(() => _newPhotoFile = f)),
                                 child: Container(
                                   padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
@@ -245,8 +367,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       readOnly: !_isDossierRejete,
                       suffixIcon: _isDossierRejete ? Icons.edit : null,
                     ),
-                    // ─── CNE (visible si étudiant ou si valeur existante) ───
-                    if (_isEtudiant || (currentUser!.cne != null && currentUser!.cne!.isNotEmpty))
+                    if (_isEtudiant)
                       PersonalInfosItems(
                         label: 'CNE',
                         controller: _isDossierRejete ? cneController : null,
@@ -274,13 +395,10 @@ class _PersonalInfosState extends State<PersonalInfos> {
                     ),
                     PersonalInfosItems(label: 'Adresse', controller: adresseController, suffixIcon: Icons.edit),
                     const SizedBox(height: 16),
-                    // Type abonnement : FutureBuilder si non disponible dans le cache
                     FutureBuilder<String>(
-                      future: selectedAbonnement != null
-                          ? Future.value(selectedAbonnement!)
-                          : TicketService()
-                              .getCurrentAbonnement(currentUser!.id)
-                              .then((a) => a?.typeNom ?? '-'),
+                      future: TicketService()
+                          .getCurrentAbonnement(currentUser!.id)
+                          .then((a) => a?.typeNom ?? (currentUser!.typeAbonnement ?? '-')),
                       builder: (ctx, snap) {
                         return PersonalInfosItems(
                           label: 'Type abonnement',
@@ -291,45 +409,41 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       },
                     ),
 
-                    // ───────── SECTION DOCUMENTS (toujours visible) ─────────
+                    // ───────── SECTION DOCUMENTS ─────────
                     const SizedBox(height: 24),
                     const Text(
                       "Documents du dossier",
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                     ),
                     const SizedBox(height: 6),
-                    if (!_isDossierRejete)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          "Vos documents actuels (non modifiables)",
-                          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                        ),
-                      ),
+                    Text(
+                      _isDossierRejete 
+                        ? "Appuyez sur un document pour le changer ou le visionner" 
+                        : "Appuyez sur un document pour le visionner",
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
                     const SizedBox(height: 10),
 
-                    // ─── PHOTO CIN ───
                     _buildDocumentRow(
                       label: "Photo CIN",
                       icon: Icons.credit_card,
                       existingUrl: currentUser!.cinUrl,
                       newFile: _newCinPhotoFile,
                       canEdit: _isDossierRejete,
-                      onTap: () => _pickImage((f) => _newCinPhotoFile = f),
+                      onTap: () => _pickImage((f) => setState(() => _newCinPhotoFile = f)),
                       onClear: () => setState(() => _newCinPhotoFile = null),
                     ),
 
                     const SizedBox(height: 14),
 
-                    // ─── CARTE SCOLAIRE (si étudiant) ───
                     if (_isEtudiant) ...[
                       _buildDocumentRow(
-                        label: "Carte scolaire",
+                        label: "Carte scolaire / Attestation",
                         icon: Icons.school,
                         existingUrl: currentUser!.carteScolaireUrl,
                         newFile: _newCarteScolaireFile,
                         canEdit: _isDossierRejete,
-                        onTap: () => _pickImage((f) => _newCarteScolaireFile = f),
+                        onTap: () => _pickImage((f) => setState(() => _newCarteScolaireFile = f)),
                         onClear: () => setState(() => _newCarteScolaireFile = null),
                       ),
                       const SizedBox(height: 14),
@@ -337,7 +451,6 @@ class _PersonalInfosState extends State<PersonalInfos> {
 
                     const SizedBox(height: 30),
 
-                    // ───────── BOUTON ─────────
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -359,6 +472,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                         onPressed: _handleSave,
                       ),
                     ),
+                    const SizedBox(height: 50),
                   ],
                 ),
               ),
@@ -399,7 +513,6 @@ class _PersonalInfosState extends State<PersonalInfos> {
     ));
   }
 
-  // ─── Widget document : affiche toujours, modifiable seulement si rejeté ───
   Widget _buildDocumentRow({
     required String label,
     required IconData icon,
@@ -412,65 +525,74 @@ class _PersonalInfosState extends State<PersonalInfos> {
     final bool hasNew = newFile != null;
     final bool hasExisting = existingUrl != null && existingUrl.isNotEmpty;
 
-    return GestureDetector(
-      onTap: canEdit ? onTap : null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: hasNew
-                ? AppColors.green
-                : canEdit
-                ? Colors.orange.shade300
-                : Colors.grey.shade300,
-          ),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2)),
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: hasNew
+              ? AppColors.green
+              : canEdit
+              ? Colors.orange.shade300
+              : Colors.grey.shade300,
         ),
-        child: Row(
-          children: [
-            // ── Miniature si photo existante ──
-            if (hasNew)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(File(newFile!.path), width: 48, height: 48, fit: BoxFit.cover),
-              )
-            else if (hasExisting)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  existingUrl!,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.darkBlue.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (hasNew) {
+                _showFullScreenFile(context, File(newFile!.path), label);
+              } else if (hasExisting) {
+                _showFullScreenImage(context, _buildFullUrl(existingUrl!), label);
+              }
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (hasNew)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(File(newFile!.path), width: 52, height: 52, fit: BoxFit.cover),
+                  )
+                else if (hasExisting)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      _buildFullUrl(existingUrl!),
+                      width: 52, height: 52, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 52, height: 52,
+                        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                        child: Icon(icon, color: Colors.grey),
+                      ),
                     ),
-                    child: Icon(icon, color: AppColors.darkBlue),
+                  )
+                else
+                  Container(
+                    width: 52, height: 52,
+                    decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                    child: Icon(icon, color: Colors.grey),
                   ),
-                ),
-              )
-            else
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: Colors.grey),
-              ),
+                if (hasNew || hasExisting)
+                  Container(
+                    width: 52, height: 52,
+                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.zoom_in, color: Colors.white, size: 20),
+                  ),
+              ],
+            ),
+          ),
 
-            const SizedBox(width: 12),
+          const SizedBox(width: 12),
 
-            Expanded(
+          Expanded(
+            child: GestureDetector(
+              onTap: canEdit ? onTap : (hasExisting ? () => _showFullScreenImage(context, _buildFullUrl(existingUrl!), label) : null),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -481,7 +603,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                         ? newFile!.name
                         : hasExisting
                         ? canEdit
-                        ? "Document actuel (appuyer pour changer)"
+                        ? "Appuyer pour changer"
                         : "Document actuel"
                         : canEdit
                         ? "Appuyer pour sélectionner"
@@ -495,15 +617,20 @@ class _PersonalInfosState extends State<PersonalInfos> {
                 ],
               ),
             ),
+          ),
 
-            if (hasNew)
-              GestureDetector(onTap: onClear, child: const Icon(Icons.close, color: Colors.red))
-            else if (canEdit)
-              Icon(Icons.upload_file, color: Colors.orange.shade400)
-            else
-              Icon(Icons.lock_outline, color: Colors.grey[400]),
-          ],
-        ),
+          if (hasNew)
+            GestureDetector(onTap: onClear, child: const Icon(Icons.close, color: Colors.red))
+          else if (canEdit)
+            IconButton(onPressed: onTap, icon: const Icon(Icons.upload_file, color: Colors.orange))
+          else if (hasExisting)
+            IconButton(
+              onPressed: () => _showFullScreenImage(context, _buildFullUrl(existingUrl!), label),
+              icon: Icon(Icons.visibility_outlined, color: AppColors.darkBlue.withValues(alpha: 0.5)),
+            )
+          else
+            Icon(Icons.lock_outline, color: Colors.grey[400]),
+        ],
       ),
     );
   }
