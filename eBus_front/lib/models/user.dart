@@ -11,12 +11,13 @@ class User {
   final String cin;
   final String? cne;
   final String? statusDossier;
-  final String? motifRejet; // Nouveau champ
+  final String? motifRejet;
 
   final String dateNaissance;
   final String? typeAbonnement;
   final String? photoUrl;
   final String? carteScolaireUrl;
+  final String? attestationScolaireUrl;
   final String? cinUrl;
   final String? token;
 
@@ -36,6 +37,7 @@ class User {
     this.typeAbonnement,
     this.photoUrl,
     this.carteScolaireUrl,
+    this.attestationScolaireUrl,
     this.cinUrl,
     this.token
   });
@@ -58,6 +60,7 @@ class User {
       typeAbonnement: json['typeAbonnement']?.toString(),
       photoUrl: json['photoUrl'],
       carteScolaireUrl: json['carteScolaireUrl'],
+      attestationScolaireUrl: json['attestationScolaireUrl'],
       cinUrl: json['cinUrl'],
       cin: json['cin'],
       cne: json['cne']?.toString(),

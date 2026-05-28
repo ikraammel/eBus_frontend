@@ -39,7 +39,7 @@ class HelpBanner extends StatelessWidget {
               Icon(Icons.email, color: Colors.white, size: 20),
               SizedBox(width: 12,),
               Text(
-                "support@ebus-vectalia.ma",
+                "support@ebus.ma",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,

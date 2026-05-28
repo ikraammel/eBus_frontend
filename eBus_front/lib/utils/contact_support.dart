@@ -4,7 +4,7 @@ class ContactSupport {
   static Future<void> sendEmail() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@ebus-vectalia.ma',
+      path: 'support@ebus.ma',
       query: 'subject=Support&body=Bonjour,',
     );
     if(!await launchUrl(

@@ -278,7 +278,7 @@ class UserObjetDetailPage extends StatelessWidget {
 
     if (statut == StatutObjet.DISPONIBLE) {
       title = "Objet disponible";
-      msg = "Rendez-vous à l'agence commerciale Vectalia munis d'une pièce d'identité pour le récupérer.";
+      msg = "Rendez-vous à l'agence commerciale munis d'une pièce d'identité pour le récupérer.";
       icon = Icons.check_circle_rounded;
     } else if (statut == StatutObjet.EN_ATTENTE) {
       title = "Dossier enregistré";
