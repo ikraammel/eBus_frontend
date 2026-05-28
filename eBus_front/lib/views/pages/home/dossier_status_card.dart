@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/models/abonnement.dart';
 import 'package:smart_bus/services/ticket_service.dart';
-import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 
 class DossierStatusCard extends StatelessWidget {
   final String? status;
   final String? rejectionReason;
   final int? userId;
+  final VoidCallback? onOpenTickets;
 
   const DossierStatusCard({
     super.key,
     this.status,
     this.rejectionReason,
     this.userId,
+    this.onOpenTickets,
   });
 
   @override
@@ -239,12 +240,7 @@ class DossierStatusCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const TicketPage(openAbonnementsTab: true),
-          ),
-        ),
+        onPressed: onOpenTickets,
         icon: Icon(icon, size: 18),
         label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(

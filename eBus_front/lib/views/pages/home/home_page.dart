@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
                   status: dossier.statusDossier,
                   rejectionReason: dossier.rejectionReason,
                   userId: user.id,
+                  onOpenTickets: () => setState(() => _selectedIndex = 2),
                 );
               }
               return const SizedBox.shrink();
