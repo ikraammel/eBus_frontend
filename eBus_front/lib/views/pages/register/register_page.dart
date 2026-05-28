@@ -51,10 +51,21 @@ class _RegisterPageState extends State<RegisterPage> {
   final FilePickerService _filePickerService = FilePickerService();
   XFile? _image;
   XFile? _carteScolaire;
+  XFile? _attestationScolaire;
   XFile? _cin;
 
   int? _selectedAbonnementId;
   String _typeAbonnementName = '';
+
+  bool _isStudentAbonnementName(String value) {
+    final normalized = value
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E");
+    return normalized.contains('SCOLAIRE') || normalized.contains('ETUDIANT');
+  }
 
   void nextStep() {
     bool isValid = false;
@@ -74,7 +85,9 @@ class _RegisterPageState extends State<RegisterPage> {
         }
         break;
       case 3:
-        isValid = _image != null && _cin != null && _carteScolaire != null;
+        final isEtudiant = _isStudentAbonnementName(_typeAbonnementName);
+        isValid = _image != null && _cin != null &&
+            (!isEtudiant || (_carteScolaire != null && _attestationScolaire != null));
         if (!isValid) {
           AppSnackBar.showError(context, "Veuillez charger tous les documents obligatoires");
         }
@@ -107,6 +120,11 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _pickCarteScolaire() async {
     final pickedImage = await _filePickerService.pickImage();
     if (pickedImage != null && mounted) setState(() => _carteScolaire = pickedImage);
+  }
+
+  Future<void> _pickAttestationScolaire() async {
+    final pickedImage = await _filePickerService.pickImage();
+    if (pickedImage != null && mounted) setState(() => _attestationScolaire = pickedImage);
   }
 
   Future<void> _pickCin() async {
@@ -209,9 +227,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             Step3Widget(
                               image: _image,
                               carteScolaire: _carteScolaire,
+                              attestationScolaire: _attestationScolaire,
                               cin: _cin,
                               onPickImage: _pickImage,
                               onPickCarteScolaire: _pickCarteScolaire,
+                              onPickAttestationScolaire: _pickAttestationScolaire,
                               onPickCin: _pickCin,
                               typeAbonnement: _typeAbonnementName,
                             ),
@@ -244,9 +264,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                                 context, "Veuillez choisir un abonnement");
                                             return;
                                           }
+                                          final isEtudiant = _isStudentAbonnementName(_typeAbonnementName);
                                           if (_image == null ||
                                               _cin == null ||
-                                              _carteScolaire == null) {
+                                              (isEtudiant && (_carteScolaire == null || _attestationScolaire == null))) {
                                             AppSnackBar.showError(context,
                                                 "Veuillez charger tous les documents obligatoires");
                                             return;
@@ -271,7 +292,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                               AuthRegisterRequested(
                                                   request: registerRequest,
                                                   photo: _image!,
-                                                  carteScolaire: _carteScolaire!,
+                                                  carteScolaire: _carteScolaire,
+                                                  attestationScolaire: _attestationScolaire,
                                                   cin: _cin!));
                                         }
                                       : nextStep)),

@@ -7,7 +7,7 @@ import 'package:smart_bus/views/pages/tickets/ticket_page.dart';
 class DossierStatusCard extends StatelessWidget {
   final String? status;
   final String? rejectionReason;
-  final int? userId; // pour charger le statut abonnement en temps réel
+  final int? userId;
 
   const DossierStatusCard({
     super.key,
@@ -18,27 +18,24 @@ class DossierStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = status?.toUpperCase().trim() ?? "";
+    final s = _normalizeStatus(status);
 
-    // ── Dossier VALIDE → charger l'abonnement actuel ──────────────────────
-    if ((s == "VALIDE" || s == "VALIDÉ") && userId != null) {
+    if (_isAccepted(s) && userId != null) {
       return FutureBuilder<Abonnement?>(
         future: TicketService().getCurrentAbonnement(userId!),
         builder: (ctx, snap) {
-          // Pendant le chargement, on affiche un indicateur léger
           if (snap.connectionState == ConnectionState.waiting) {
             return _buildShell(
               context,
               color: AppColors.green,
               icon: Icons.check_circle_rounded,
-              message: "Dossier validé 🎉",
+              message: "Dossier valide",
               actionButton: null,
               showLoader: true,
             );
           }
           final abo = snap.data;
 
-          // ── Abonnement ACTIF : ne plus afficher le bouton paiement ───────
           if (abo != null && abo.isActif) {
             final jours = abo.joursRestants;
             return _buildShell(
@@ -46,21 +43,20 @@ class DossierStatusCard extends StatelessWidget {
               color: AppColors.green,
               icon: Icons.verified_rounded,
               message:
-                  "🎉 Votre abonnement ${_fmt(abo.typeNom)} est actif !\n"
+                  "Votre abonnement ${_fmt(abo.typeNom)} est actif !\n"
                   "Expire dans $jours jour${jours > 1 ? 's' : ''}.",
-              actionButton: null, // ✅ Pas de bouton quand déjà actif
+              actionButton: null,
             );
           }
 
-          // ── Paiement EN_ATTENTE : bouton "Finaliser" ─────────────────────
           if (abo != null && abo.isEnAttente) {
             return _buildShell(
               context,
               color: Colors.blue,
               icon: Icons.hourglass_top_rounded,
               message:
-                  "⏳ Votre paiement est en attente de confirmation.\n"
-                  "Cliquez ci-dessous pour finaliser ou réessayer.",
+                  "Votre paiement est en attente de confirmation.\n"
+                  "Cliquez ci-dessous pour finaliser ou reessayer.",
               actionButton: _btn(
                 context,
                 label: "Finaliser le paiement",
@@ -70,16 +66,15 @@ class DossierStatusCard extends StatelessWidget {
             );
           }
 
-          // ── Pas encore d'abonnement ou abonnement expiré/refusé ──────────
           return _buildShell(
             context,
             color: AppColors.green,
             icon: Icons.check_circle_rounded,
             message:
-                "Dossier validé 🎉 Vous pouvez maintenant souscrire à un abonnement.",
+                "Dossier valide. Vous pouvez maintenant souscrire a un abonnement.",
             actionButton: _btn(
               context,
-              label: "Procéder au paiement",
+              label: "Proceder au paiement",
               icon: Icons.card_membership_rounded,
               color: AppColors.green,
             ),
@@ -88,13 +83,12 @@ class DossierStatusCard extends StatelessWidget {
       );
     }
 
-    // ── Dossier REJETE ────────────────────────────────────────────────────
-    if (s == "REJETE" || s == "REJETÉ") {
+    if (_isRejected(s)) {
       return _buildShell(
         context,
         color: Colors.red,
         icon: Icons.cancel_rounded,
-        message: "Votre dossier a été rejeté.",
+        message: "Votre dossier a ete rejete.",
         rejectionReason: rejectionReason,
         actionButton: SizedBox(
           width: double.infinity,
@@ -109,7 +103,8 @@ class DossierStatusCard extends StatelessWidget {
               backgroundColor: Colors.red.shade700,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
               padding: const EdgeInsets.symmetric(vertical: 12),
               elevation: 0,
             ),
@@ -118,19 +113,16 @@ class DossierStatusCard extends StatelessWidget {
       );
     }
 
-    // ── EN_COURS ──────────────────────────────────────────────────────────
     if (s == "EN_COURS") {
       return _buildShell(
         context,
         color: Colors.orange,
         icon: Icons.hourglass_bottom,
-        message:
-            "Votre dossier est en cours de vérification par l'administration.",
+        message: "Votre dossier est en cours de verification par l'administration.",
         actionButton: null,
       );
     }
 
-    // ── EN_ATTENTE (dossier pas encore validé) ────────────────────────────
     return _buildShell(
       context,
       color: Colors.blue,
@@ -140,7 +132,24 @@ class DossierStatusCard extends StatelessWidget {
     );
   }
 
-  // ── Shell commun ──────────────────────────────────────────────────────────
+  String _normalizeStatus(String? value) {
+    return (value ?? "")
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E")
+        .replaceAll("À", "A");
+  }
+
+  bool _isAccepted(String status) {
+    return status == "VALIDE" || status == "ACCEPTED";
+  }
+
+  bool _isRejected(String status) {
+    return status == "REJETE" || status == "REJECTED" || status == "REFUSE";
+  }
+
   Widget _buildShell(
     BuildContext context, {
     required Color color,
@@ -178,9 +187,8 @@ class DossierStatusCard extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    // Motif rejet
                     if (rejectionReason != null &&
-                        rejectionReason!.trim().isNotEmpty) ...[
+                        rejectionReason.trim().isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.all(8),
@@ -242,8 +250,7 @@ class DossierStatusCard extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           padding: const EdgeInsets.symmetric(vertical: 12),
           elevation: 0,
         ),
@@ -260,7 +267,6 @@ class DossierStatusCard extends StatelessWidget {
         .join(' ');
   }
 }
-
 
 extension ColorExtension on Color {
   Color darken([double amount = .1]) {

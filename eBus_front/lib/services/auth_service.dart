@@ -52,24 +52,39 @@ class AuthService {
   Future<User> register(
       RegisterRequest request,
       XFile photo,
-      XFile carteScolaire,
+      XFile? carteScolaire,
+      XFile? attestationScolaire,
       XFile cin
       ) async {
     try{
       final userJson = jsonEncode(request.toJson());
 
-      FormData formData = FormData.fromMap({
+      final Map<String, dynamic> formFields = {
         'user':MultipartFile.fromString(
           userJson,
           filename: 'user.json',
           contentType: MediaType.parse('application/json'),),
         'photo': await MultipartFile.fromFile(photo.path,
             filename: photo.name),
-        'carteScolaire': await MultipartFile.fromFile(carteScolaire.path,
-            filename: carteScolaire.name),
         'cinPhoto': await MultipartFile.fromFile(cin.path,
             filename: cin.name),
-      });
+      };
+
+      if (carteScolaire != null) {
+        formFields['carteScolaire'] = await MultipartFile.fromFile(
+          carteScolaire.path,
+          filename: carteScolaire.name,
+        );
+      }
+
+      if (attestationScolaire != null) {
+        formFields['attestationScolaire'] = await MultipartFile.fromFile(
+          attestationScolaire.path,
+          filename: attestationScolaire.name,
+        );
+      }
+
+      FormData formData = FormData.fromMap(formFields);
 
       final response = await _dio.post(
           '/users/register',
@@ -163,9 +178,10 @@ class AuthService {
   /// Le backend remet le statusDossier à EN_ATTENTE.
   Future<User> resubmitDossier({
     required int userId,
-    XFile? newPhotoFile,          // ← AJOUTÉ
+    XFile? newPhotoFile,
     XFile? newCinFile,
     XFile? newCarteScolaireFile,
+    XFile? newAttestationScolaireFile,
   }) async {
     try {
       final Map<String, dynamic> fields = {};
@@ -186,6 +202,12 @@ class AuthService {
         fields['carteScolaire'] = await MultipartFile.fromFile(
           newCarteScolaireFile.path,
           filename: newCarteScolaireFile.name,
+        );
+      }
+      if (newAttestationScolaireFile != null) {
+        fields['attestationScolaire'] = await MultipartFile.fromFile(
+          newAttestationScolaireFile.path,
+          filename: newAttestationScolaireFile.name,
         );
       }
 

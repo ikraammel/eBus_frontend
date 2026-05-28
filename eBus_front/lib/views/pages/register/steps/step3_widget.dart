@@ -7,27 +7,36 @@ class Step3Widget extends StatelessWidget {
     super.key,
     required this.image,
     required this.carteScolaire,
+    this.attestationScolaire,
     required this.cin,
     required this.onPickImage,
     required this.onPickCarteScolaire,
+    this.onPickAttestationScolaire,
     required this.onPickCin,
-    required this.typeAbonnement
+    required this.typeAbonnement,
   });
 
   final XFile? image;
   final XFile? carteScolaire;
+  final XFile? attestationScolaire;
   final XFile? cin;
   final String typeAbonnement;
 
   final VoidCallback onPickImage;
   final VoidCallback onPickCarteScolaire;
+  final VoidCallback? onPickAttestationScolaire;
   final VoidCallback onPickCin;
 
   @override
   Widget build(BuildContext context) {
-    // Détection si c'est un profil étudiant
-    bool isEtudiant = (typeAbonnement ?? '').toUpperCase().contains('SCOLAIRE') || 
-                      (typeAbonnement ?? '').toUpperCase().contains('ETUDIANT');
+    final normalizedType = typeAbonnement
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E");
+    final isEtudiant = normalizedType.contains('SCOLAIRE') ||
+        normalizedType.contains('ETUDIANT');
 
     return SingleChildScrollView(
       child: Column(
@@ -38,15 +47,20 @@ class Step3Widget extends StatelessWidget {
             onPick: onPickImage,
             placeholder: "Charger votre photo",
           ),
-      
-          if (isEtudiant)
+          if (isEtudiant) ...[
             FilePickerField(
-              label: "Carte scolaire ou Attestation de scolarité*",
+              label: "Carte scolaire*",
               image: carteScolaire,
               onPick: onPickCarteScolaire,
-              placeholder: "Charger le justificatif de scolarité",
+              placeholder: "Charger votre carte scolaire",
             ),
-      
+            FilePickerField(
+              label: "Attestation de scolarite*",
+              image: attestationScolaire,
+              onPick: onPickAttestationScolaire ?? () {},
+              placeholder: "Charger l'attestation de scolarite",
+            ),
+          ],
           FilePickerField(
             label: "CIN (Recto/Verso)*",
             image: cin,

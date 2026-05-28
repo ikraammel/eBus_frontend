@@ -23,17 +23,19 @@ class AuthLoginRequested extends AuthEvent{
 class AuthRegisterRequested extends AuthEvent{
   final RegisterRequest request;
   final XFile photo;
-  final XFile carteScolaire;
+  final XFile? carteScolaire;
+  final XFile? attestationScolaire;
   final XFile cin;
   AuthRegisterRequested({
     required this.request,
     required this.photo,
-    required this.carteScolaire,
+    this.carteScolaire,
+    this.attestationScolaire,
     required this.cin,
   });
 
   @override
-  List<Object?> get props => [request,photo,carteScolaire,cin];
+  List<Object?> get props => [request,photo,carteScolaire,attestationScolaire,cin];
 }
 
 class AuthUpdateUserRequested extends AuthEvent{
@@ -80,6 +82,7 @@ class AuthResubmitDossierRequested extends AuthEvent {
   final XFile? newPhotoFile;
   final XFile? newCinFile;
   final XFile? newCarteScolaireFile;
+  final XFile? newAttestationScolaireFile;
 
   AuthResubmitDossierRequested({
     required this.userId,
@@ -93,12 +96,13 @@ class AuthResubmitDossierRequested extends AuthEvent {
     this.newPhotoFile,
     this.newCinFile,
     this.newCarteScolaireFile,
+    this.newAttestationScolaireFile,
   });
 
   @override
   List<Object?> get props => [
     userId, nom, prenom, email, tel, adresse, dateNaissance,
-    cin, newPhotoFile, newCinFile, newCarteScolaireFile,
+    cin, newPhotoFile, newCinFile, newCarteScolaireFile,newAttestationScolaireFile,
   ];
 }
 

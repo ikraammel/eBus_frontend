@@ -4,6 +4,7 @@ import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/constants/app_colors.dart';
 import 'package:smart_bus/models/abonnement.dart';
+import 'package:smart_bus/models/dossier.dart';
 import 'package:smart_bus/models/ticket.dart';
 import 'package:smart_bus/models/type_abonnement.dart';
 import 'package:smart_bus/services/ticket_service.dart';
@@ -68,6 +69,70 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
         ),
       );
     }
+  }
+
+  String _normalizeDossierStatus(String? status) {
+    return (status ?? "")
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E")
+        .replaceAll("À", "A");
+  }
+
+  bool _isDossierAccepted(String? status) {
+    final normalized = _normalizeDossierStatus(status);
+    return normalized == "VALIDE" || normalized == "ACCEPTED";
+  }
+
+  bool _isDossierRejected(String? status) {
+    final normalized = _normalizeDossierStatus(status);
+    return normalized == "REJETE" ||
+        normalized == "REJECTED" ||
+        normalized == "REFUSE";
+  }
+
+  bool _isDossierPending(String? status) {
+    final normalized = _normalizeDossierStatus(status);
+    return normalized == "EN_ATTENTE" || normalized == "EN_COURS";
+  }
+
+  bool _isStudentAbonnementName(String? name) {
+    final normalized = (name ?? "")
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E");
+    return normalized.contains("ETUDIANT") || normalized.contains("SCOLAIRE");
+  }
+
+  bool _hasStudentDocuments(Dossier? dossier) {
+    final carte = dossier?.carteScolaireUrl?.toString() ?? "";
+    final attestation = dossier?.attestationScolaireUrl?.toString() ?? "";
+    return carte.isNotEmpty && attestation.isNotEmpty;
+  }
+
+  bool _isStudentUser(AuthAuthenticated authState, Dossier? dossier) {
+    return _isStudentAbonnementName(dossier?.typeAbonnement?.toString()) ||
+        _isStudentAbonnementName(authState.user.typeAbonnement) ||
+        _hasStudentDocuments(dossier);
+  }
+
+  List<TypeAbonnement> _filterAbonnementOffers(
+    List<TypeAbonnement> items,
+    bool isGuest,
+  ) {
+    if (isGuest) return items;
+
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return items;
+
+    final isStudent = _isStudentAbonnementName(authState.user.typeAbonnement);
+    return items
+        .where((item) => _isStudentAbonnementName(item.nom) == isStudent)
+        .toList();
   }
 
   @override
@@ -175,9 +240,25 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
 
     final dossier = await _dossierService.getMyDossier(user.id);
     final statusDossier = dossier?.statusDossier ?? user.statusDossier ?? "";
+    final isStudent = _isStudentUser(authState, dossier);
+    final selectedIsStudentOffer = _isStudentAbonnementName(item.nom);
+
+    if (isStudent != selectedIsStudentOffer) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isStudent
+                ? "Votre dossier etudiant donne acces uniquement aux abonnements etudiants."
+                : "Les abonnements etudiants sont reserves aux dossiers avec carte scolaire et attestation.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     // 🚨 DOSSIER REJETÉ
-    if (statusDossier == "REJETE") {
+    if (_isDossierRejected(statusDossier)) {
       await showDialog(
         context: context,
         builder: (ctx) => Dialog(
@@ -261,8 +342,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
     }
 
     // 🚨 DOSSIER EN ATTENTE
-    if (statusDossier == "EN_ATTENTE" ||
-        statusDossier == "EN_COURS") {
+    if (_isDossierPending(statusDossier)) {
       showDialog(
         context: context,
         builder: (ctx) => Dialog(
@@ -329,7 +409,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
 
 
 
-    if (statusDossier != "VALIDE") {
+    if (!_isDossierAccepted(statusDossier)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -642,6 +722,8 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
 
 
   Widget _buildAbonnementsTab(List<TypeAbonnement> items, bool isGuest) {
+    final filteredItems = _filterAbonnementOffers(items, isGuest);
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -669,10 +751,10 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
           ),
 
 
-        if (items.isEmpty)
+        if (filteredItems.isEmpty)
           _buildEmpty("Aucun abonnement disponible")
         else
-          ...items.map((item) => _buildAbonnementCard(item, isGuest)),
+          ...filteredItems.map((item) => _buildAbonnementCard(item, isGuest)),
 
 
         if (!isGuest && _historiqueFuture != null) ...[
@@ -794,7 +876,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
   }
 
   Widget _buildAbonnementCard(TypeAbonnement item, bool isGuest) {
-    final isScolaire = item.nom.toUpperCase().contains('SCOLAIRE');
+    final isScolaire = _isStudentAbonnementName(item.nom);
     final accentColor =
         isScolaire ? const Color(0xFF9C27B0) : AppColors.darkBlue;
     final label = _formatTitle(item.nom);

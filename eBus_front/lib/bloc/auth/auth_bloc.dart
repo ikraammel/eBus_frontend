@@ -59,6 +59,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
           event.request,
           event.photo,
           event.carteScolaire,
+          event.attestationScolaire,
           event.cin
       );
       await _localStorageService.saveUser(user);
@@ -144,9 +145,15 @@ class AuthBloc extends Bloc<AuthEvent,AuthState> {
         newPhotoFile: event.newPhotoFile,
         newCinFile: event.newCinFile,
         newCarteScolaireFile: event.newCarteScolaireFile,
+        newAttestationScolaireFile: event.newAttestationScolaireFile,
       );
 
       await _localStorageService.saveUser(updatedUser);
+      await _localStorageService.updateDossierUrls(
+        photoUrl: updatedUser.photoUrl,
+        cinUrl: updatedUser.cinUrl,
+        carteScolaireUrl: updatedUser.carteScolaireUrl,
+      );
       emit(AuthDossierResubmitted(user: updatedUser));
       emit(AuthAuthenticated(user: updatedUser));
     } catch (e) {

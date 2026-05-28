@@ -53,6 +53,24 @@ class LocalStorageService {
     await Future.wait(futures);
   }
 
+  Future<void> updatePhotoUrl(String? photoUrl) async {
+    await prefs.setString(keyPhotoUrl, photoUrl ?? '');
+  }
+
+  Future<void> updateDossierUrls({
+    String? photoUrl,
+    String? cinUrl,
+    String? carteScolaireUrl,
+  }) async {
+    final futures = <Future>[
+      if (photoUrl != null) prefs.setString(keyPhotoUrl, photoUrl),
+      if (cinUrl != null) prefs.setString(keyCinUrl, cinUrl),
+      if (carteScolaireUrl != null)
+        prefs.setString(keyCarteScolaireUrl, carteScolaireUrl),
+    ];
+    await Future.wait(futures);
+  }
+
   User? getUser(){
     final id = prefs.getInt(keyUserId);
     if(id == null) {

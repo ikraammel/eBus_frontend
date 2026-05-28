@@ -52,6 +52,16 @@ class _Step2WidgetState extends State<Step2Widget> {
     return formatted[0].toUpperCase() + formatted.substring(1);
   }
 
+  bool _isStudentAbonnement(TypeAbonnement type) {
+    final nom = type.nom
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E");
+    return nom.contains('SCOLAIRE') || nom.contains('ETUDIANT');
+  }
+
   @override
   Widget build(BuildContext context) {
     // Vérifier si le type actuellement sélectionné est scolaire ou étudiant
@@ -59,8 +69,7 @@ class _Step2WidgetState extends State<Step2Widget> {
     if (widget.selectedAbonnementId != null && _types.isNotEmpty) {
       try {
         final current = _types.firstWhere((t) => t.id == widget.selectedAbonnementId);
-        final nom = current.nom.toUpperCase();
-        isScolaireOrEtudiant = nom.contains('SCOLAIRE') || nom.contains('ETUDIANT');
+        isScolaireOrEtudiant = _isStudentAbonnement(current);
       } catch (_) {}
     }
 

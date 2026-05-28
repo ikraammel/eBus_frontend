@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smart_bus/bloc/auth/auth_state.dart';
 import 'package:smart_bus/views/UI/personal_infos_items.dart';
 import 'package:smart_bus/services/ticket_service.dart';
+import 'package:smart_bus/utils/shared_prefs_helper.dart';
 
 import '../../../../../bloc/auth/auth_bloc.dart';
 import '../../../../../bloc/auth/auth_event.dart';
@@ -35,10 +36,12 @@ class _PersonalInfosState extends State<PersonalInfos> {
   late TextEditingController cneController;
 
   User? currentUser;
+  bool _controllersInitialized = false;
 
   XFile? _newPhotoFile;
   XFile? _newCinPhotoFile;
   XFile? _newCarteScolaireFile;
+  XFile? _newAttestationScolaireFile;
 
   final ImagePicker _picker = ImagePicker();
   final ScrollController _scrollController = ScrollController();
@@ -56,6 +59,18 @@ class _PersonalInfosState extends State<PersonalInfos> {
     cneController = TextEditingController();
   }
 
+  void _initControllers(User user) {
+    nomController.text = user.nom;
+    prenomController.text = user.prenom;
+    emailController.text = user.email;
+    telController.text = user.tel;
+    adresseController.text = user.adresse;
+    dateController.text = user.dateNaissance;
+    cinController.text = user.cin;
+    cneController.text = user.cne ?? '';
+    _controllersInitialized = true;
+  }
+
   @override
   void dispose() {
     nomController.dispose();
@@ -70,9 +85,23 @@ class _PersonalInfosState extends State<PersonalInfos> {
     super.dispose();
   }
 
+  /// Retourne vrai si le dossier est explicitement rejeté
   bool get _isDossierRejete {
     final s = currentUser?.statusDossier?.toUpperCase().trim() ?? "";
-    return s == "REJETE" || s == "REJETÉ" || s == "REJECTED";
+    return s == "REJETE" || s == "REJETÉ" || s == "REJECTED" || s == "REFUSE" || s == "REFUSÉ";
+  }
+
+  /// Retourne vrai si le dossier est validé
+  bool get _isDossierValide {
+    final s = currentUser?.statusDossier?.toUpperCase().trim() ?? "";
+    return s == "VALIDE" || s == "VALIDÉ" || s == "ACCEPTED";
+  }
+
+  /// Autorise la modification si le dossier n'est pas encore validé.
+  /// Une fois accepté, les champs sensibles sont verrouillés.
+  bool get _isModifiable {
+    if (currentUser == null) return true;
+    return !_isDossierValide;
   }
 
   bool get _isEtudiant {
@@ -91,11 +120,37 @@ class _PersonalInfosState extends State<PersonalInfos> {
   String _buildFullUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    final cleanPath = path.startsWith('/') ? path : '/$path';
-    return '${AppConstants.baseUrl}$cleanPath';
+    // Correction : éviter les doubles slashs et garantir une URL correcte
+    String base = AppConstants.baseUrl;
+    if (base.endsWith('/')) base = base.substring(0, base.length - 1);
+    String cleanPath = path.startsWith('/') ? path : '/$path';
+    final url = '$base$cleanPath';
+    // Debug : print l'URL générée
+    // ignore: avoid_print
+    print('[DEBUG] Image URL: $url');
+    return url;
   }
 
   void _showFullScreenImage(BuildContext context, String url, String title) {
+    if (url.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.black,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.broken_image, color: Colors.white, size: 50),
+                SizedBox(height: 10),
+                Text("Aucune image disponible", style: TextStyle(color: Colors.white)),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -107,23 +162,39 @@ class _PersonalInfosState extends State<PersonalInfos> {
               minScale: 0.5,
               maxScale: 4.0,
               child: Center(
-                child: Image.network(
-                  url,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                child: FutureBuilder<String?>(
+                  future: SharedPrefsHelper.getToken(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator(color: Colors.white));
+                    }
+                    final token = snapshot.data;
+                    return Image.network(
+                      url,
+                      fit: BoxFit.contain,
+                      headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator(color: Colors.white));
+                      },
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.broken_image, color: Colors.white, size: 50),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Impossible de charger l'image.\nVérifiez votre connexion ou contactez le support.",
+                              style: const TextStyle(color: Colors.white),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            SelectableText(url, style: const TextStyle(color: Colors.orange, fontSize: 10)),
+                          ],
+                        ),
+                      ),
+                    );
                   },
-                  errorBuilder: (context, error, stackTrace) => const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.broken_image, color: Colors.white, size: 50),
-                        SizedBox(height: 10),
-                        Text("Impossible de charger l'image", style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -195,6 +266,9 @@ class _PersonalInfosState extends State<PersonalInfos> {
       listener: (context, state) {
         if (state is AuthProfileUpdated) {
           AppSnackBar.showSuccess(context, "Profil mis à jour avec succès !");
+          if (state is AuthAuthenticated) {
+             _initControllers(state.user);
+          }
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) Navigator.pop(context);
           });
@@ -210,17 +284,14 @@ class _PersonalInfosState extends State<PersonalInfos> {
         }
       },
       builder: (context, state) {
-        if (state is AuthAuthenticated) currentUser = state.user;
+        if (state is AuthAuthenticated) {
+          currentUser = state.user;
+          if (!_controllersInitialized) {
+            _initControllers(currentUser!);
+          }
+        }
+        
         if (currentUser == null) return const SplashScreen();
-
-        nomController.text = currentUser!.nom;
-        prenomController.text = currentUser!.prenom;
-        emailController.text = currentUser!.email;
-        telController.text = currentUser!.tel;
-        adresseController.text = currentUser!.adresse;
-        dateController.text = currentUser!.dateNaissance;
-        cinController.text = currentUser!.cin;
-        cneController.text = currentUser!.cne ?? '';
 
         final String? currentMotif = currentUser!.motifRejet ?? widget.rejectionReason;
 
@@ -304,7 +375,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
 
                     // ───────── PHOTO DE PROFIL ─────────
                     const Text(
-                      "Photo de profil",
+                      "Photo",
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                     ),
                     const SizedBox(height: 12),
@@ -322,18 +393,30 @@ class _PersonalInfosState extends State<PersonalInfos> {
                             child: CircleAvatar(
                               radius: 55,
                               backgroundColor: Colors.grey.shade200,
-                              backgroundImage: _newPhotoFile != null
-                                  ? FileImage(File(_newPhotoFile!.path))
-                                  : (currentUser!.photoUrl != null && currentUser!.photoUrl!.isNotEmpty
-                                  ? NetworkImage(_buildFullUrl(currentUser!.photoUrl!)) as ImageProvider
-                                  : null),
-                              child: (_newPhotoFile == null &&
-                                  (currentUser!.photoUrl == null || currentUser!.photoUrl!.isEmpty))
-                                  ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                                  : null,
+                              child: ClipOval(
+                                child: _newPhotoFile != null
+                                    ? Image.file(
+                                        File(_newPhotoFile!.path),
+                                        width: 110,
+                                        height: 110,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : (currentUser!.photoUrl != null &&
+                                            currentUser!.photoUrl!.isNotEmpty
+                                        ? Image.network(
+                                            _buildFullUrl(currentUser!.photoUrl!),
+                                            key: ValueKey(currentUser!.photoUrl),
+                                            width: 110,
+                                            height: 110,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                const Icon(Icons.person, size: 50, color: Colors.grey),
+                                          )
+                                        : const Icon(Icons.person, size: 50, color: Colors.grey)),
+                              ),
                             ),
                           ),
-                          if (_isDossierRejete)
+                          if (_isModifiable)
                             Positioned(
                               bottom: 0,
                               right: 0,
@@ -356,30 +439,51 @@ class _PersonalInfosState extends State<PersonalInfos> {
                     const SizedBox(height: 24),
 
                     // ───────── CHAMPS TEXTE ─────────
-                    PersonalInfosItems(label: 'Nom', controller: nomController, suffixIcon: Icons.edit),
-                    PersonalInfosItems(label: 'Prénom', controller: prenomController, suffixIcon: Icons.edit),
-                    PersonalInfosItems(label: 'Email', controller: emailController, suffixIcon: Icons.edit),
-                    PersonalInfosItems(label: 'Téléphone', controller: telController, suffixIcon: Icons.edit),
+                    PersonalInfosItems(
+                      label: 'Nom', 
+                      controller: nomController, 
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.edit : null
+                    ),
+                    PersonalInfosItems(
+                      label: 'Prénom', 
+                      controller: prenomController, 
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.edit : null
+                    ),
+                    PersonalInfosItems(
+                      label: 'Email', 
+                      controller: emailController, 
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.edit : null
+                    ),
+                    PersonalInfosItems(
+                      label: 'Téléphone', 
+                      controller: telController, 
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.edit : null
+                    ),
                     PersonalInfosItems(
                       label: 'CIN',
-                      controller: _isDossierRejete ? cinController : null,
-                      value: _isDossierRejete ? null : currentUser!.cin,
-                      readOnly: !_isDossierRejete,
-                      suffixIcon: _isDossierRejete ? Icons.edit : null,
+                      controller: _isModifiable ? cinController : null,
+                      value: _isModifiable ? null : currentUser!.cin,
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.edit : null,
                     ),
                     if (_isEtudiant)
                       PersonalInfosItems(
                         label: 'CNE',
-                        controller: _isDossierRejete ? cneController : null,
-                        value: _isDossierRejete ? null : (currentUser!.cne ?? '-'),
-                        readOnly: !_isDossierRejete,
-                        suffixIcon: _isDossierRejete ? Icons.edit : null,
+                        controller: _isModifiable ? cneController : null,
+                        value: _isModifiable ? null : (currentUser!.cne ?? '-'),
+                        readOnly: !_isModifiable,
+                        suffixIcon: _isModifiable ? Icons.edit : null,
                       ),
                     PersonalInfosItems(
                       label: 'Date de naissance',
                       controller: dateController,
-                      suffixIcon: Icons.calendar_month,
-                      onTap: () async {
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.calendar_month : null,
+                      onTap: _isModifiable ? () async {
                         final DateTime? picked = await showDatePicker(
                           context: context,
                           initialDate: DateTime.tryParse(dateController.text) ?? DateTime(2005),
@@ -388,12 +492,19 @@ class _PersonalInfosState extends State<PersonalInfos> {
                           locale: const Locale('fr', 'FR'),
                         );
                         if (picked != null) {
-                          dateController.text =
+                          setState(() {
+                             dateController.text =
                           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                          });
                         }
-                      },
+                      } : null,
                     ),
-                    PersonalInfosItems(label: 'Adresse', controller: adresseController, suffixIcon: Icons.edit),
+                    PersonalInfosItems(
+                      label: 'Adresse', 
+                      controller: adresseController, 
+                      readOnly: !_isModifiable,
+                      suffixIcon: _isModifiable ? Icons.edit : null
+                    ),
                     const SizedBox(height: 16),
                     FutureBuilder<String>(
                       future: TicketService()
@@ -417,7 +528,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      _isDossierRejete 
+                      _isModifiable 
                         ? "Appuyez sur un document pour le changer ou le visionner" 
                         : "Appuyez sur un document pour le visionner",
                       style: TextStyle(fontSize: 13, color: Colors.grey[600]),
@@ -429,7 +540,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       icon: Icons.credit_card,
                       existingUrl: currentUser!.cinUrl,
                       newFile: _newCinPhotoFile,
-                      canEdit: _isDossierRejete,
+                      canEdit: _isModifiable,
                       onTap: () => _pickImage((f) => setState(() => _newCinPhotoFile = f)),
                       onClear: () => setState(() => _newCinPhotoFile = null),
                     ),
@@ -438,19 +549,30 @@ class _PersonalInfosState extends State<PersonalInfos> {
 
                     if (_isEtudiant) ...[
                       _buildDocumentRow(
-                        label: "Carte scolaire / Attestation",
+                        label: "Carte scolaire",
                         icon: Icons.school,
                         existingUrl: currentUser!.carteScolaireUrl,
                         newFile: _newCarteScolaireFile,
-                        canEdit: _isDossierRejete,
+                        canEdit: _isModifiable,
                         onTap: () => _pickImage((f) => setState(() => _newCarteScolaireFile = f)),
                         onClear: () => setState(() => _newCarteScolaireFile = null),
+                      ),
+                      const SizedBox(height: 14),
+                      _buildDocumentRow(
+                        label: "Attestation de scolarite",
+                        icon: Icons.description,
+                        existingUrl: currentUser!.attestationScolaireUrl,
+                        newFile: _newAttestationScolaireFile,
+                        canEdit: _isModifiable,
+                        onTap: () => _pickImage((f) => setState(() => _newAttestationScolaireFile = f)),
+                        onClear: () => setState(() => _newAttestationScolaireFile = null),
                       ),
                       const SizedBox(height: 14),
                     ],
 
                     const SizedBox(height: 30),
 
+                    if (_isModifiable)
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -469,7 +591,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
                       )
                           : AppButton(
                         text: "Enregistrer les modifications",
-                        onPressed: _handleSave,
+                        onPressed: _handleResubmit,
                       ),
                     ),
                     const SizedBox(height: 50),
@@ -481,19 +603,6 @@ class _PersonalInfosState extends State<PersonalInfos> {
         );
       },
     );
-  }
-
-  void _handleSave() {
-    if (currentUser == null) return;
-    context.read<AuthBloc>().add(AuthUpdateUserRequested(
-      id: currentUser!.id,
-      nom: nomController.text.trim(),
-      prenom: prenomController.text.trim(),
-      email: emailController.text.trim(),
-      tel: telController.text.trim(),
-      adresse: adresseController.text.trim(),
-      dateNaissance: dateController.text.trim(),
-    ));
   }
 
   void _handleResubmit() {
@@ -510,6 +619,7 @@ class _PersonalInfosState extends State<PersonalInfos> {
       newPhotoFile: _newPhotoFile,
       newCinFile: _newCinPhotoFile,
       newCarteScolaireFile: _newCarteScolaireFile,
+      newAttestationScolaireFile: _newAttestationScolaireFile,
     ));
   }
 
@@ -562,14 +672,36 @@ class _PersonalInfosState extends State<PersonalInfos> {
                 else if (hasExisting)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      _buildFullUrl(existingUrl!),
-                      width: 52, height: 52, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 52, height: 52,
-                        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-                        child: Icon(icon, color: Colors.grey),
-                      ),
+                    child: FutureBuilder<String?>(
+                      future: SharedPrefsHelper.getToken(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Container(
+                            width: 52,
+                            height: 52,
+                            alignment: Alignment.center,
+                            child: const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        }
+                        final token = snapshot.data;
+                        return Image.network(
+                          _buildFullUrl(existingUrl!),
+                          width: 52,
+                          height: 52,
+                          fit: BoxFit.cover,
+                          headers: token != null ? {'Authorization': 'Bearer $token'} : null,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                            child: Icon(icon, color: Colors.grey),
+                          ),
+                        );
+                      },
                     ),
                   )
                 else

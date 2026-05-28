@@ -24,8 +24,22 @@ class AdminDossiersPage extends StatelessWidget {
   }
 }
 
-class AdminDossiersView extends StatelessWidget {
+class AdminDossiersView extends StatefulWidget {
   const AdminDossiersView({super.key});
+
+  @override
+  State<AdminDossiersView> createState() => _AdminDossiersViewState();
+}
+
+class _AdminDossiersViewState extends State<AdminDossiersView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _showRejectDialog(BuildContext context, Dossier dossier) {
     final TextEditingController reasonController = TextEditingController();
@@ -203,15 +217,68 @@ class AdminDossiersView extends StatelessWidget {
             }
 
             if (state is AdminDossierLoaded) {
-              final allDossiers = state.dossiers;
+              final allDossiers = _filterDossiers(state.dossiers);
 
-              return TabBarView(
+              return Column(
                 children: [
-                  _buildDossierList(context, allDossiers), 
-                  _buildDossierList(context, allDossiers.where((d) => d.statusDossier == "EN_ATTENTE").toList()), 
-                  _buildDossierList(context, allDossiers.where((d) => d.statusDossier == "VALIDE").toList()), 
-                  _buildDossierList(context, allDossiers.where((d) => d.statusDossier == "REJETE").toList()), 
+                  _buildSearchField(),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildDossierList(context, allDossiers),
+                        _buildDossierList(
+                          context,
+                          allDossiers
+                              .where((d) => d.statusDossier == "EN_ATTENTE")
+                              .toList(),
+                        ),
+                        _buildDossierList(
+                          context,
+                          allDossiers
+                              .where((d) => d.statusDossier == "VALIDE")
+                              .toList(),
+                        ),
+                        _buildDossierList(
+                          context,
+                          allDossiers
+                              .where((d) => d.statusDossier == "REJETE")
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
+              );
+            }
+
+            if (state is AdminDossierError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 12),
+                      Text(
+                        state.message.replaceFirst("Exception: ", ""),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () =>
+                            context.read<AdminDossierBloc>().add(LoadDossiers()),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text("Reessayer"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.darkBlue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
 
@@ -243,7 +310,87 @@ class AdminDossiersView extends StatelessWidget {
     );
   }
 
+  Widget _buildSearchField() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 8),
+      color: const Color(0xFFF8F9FB),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) => setState(() => _searchQuery = value.trim()),
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          hintText: "Rechercher par nom, prenom, CIN, email, telephone...",
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: _searchQuery.isEmpty
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                ),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.darkBlue, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Dossier> _filterDossiers(List<Dossier> dossiers) {
+    final query = _normalizeSearch(_searchQuery);
+    if (query.isEmpty) return dossiers;
+
+    return dossiers.where((dossier) {
+      final searchable = _normalizeSearch([
+        dossier.nom,
+        dossier.prenom,
+        dossier.email,
+        dossier.tel,
+        dossier.adresse,
+        dossier.typeAbonnement,
+        dossier.cin,
+        dossier.cne,
+        dossier.statusDossier,
+        dossier.rejectionReason,
+      ].whereType<String>().join(' '));
+
+      return searchable.contains(query);
+    }).toList();
+  }
+
+  String _normalizeSearch(String value) {
+    return value
+        .toLowerCase()
+        .trim()
+        .replaceAll('é', 'e')
+        .replaceAll('è', 'e')
+        .replaceAll('ê', 'e')
+        .replaceAll('ë', 'e')
+        .replaceAll('à', 'a')
+        .replaceAll('â', 'a')
+        .replaceAll('î', 'i')
+        .replaceAll('ï', 'i')
+        .replaceAll('ô', 'o')
+        .replaceAll('ù', 'u')
+        .replaceAll('û', 'u')
+        .replaceAll('ç', 'c');
+  }
+
   Widget _buildDossierCard(BuildContext context, Dossier dossier) {
+    final isEtudiant = _isEtudiantDossier(dossier);
     Color statusColor;
     switch (dossier.statusDossier) {
       case "VALIDE": statusColor = Colors.green; break;
@@ -295,7 +442,8 @@ class AdminDossiersView extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               if (dossier.cin != null) _buildInfoRow(Icons.badge, "CIN: ${dossier.cin}"),
-              if (dossier.cne != null) _buildInfoRow(Icons.school, "CNE: ${dossier.cne}"),
+              if (isEtudiant && dossier.cne != null && dossier.cne!.isNotEmpty)
+                _buildInfoRow(Icons.school, "CNE: ${dossier.cne}"),
               
               if (dossier.dateDebutAbonnement != null)
                 _buildInfoRow(Icons.calendar_today, "Début: ${dossier.dateDebutAbonnement}"),
@@ -340,6 +488,18 @@ class AdminDossiersView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isEtudiantDossier(Dossier dossier) {
+    final type = (dossier.typeAbonnement ?? "")
+        .toUpperCase()
+        .trim()
+        .replaceAll("É", "E")
+        .replaceAll("È", "E")
+        .replaceAll("Ê", "E");
+    return type.contains("SCOLAIRE") ||
+        type.contains("ETUDIANT") ||
+        (dossier.cne != null && dossier.cne!.isNotEmpty);
   }
 
   Widget _buildInfoRow(IconData icon, String text) {

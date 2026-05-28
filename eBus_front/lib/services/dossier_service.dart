@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/utils/dio_interceptor.dart';
+
 import '../models/dossier.dart';
+import 'local_storage_service.dart';
 
 class DossierService {
   final Dio _dio = DioClient.dio;
@@ -23,7 +26,8 @@ class DossierService {
 
       if (response.statusCode == 200 && response.data != null) {
         final dossier = Dossier.fromJson(response.data);
-        print("DossierService: Statut récupéré = ${dossier.statusDossier}");
+        await _syncDossierUrls(dossier);
+        print("DossierService: Statut recupere = ${dossier.statusDossier}");
         return dossier;
       }
       return null;
@@ -33,6 +37,24 @@ class DossierService {
     } catch (e) {
       print("Erreur inattendue DossierService: $e");
       return null;
+    }
+  }
+
+  Future<void> _syncDossierUrls(Dossier dossier) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (dossier.photoUrl != null && dossier.photoUrl!.isNotEmpty) {
+      await prefs.setString(LocalStorageService.keyPhotoUrl, dossier.photoUrl!);
+    }
+    if (dossier.cinUrl != null && dossier.cinUrl!.isNotEmpty) {
+      await prefs.setString(LocalStorageService.keyCinUrl, dossier.cinUrl!);
+    }
+    if (dossier.carteScolaireUrl != null &&
+        dossier.carteScolaireUrl!.isNotEmpty) {
+      await prefs.setString(
+        LocalStorageService.keyCarteScolaireUrl,
+        dossier.carteScolaireUrl!,
+      );
     }
   }
 }
