@@ -18,7 +18,7 @@ class HeaderPage extends StatefulWidget {
 
   final User? currentUser;
   final bool showBackButton;
-  final bool allowEditAvatar; // conservé pour compatibilité, mais inutile désormais
+  final bool allowEditAvatar;
 
   @override
   State<HeaderPage> createState() => _HeaderPageState();
@@ -177,6 +177,7 @@ class _HeaderPageState extends State<HeaderPage> {
         final fullUrl = photoUrl.isNotEmpty
             ? '${AppConstants.baseUrl}${photoUrl.startsWith('/') ? photoUrl : '/$photoUrl'}'
             : '';
+        final canEditAvatar = widget.allowEditAvatar;
 
         return Container(
           width: double.infinity,
@@ -212,7 +213,7 @@ class _HeaderPageState extends State<HeaderPage> {
                 children: [
                   // ── Avatar cliquable ───────────────────────────────────────
                   GestureDetector(
-                    onTap: () => _showPickerOptions(context),
+                    onTap: canEditAvatar ? () => _showPickerOptions(context) : null,
                     child: Stack(
                       children: [
                         // Anneau blanc
@@ -252,27 +253,27 @@ class _HeaderPageState extends State<HeaderPage> {
                           ),
                         ),
 
-                        // Bouton caméra (toujours visible)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppColors.green,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                              boxShadow: const [
-                                BoxShadow(color: Colors.black38, blurRadius: 4),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 16,
+                        if (canEditAvatar)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.green,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: const [
+                                  BoxShadow(color: Colors.black38, blurRadius: 4),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),

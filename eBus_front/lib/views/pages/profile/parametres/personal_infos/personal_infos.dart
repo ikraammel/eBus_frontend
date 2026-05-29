@@ -97,11 +97,11 @@ class _PersonalInfosState extends State<PersonalInfos> {
     return s == "VALIDE" || s == "VALIDÉ" || s == "ACCEPTED";
   }
 
-  /// Autorise la modification si le dossier n'est pas encore validé.
-  /// Une fois accepté, les champs sensibles sont verrouillés.
+  /// Autorise la modification uniquement si l'admin a rejete le dossier.
+  /// Les dossiers acceptes ou en attente restent consultables, pas modifiables.
   bool get _isModifiable {
-    if (currentUser == null) return true;
-    return !_isDossierValide;
+    if (currentUser == null) return false;
+    return _isDossierRejete;
   }
 
   bool get _isEtudiant {
@@ -607,6 +607,13 @@ class _PersonalInfosState extends State<PersonalInfos> {
 
   void _handleResubmit() {
     if (currentUser == null) return;
+    if (!_isDossierRejete) {
+      AppSnackBar.showError(
+        context,
+        "Vous pouvez modifier votre dossier seulement s'il est rejete.",
+      );
+      return;
+    }
     context.read<AuthBloc>().add(AuthResubmitDossierRequested(
       userId: currentUser!.id,
       nom: nomController.text.trim(),
