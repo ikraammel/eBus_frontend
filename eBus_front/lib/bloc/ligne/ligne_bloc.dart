@@ -44,11 +44,12 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
       emit(LigneLoading());
       try {
         final newLigne = await ligneService.createLine(event.ligne);
+        lignes = await ligneService.getLignes();
         emit(LigneCreated(newLigne));
       } catch (e) {
         String errorMessage = "Erreur inconnue";
 
-        if (e is DioError && e.response != null) {
+        if (e is DioException && e.response != null) {
           final data = e.response!.data;
           if (data is Map && data['message'] != null) {
             errorMessage = data['message'];
@@ -66,7 +67,7 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
     on<DeleteLine>((event, emit) async {
       try {
         await ligneService.deleteLine(event.id);
-        lignes.removeWhere((ligne) => ligne.id == event.id);
+        lignes = await ligneService.getLignes();
         emit(LigneDeleted(event.id));
       }catch(e){
         String errorMessage = "Erreur de suppression";
@@ -86,6 +87,7 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
       try {
         final patchData = event.patch.toJson();
         await ligneService.updateLine(event.id,patchData);
+        lignes = await ligneService.getLignes();
         emit(LigneUpdated(event.id,patchData));
       }catch(e){
         String errorMessage = "Erreur de modification";
@@ -108,6 +110,7 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
         if (ligneIndex != -1) {
           lignes[ligneIndex].stations.removeWhere((s) => s.id == event.stationId);
         }
+        lignes = await ligneService.getLignes();
         emit(StationDeleted(event.ligneId, event.stationId));
       }catch(e){
         String errorMessage = "Erreur de suppression de la station";
@@ -133,6 +136,7 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
             lignes[ligneIndex].stations[stationIndex] = event.station;
           }
         }
+        lignes = await ligneService.getLignes();
         emit(StationUpdated(event.station,event.ligneId,event.stationId));
       }catch(e){
         String errorMessage = "Erreur de modification de station";
@@ -155,7 +159,8 @@ class LigneBloc extends Bloc<LigneEvent,LigneState>{
         if (ligneIndex != -1) {
           lignes[ligneIndex].stations.add(newStation);
         }
-        emit(StationCreated(event.ligneId,event.station));
+        lignes = await ligneService.getLignes();
+        emit(StationCreated(event.ligneId,newStation));
       }catch(e){
         String errorMessage = "Erreur d'ajout de station";
         if(e is DioException && e.response!=null){

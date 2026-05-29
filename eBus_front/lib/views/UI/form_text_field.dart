@@ -11,6 +11,7 @@ class FormTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextEditingController? controller;
   final Function(String)? onChanged;
+  final String? Function(String?)? validator;
   final bool readOnly;
 
   const FormTextField({
@@ -21,6 +22,7 @@ class FormTextField extends StatelessWidget {
     this.keyboardType,
     this.controller,
     this.onChanged,
+    this.validator,
     this.readOnly=false
   });
 
@@ -32,6 +34,7 @@ class FormTextField extends StatelessWidget {
       maxLines: maxLines,
       keyboardType: keyboardType,
       controller: controller,
+      validator: validator,
       readOnly: readOnly,
       decoration: AppInputDecoration.input(hint).copyWith(
         suffixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,

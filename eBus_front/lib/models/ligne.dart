@@ -20,13 +20,14 @@ class Ligne {
 
   factory Ligne.fromJson(Map<String, dynamic> json) {
     return Ligne(
-      id: json['id']?.toInt(),
+      id: _asInt(json['id']),
       numero: json['numero']?.toString() ?? '',
-      distance: (json['distance'] ?? 0).toDouble(),
-      startPoint: json['startPoint'] ?? '',
-      endPoint: json['endPoint'] ?? '',
-      stations: (json['stations'] as List? ?? [])
-          .map((e) => Station.fromJson(e))
+      distance: _asDouble(json['distance']),
+      startPoint: (json['startPoint'] ?? json['depart'] ?? json['pointDepart'] ?? '').toString(),
+      endPoint: (json['endPoint'] ?? json['arrivee'] ?? json['pointArrivee'] ?? '').toString(),
+      stations: _stationList(json)
+          .whereType<Map>()
+          .map((e) => Station.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
     );
   }
@@ -40,5 +41,26 @@ class Ligne {
       'endPoint': endPoint,
       "stations": stations.map((e) => e.toJson()).toList(),
     };
+  }
+
+  static int? _asInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  static double? _asDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
+
+  static List _stationList(Map<String, dynamic> json) {
+    final value = json['stations'] ??
+        json['stationOrdres'] ??
+        json['stationOrdreDtos'] ??
+        json['stationOrdreList'];
+    return value is List ? value : const [];
   }
 }

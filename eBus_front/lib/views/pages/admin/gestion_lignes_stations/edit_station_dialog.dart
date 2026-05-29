@@ -18,29 +18,38 @@ class EditStationDialog extends StatefulWidget {
 }
 
 class _EditStationDialogState extends State<EditStationDialog> {
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text("Modifier la station"),
 
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-
-          TextField(
-            controller: widget.nameController,
-            decoration: const InputDecoration(labelText: "Nom"),
-          ),
-
-          const SizedBox(height: 10),
-
-          TextField(
-            controller: widget.orderController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "Ordre"),
-          ),
-        ],
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: widget.nameController,
+              decoration: const InputDecoration(labelText: "Nom"),
+              validator: (value) =>
+                  value == null || value.trim().isEmpty ? "Nom obligatoire" : null,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: widget.orderController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Ordre"),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Ordre obligatoire";
+                }
+                return int.tryParse(value) == null ? "Ordre invalide" : null;
+              },
+            ),
+          ],
+        ),
       ),
 
       actions: [
@@ -52,6 +61,7 @@ class _EditStationDialogState extends State<EditStationDialog> {
 
         TextButton(
           onPressed: () {
+            if (!(_formKey.currentState?.validate() ?? false)) return;
             widget.onValidate();
             Navigator.pop(context);
           },

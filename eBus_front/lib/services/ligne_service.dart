@@ -9,26 +9,37 @@ class LigneService {
 
   Future<List<Ligne>> getLignes() async {
     final response = await _dio.get('/lignes');
-    print("Status: ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      List data;
-      if (response.data is List) {
-        data = response.data;
-      } else if (response.data is Map && response.data['lignes'] != null) {
-        data = response.data['lignes'];
-      } else {
-        data = [];
-      }
-      return data.map((e) => Ligne.fromJson(e)).toList();
+      final data = _extractList(response.data);
+      return data
+          .whereType<Map>()
+          .map((e) => Ligne.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     } else {
       throw Exception("Erreur chargement lignes");
     }
   }
 
+  Future<Ligne> getLineById(int id) async {
+    final response = await _dio.get('/lignes/$id');
+    if (response.statusCode == 200 && response.data is Map) {
+      return Ligne.fromJson(Map<String, dynamic>.from(response.data));
+    }
+    throw Exception("Ligne introuvable");
+  }
+
+  Future<Ligne> getLineByNumero(String numero) async {
+    final response = await _dio.get('/lignes/ligne/$numero');
+    if (response.statusCode == 200 && response.data is Map) {
+      return Ligne.fromJson(Map<String, dynamic>.from(response.data));
+    }
+    throw Exception("Ligne introuvable");
+  }
+
   Future<Ligne> createLine(Ligne ligne) async {
     final response = await _dio.post('/lignes/new', data: ligne.toJson());
-    if(response.statusCode == 200){
+    if(response.statusCode == 200 || response.statusCode == 201){
       return Ligne.fromJson(response.data);
     }else{
       throw Exception("Erreur création ligne: ${response.data}");
@@ -58,7 +69,7 @@ class LigneService {
         '/lignes/station/new/${ligneId}',
         data: station.toJson()
     );
-    if(response.statusCode == 200){
+    if(response.statusCode == 200 || response.statusCode == 201){
       return Station.fromJson(response.data);
     }else{
       throw Exception("Erreur création station: ${response.data}");
@@ -84,5 +95,16 @@ class LigneService {
     }else{
       throw Exception("Erreur suppression station");
     }
+  }
+
+  List<dynamic> _extractList(dynamic payload) {
+    if (payload is List) return payload;
+    if (payload is Map) {
+      for (final key in ['lignes', 'data', 'content', 'items', 'results']) {
+        final value = payload[key];
+        if (value is List) return value;
+      }
+    }
+    return [];
   }
   }
