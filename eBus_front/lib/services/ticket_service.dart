@@ -139,27 +139,19 @@ class TicketService {
     }
   }
 
-  /// Confirme le paiement en envoyant le session_id au backend.
-  Future<String> confirmPayment(int abonnementId, String sessionId) async {
+  /// Confirme le paiement Stripe. Le backend cree l'abonnement seulement ici.
+  Future<String> confirmPayment(String sessionId) async {
     try {
+      print("[TicketService] confirmPayment sessionId=$sessionId");
       final res = await _dio.post(
-        '/abonnements/$abonnementId/confirm',
+        '/abonnements/confirm',
         queryParameters: {'sessionId': sessionId},
       );
-      return res.data.toString(); // "ACTIF" ou "EN_ATTENTE"
+      final status = res.data.toString();
+      print("[TicketService] confirmPayment response=$status");
+      return status; // "ACTIF" ou "EN_ATTENTE"
     } catch (e) {
       print("Erreur confirmPayment: $e");
-      return 'EN_ATTENTE';
-    }
-  }
-
-  /// Poll simple du statut (backup si confirmPayment échoue).
-  Future<String> getAbonnementStatus(int abonnementId) async {
-    try {
-      final res = await _dio.get('/abonnements/$abonnementId/status');
-      return res.data.toString();
-    } catch (e) {
-      print("Erreur getAbonnementStatus: $e");
       return 'EN_ATTENTE';
     }
   }

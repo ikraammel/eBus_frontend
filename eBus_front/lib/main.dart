@@ -1,10 +1,12 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 // Blocs
 import 'package:smart_bus/bloc/auth/auth_bloc.dart';
 import 'package:smart_bus/bloc/auth/auth_event.dart';
@@ -72,10 +74,7 @@ Future<void> main() async {
 
   await initialDependencies();
 
-
-    await Firebase.initializeApp();
-
-
+  await Firebase.initializeApp();
 
   final db = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
@@ -87,8 +86,78 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+  String? _lastHandledLink;
+
+  @override
+  void initState() {
+    super.initState();
+    _appLinks = AppLinks();
+    _initDeepLinks();
+  }
+
+  Future<void> _initDeepLinks() async {
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      print("[DeepLink] Erreur lien initial: $e");
+    }
+
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      _handleDeepLink,
+      onError: (error) {
+        print("[DeepLink] Erreur stream: $error");
+      },
+    );
+  }
+
+  void _handleDeepLink(Uri uri) {
+    if (_lastHandledLink == uri.toString()) return;
+    _lastHandledLink = uri.toString();
+
+    print("[DeepLink] Recu: $uri");
+    if (uri.scheme == 'gestionbus' && uri.host == 'payment-success') {
+      final sessionId = uri.queryParameters['session_id'];
+      print("[DeepLink] payment-success session_id=$sessionId");
+
+      _openPaymentSuccess(sessionId);
+    }
+  }
+
+  void _openPaymentSuccess(String? sessionId) {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _openPaymentSuccess(sessionId);
+      });
+      return;
+    }
+
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => PaymentSuccessPage(sessionId: sessionId),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +171,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => DashboardBloc()..add(LoadDashboard())),
       ],
       child: MaterialApp(
+        navigatorKey: _navigatorKey,
         title: 'Smart Bus',
         locale: const Locale('fr', 'FR'),
         supportedLocales: const [Locale('fr', 'FR'), Locale('en', 'US')],
@@ -132,16 +202,13 @@ class MyApp extends StatelessWidget {
 
         },
         onGenerateRoute: (settings) {
-          // Retour de Stripe : /#/payment-success?aboId=42&session_id=cs_xxx
+          // Retour de Stripe : /#/payment-success?session_id=cs_xxx
           if (settings.name != null &&
               settings.name!.startsWith('/payment-success')) {
             final uri = Uri.tryParse(settings.name!);
-            final aboIdStr = uri?.queryParameters['aboId'];
-            final aboId = aboIdStr != null ? int.tryParse(aboIdStr) : null;
             final sessionId = uri?.queryParameters['session_id'];
             return MaterialPageRoute(
               builder: (_) => PaymentSuccessPage(
-                abonnementId: aboId,
                 sessionId: sessionId,
               ),
             );

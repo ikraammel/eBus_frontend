@@ -784,7 +784,7 @@ class _TicketPageState extends State<TicketPage> with TickerProviderStateMixin {
       color = Colors.blue;
       icon = Icons.hourglass_top_rounded;
       title = "Paiement en attente";
-      subtitle = "Cliquez sur 'S'abonner' ci-dessous pour reprendre votre paiement.";
+      subtitle = "Votre paiement est en cours de verification.";
     } else if (abo.isRefuse) {
       color = Colors.red;
       icon = Icons.cancel_rounded;

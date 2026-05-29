@@ -57,13 +57,8 @@ class DossierStatusCard extends StatelessWidget {
               icon: Icons.hourglass_top_rounded,
               message:
                   "Votre paiement est en attente de confirmation.\n"
-                  "Cliquez ci-dessous pour finaliser ou reessayer.",
-              actionButton: _btn(
-                context,
-                label: "Finaliser le paiement",
-                icon: Icons.payment_rounded,
-                color: Colors.blue,
-              ),
+                  "Nous verifierons automatiquement le statut de votre abonnement.",
+              actionButton: null,
             );
           }
 
