@@ -4,7 +4,7 @@ import '../../models/bus.dart';
 
 abstract class BusEvent extends Equatable{
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class LoadBuses extends BusEvent{
@@ -35,4 +35,28 @@ class DeleteBus extends BusEvent{
 
   @override
   List<Object> get props => [id];
+}
+
+class LoadBusById extends BusEvent {
+  final int id;
+  LoadBusById(this.id);
+
+  @override
+  List<Object> get props => [id];
+}
+
+class SearchBusByImmatriculation extends BusEvent {
+  final String immatriculation;
+  SearchBusByImmatriculation(this.immatriculation);
+
+  @override
+  List<Object> get props => [immatriculation];
+}
+
+class FilterBusByLigne extends BusEvent {
+  final int ligneId;
+  FilterBusByLigne(this.ligneId);
+
+  @override
+  List<Object> get props => [ligneId];
 }

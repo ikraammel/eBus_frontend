@@ -6,80 +6,120 @@ import 'package:smart_bus/services/bus_service.dart';
 
 import '../../models/bus.dart';
 
-class BusBloc extends Bloc<BusEvent,BusState>{
+class BusBloc extends Bloc<BusEvent, BusState> {
   final BusService busService;
   List<Bus> buses = [];
 
-  BusBloc(this.busService):super(BusInitial()) {
-    on<LoadBuses>((event, emit) async {
-      emit(BusLoading());
-      try {
-        final allBus = await busService.getAllBus();
-        buses = allBus;
-        emit(BusLoaded(buses));
-      } catch (e) {
-        emit(BusError("Erreur de chargement des bus"));
+  BusBloc(this.busService) : super(BusInitial()) {
+    on<LoadBuses>(_onLoadBuses);
+    on<CreateBus>(_onCreateBus);
+    on<UpdateBus>(_onUpdateBus);
+    on<DeleteBus>(_onDeleteBus);
+    on<LoadBusById>(_onLoadBusById);
+    on<SearchBusByImmatriculation>(_onSearchBusByImmatriculation);
+    on<FilterBusByLigne>(_onFilterBusByLigne);
+  }
+
+  Future<void> _onLoadBuses(LoadBuses event, Emitter<BusState> emit) async {
+    emit(BusLoading());
+    try {
+      buses = await busService.getAllBus();
+      emit(BusLoaded(buses));
+    } catch (e) {
+      emit(BusError(_errorMessage(e, fallback: "Erreur de chargement des bus")));
+    }
+  }
+
+  Future<void> _onCreateBus(CreateBus event, Emitter<BusState> emit) async {
+    emit(BusLoading());
+    try {
+      final newBus = await busService.createBus(event.bus);
+      emit(BusCreated(newBus));
+      buses = await busService.getAllBus();
+      emit(BusLoaded(buses));
+    } catch (e) {
+      emit(BusError(_errorMessage(e)));
+    }
+  }
+
+  Future<void> _onUpdateBus(UpdateBus event, Emitter<BusState> emit) async {
+    emit(BusLoading());
+    try {
+      final updatedBus = await busService.updateBus(event.id, event.bus);
+      emit(BusUpdated(event.id, updatedBus));
+      buses = await busService.getAllBus();
+      emit(BusLoaded(buses));
+    } catch (e) {
+      emit(BusError(_errorMessage(e, fallback: "Erreur de modification")));
+    }
+  }
+
+  Future<void> _onDeleteBus(DeleteBus event, Emitter<BusState> emit) async {
+    emit(BusLoading());
+    try {
+      await busService.deleteBus(event.id);
+      emit(BusDeleted(event.id));
+      buses = await busService.getAllBus();
+      emit(BusLoaded(buses));
+    } catch (e) {
+      emit(BusError(_errorMessage(e, fallback: "Erreur de suppression")));
+    }
+  }
+
+  Future<void> _onLoadBusById(LoadBusById event, Emitter<BusState> emit) async {
+    emit(BusLoading());
+    try {
+      final bus = await busService.getBusById(event.id);
+      emit(BusDetailsLoaded(bus));
+    } catch (e) {
+      emit(BusError(_errorMessage(e, fallback: "Bus introuvable")));
+    }
+  }
+
+  Future<void> _onSearchBusByImmatriculation(
+    SearchBusByImmatriculation event,
+    Emitter<BusState> emit,
+  ) async {
+    final query = event.immatriculation.trim();
+    if (query.isEmpty) {
+      add(LoadBuses());
+      return;
+    }
+
+    emit(BusLoading());
+    try {
+      final bus = await busService.getBusByImmatriculation(query);
+      buses = [bus];
+      emit(BusLoaded(buses));
+    } catch (e) {
+      buses = [];
+      emit(BusLoaded(buses));
+      emit(BusError(_errorMessage(e, fallback: "Aucun bus trouve")));
+    }
+  }
+
+  Future<void> _onFilterBusByLigne(
+    FilterBusByLigne event,
+    Emitter<BusState> emit,
+  ) async {
+    emit(BusLoading());
+    try {
+      buses = await busService.getBusesByLigne(event.ligneId);
+      emit(BusLoaded(buses));
+    } catch (e) {
+      emit(BusError(_errorMessage(e, fallback: "Erreur filtrage bus par ligne")));
+    }
+  }
+
+  String _errorMessage(dynamic error, {String fallback = "Erreur inconnue"}) {
+    if (error is DioException && error.response != null) {
+      final data = error.response!.data;
+      if (data is Map && data['message'] != null) {
+        return data['message'].toString();
       }
-    });
-
-    on<CreateBus>((event, emit) async {
-      emit(BusLoading());
-      try {
-        final newBus = await busService.createBus(event.bus);
-        emit(BusCreated(newBus));
-      } catch (e) {
-        String errorMessage = "Erreur inconnue";
-
-        if (e is DioError && e.response != null) {
-          final data = e.response!.data;
-          if (data is Map && data['message'] != null) {
-            errorMessage = data['message'];
-          } else {
-            errorMessage = e.response.toString();
-          }
-        } else if (e is Exception) {
-          errorMessage = e.toString();
-        }
-
-        emit(BusError(errorMessage));
-      }
-    });
-
-    on<UpdateBus>((event, emit) async {
-      try {
-        await busService.updateBus(event.id, event.bus);
-        emit(BusUpdated(event.id, event.bus));
-      } catch (e) {
-        String errorMessage = "Erreur de modification";
-        if (e is DioException && e.response != null) {
-          final data = e.response!.data;
-          if (data is Map && data['message'] != null) {
-            errorMessage = data['message'];
-          } else {
-            errorMessage = e.response.toString();
-          }
-        }
-        emit(BusError(errorMessage));
-      }
-    });
-
-    on<DeleteBus>((event, emit) async {
-      try {
-        await busService.deleteBus(event.id);
-        buses.removeWhere((bus) => bus.id == event.id);
-        emit(BusDeleted(event.id));
-      } catch (e) {
-        String errorMessage = "Erreur de suppression";
-        if (e is DioException && e.response != null) {
-          final data = e.response!.data;
-          if (data is Map && data['message'] != null) {
-            errorMessage = data['message'];
-          } else {
-            errorMessage = e.response.toString();
-          }
-        }
-        emit(BusError(errorMessage));
-      }
-    });
+      return error.response.toString();
+    }
+    if (error is Exception) return error.toString();
+    return fallback;
   }
 }

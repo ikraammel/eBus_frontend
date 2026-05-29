@@ -8,77 +8,75 @@ class BusService {
 
   Future<Bus> createBus(Bus bus) async {
     final response = await _dio.post('/bus/new', data: bus.toJson());
-    if (response.statusCode == 200) {
-      return Bus.fromJson(response.data);
-    } else {
-      throw Exception("Erreur création bus: ${response.data}");
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return Bus.fromJson(Map<String, dynamic>.from(response.data));
     }
+    throw Exception("Erreur creation bus: ${response.data}");
   }
 
-  Future<Bus> updateBus(int id,Bus bus) async {
+  Future<Bus> updateBus(int id, Bus bus) async {
     final response = await _dio.patch('/bus/$id', data: bus.toJson());
     if (response.statusCode == 200) {
-      return Bus.fromJson(response.data);
-    } else {
-      throw Exception("Erreur modification bus: ${response.data}");
+      return Bus.fromJson(Map<String, dynamic>.from(response.data));
     }
+    throw Exception("Erreur modification bus: ${response.data}");
   }
 
   Future<void> deleteBus(int id) async {
     final response = await _dio.delete('/bus/$id');
-    if (response.statusCode == 200 || response.statusCode == 204) {
-      print("Bus supprimé avec succès");
-    }else{
-      throw Exception("Erreur suppression bus");
-    }
+    if (response.statusCode == 200 || response.statusCode == 204) return;
+    throw Exception("Erreur suppression bus");
   }
 
   Future<List<Bus>> getAllBus() async {
     final response = await _dio.get('/bus');
-
     if (response.statusCode == 200) {
-      List data;
-      if (response.data is List) {
-        data = response.data;
-      } else if (response.data is Map && response.data['bus'] != null) {
-        data = response.data['bus'];
-      } else {
-        data = [];
-      }
-      return data.map((e) => Bus.fromJson(e)).toList();
-    } else {
-      throw Exception("Erreur chargement bus");
+      return _parseBusList(response.data);
     }
+    throw Exception("Erreur chargement bus");
+  }
+
+  Future<Bus> getBusById(int id) async {
+    final response = await _dio.get('/bus/$id');
+    if (response.statusCode == 200 && response.data is Map) {
+      return Bus.fromJson(Map<String, dynamic>.from(response.data));
+    }
+    throw Exception("Bus introuvable");
   }
 
   Future<Bus> getBusByImmatriculation(String immatriculation) async {
-    final response = await _dio.get('/bus/immat/$immatriculation');
-
-    if (response.statusCode == 200) {
-      return Bus.fromJson(response.data);
-    } else {
-      throw Exception("Bus introuvable");
+    final encoded = Uri.encodeComponent(immatriculation);
+    final response = await _dio.get('/bus/immatriculation/$encoded');
+    if (response.statusCode == 200 && response.data is Map) {
+      return Bus.fromJson(Map<String, dynamic>.from(response.data));
     }
+    throw Exception("Bus introuvable");
   }
 
   Future<List<Bus>> getBusesByLigne(int ligneId) async {
-    try {
-      final response = await _dio.get('/bus/ligne/$ligneId');
-      if (response.statusCode == 200) {
-        List data;
-        if (response.data is List) {
-          data = response.data;
-        } else if (response.data is Map && response.data['data'] != null) {
-          data = response.data['data'];
-        } else {
-          data = [];
-        }
-        return data.map((e) => Bus.fromJson(e)).toList();
-      }
-      return [];
-    } catch (e) {
-      print("Erreur getBusesByLigne: $e");
-      return [];
+    final response = await _dio.get('/bus/ligne/$ligneId');
+    if (response.statusCode == 200) {
+      return _parseBusList(response.data);
     }
+    throw Exception("Erreur chargement bus par ligne");
+  }
+
+  List<Bus> _parseBusList(dynamic payload) {
+    final data = _extractList(payload);
+    return data
+        .whereType<Map>()
+        .map((e) => Bus.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  List<dynamic> _extractList(dynamic payload) {
+    if (payload is List) return payload;
+    if (payload is Map) {
+      for (final key in ['bus', 'buses', 'data', 'content', 'items', 'results']) {
+        final value = payload[key];
+        if (value is List) return value;
+      }
+    }
+    return [];
   }
 }

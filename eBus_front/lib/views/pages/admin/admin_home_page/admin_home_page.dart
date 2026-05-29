@@ -6,6 +6,7 @@ import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_list_page.
 import 'package:smart_bus/views/pages/admin/gestion_tickets/gestion_tickets_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_dossiers/admin_dossiers_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_abonnements/admin_abonnements_page.dart';
+import 'package:smart_bus/views/pages/admin/gestion_bus/admin_bus_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_lignes_stations/admin_lignes_page.dart';
 
 import '../../../../bloc/dashboard/dashboard_bloc.dart';
@@ -184,6 +185,17 @@ class _AdminHomePageState extends State<AdminHomePage> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AdminLignesPage()),
+            );
+          },
+        ),
+        CardMenu(
+          title: 'Gestion des bus',
+          icon: Icons.directions_bus,
+          color: AppColors.green,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminBusPage()),
             );
           },
         ),

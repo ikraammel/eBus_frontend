@@ -5,7 +5,7 @@ import '../../models/bus.dart';
 abstract class BusState extends Equatable{
   BusState();
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class BusInitial extends BusState {}
@@ -51,4 +51,12 @@ class BusDeleted extends BusState{
 
   @override
   List<Object> get props => [id];
+}
+
+class BusDetailsLoaded extends BusState {
+  final Bus bus;
+  BusDetailsLoaded(this.bus);
+
+  @override
+  List<Object> get props => [bus];
 }
