@@ -41,7 +41,3 @@ cd eBus_front
 flutter pub get
 flutter run
 ```
-
-## About this project
-
-Part of my software engineering project portfolio.
