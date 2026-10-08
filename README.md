@@ -1,10 +1,30 @@
-# eBus — Flutter Frontend
+# eBus — Urban Transport Mobile App
 
-Flutter mobile frontend for the eBus project. The Flutter application is located in `eBus_front/`.
+A mobile application for digitizing urban bus services and improving access to public transport information. This repository contains the Flutter frontend.
 
-## Repository overview
+## Key features
 
-This repository is part of my software engineering portfolio. It contains the implementation and supporting project files for **eBus — Flutter Frontend**.
+- Secure user authentication
+- Bus routes and schedules
+- Trip tracking on a map
+- Complaints and lost-property management
+- Online payments
+- Responsive mobile interface
+
+## Technology stack
+
+- Flutter
+- Dart
+- Java
+- Spring Boot
+- Spring Security
+- JWT
+- PostgreSQL
+- Docker
+
+## Repository structure
+
+Flutter application source: `eBus_front/`. Related backend: [eBus_backend](https://github.com/ikraammel/eBus_backend) (private repository).
 
 ## Getting started
 
@@ -14,8 +34,7 @@ Clone the repository:
 git clone https://github.com/ikraammel/eBus_frontend.git
 cd eBus_frontend
 ```
-
-### Run locally
+To launch the mobile frontend (Flutter SDK required):
 
 ```bash
 cd eBus_front
@@ -23,11 +42,9 @@ flutter pub get
 flutter run
 ```
 
-Install the required SDK and configure any backend services or environment variables used by the application before launching.
+## About this project
 
-## Project structure
-
-Browse the source folders in this repository to explore the implementation. For projects with separate frontend and backend components, configure and run each component independently.
+Part of my software engineering project portfolio.
 
 ## Author
 
