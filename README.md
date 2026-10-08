@@ -45,7 +45,3 @@ flutter run
 ## About this project
 
 Part of my software engineering project portfolio.
-
-## Author
-
-[Ikram El Houl](https://github.com/ikraammel)
