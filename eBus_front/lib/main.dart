@@ -57,6 +57,7 @@ import 'package:smart_bus/views/pages/admin/gestion_objet_perdu/admin_objet_deta
 import 'bloc/dashboard/dashboard_event.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 final getIt = GetIt.instance;
 
@@ -74,7 +75,9 @@ Future<void> main() async {
 
   await initialDependencies();
 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final db = FirebaseDatabase.instanceFor(
     app: Firebase.app(),

@@ -49,6 +49,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '9061511448',
     projectId: 'ebus-6311b',
     authDomain: 'ebus-6311b.firebaseapp.com',
+    databaseURL: 'https://ebus-6311b-default-rtdb.firebaseio.com',
     storageBucket: 'ebus-6311b.firebasestorage.app',
     measurementId: 'G-WCWYL97NJL',
   );
@@ -58,9 +59,9 @@ class DefaultFirebaseOptions {
     appId: '1:9061511448:android:482386c7bb44891ab5ae6d',
     messagingSenderId: '9061511448',
     projectId: 'ebus-6311b',
+    databaseURL: 'https://ebus-6311b-default-rtdb.firebaseio.com',
     storageBucket: 'ebus-6311b.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBk8rpQUmTjAaVtkiXi_4ewH74gCvbFkHQ',
     appId: '1:9061511448:ios:5b8e56d7a28f32d7b5ae6d',
