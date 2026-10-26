@@ -32,6 +32,7 @@ import 'package:smart_bus/services/reclamation_service.dart';
 
 // Views
 import 'package:smart_bus/views/UI/splash_screen.dart';
+import 'package:smart_bus/views/UI/backend_startup_gate.dart';
 import 'package:smart_bus/views/pages/admin/admin_home_page/admin_home_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_bus/admin_bus_page.dart';
 import 'package:smart_bus/views/pages/admin/gestion_horaire/gestion_horaires_page.dart';
@@ -101,6 +102,9 @@ class _MyAppState extends State<MyApp> {
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
   String? _lastHandledLink;
+  bool _backendReady = false;
+  bool _hasPendingPayment = false;
+  String? _pendingPaymentSession;
 
   @override
   void initState() {
@@ -140,7 +144,21 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  void _onBackendReady() {
+    _backendReady = true;
+    if (_hasPendingPayment) {
+      _hasPendingPayment = false;
+      _openPaymentSuccess(_pendingPaymentSession);
+    }
+  }
+
   void _openPaymentSuccess(String? sessionId) {
+    if (!mounted) return;
+    if (!_backendReady) {
+      _hasPendingPayment = true;
+      _pendingPaymentSession = sessionId;
+      return;
+    }
     final navigator = _navigatorKey.currentState;
     if (navigator == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -174,6 +192,10 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => DashboardBloc()..add(LoadDashboard())),
       ],
       child: MaterialApp(
+        builder: (context, child) => BackendStartupGate(
+          onReady: _onBackendReady,
+          child: child!,
+        ),
         navigatorKey: _navigatorKey,
         title: 'Smart Bus',
         locale: const Locale('fr', 'FR'),

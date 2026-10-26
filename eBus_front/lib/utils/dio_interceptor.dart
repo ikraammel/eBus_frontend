@@ -12,6 +12,11 @@ class DioClient {
     ..interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          if (options.extra['publicHealthCheck'] == true) {
+            options.headers.remove('Authorization');
+            print("API REQUEST URL: ${options.uri}");
+            return handler.next(options);
+          }
           final token = await SharedPrefsHelper.getToken();
           print("TOKEN FROM PREFS: $token");
 
