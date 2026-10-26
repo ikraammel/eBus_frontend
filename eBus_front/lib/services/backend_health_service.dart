@@ -5,12 +5,12 @@ import '../constants/constants.dart';
 
 /// One sequential startup probe. The caller owns cancellation and the client.
 class BackendHealthService {
-  BackendHealthService(
-    this._dio, {
-    this.retryDelay = const Duration(seconds: 5),
-    this.requestTimeout = const Duration(seconds: 10),
-    this.totalTimeout = const Duration(seconds: 120),
-  });
+ BackendHealthService(
+  this._dio, {
+  this.retryDelay = const Duration(seconds: 5),
+  this.requestTimeout = const Duration(seconds: 60),
+  this.totalTimeout = const Duration(seconds: 180),
+});
 
   final Dio _dio;
   final Duration retryDelay;
