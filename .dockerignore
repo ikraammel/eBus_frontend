@@ -1,0 +1,17 @@
+.git
+**/.git
+**/build
+**/.dart_tool
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.gradle
+**/node_modules
+**/.env
+**/.env.*
+**/*credentials*.json
+**/serviceAccountKey.json
+**/*.pem
+**/*.key
+**/*.jks
+**/key.properties
+**/*.log
