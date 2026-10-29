@@ -340,16 +340,7 @@ La disponibilité actuelle des environnements et le bon fonctionnement des fonct
 | Backend Spring Boot | [eBus_backend](https://github.com/ikraammel/eBus_backend) |
 | Automatisation QA | [eBus-qa-automation](https://github.com/FATIMA-BOUSMITI/eBus-qa-automation) |
 
-## 🔐 Bonnes pratiques
 
-- Ne jamais versionner les mots de passe, jetons ou fichiers `.env` contenant des secrets.
-- Utiliser des comptes de démonstration dédiés.
-- Ne pas exposer les données personnelles dans les captures d’écran.
-- Utiliser HTTPS pour les environnements accessibles publiquement.
-- Tester les parcours critiques avec le backend réellement configuré.
-- Séparer les environnements de développement, de test et de production.
-
----
 
 **Projet eBus — Frontend Flutter**
 
