@@ -69,39 +69,7 @@ The frontend consumes REST APIs exposed by the Spring Boot backend to retrieve d
 
 The features actually available depend on the frontend version and the APIs exposed by the backend.
 
-## 🖥️ Application Screenshots
 
-Add screenshots to the `docs/screenshots/` directory at the root of the repository.
-
-### 1. Home Page and Transportation Routes
-
-![Home page and transportation routes](docs/screenshots/01-accueil-lignes.png)
-
-### 2. Authentication
-
-![Authentication interface](docs/screenshots/02-authentification.png)
-
-### 3. User Dashboard
-
-![User dashboard](docs/screenshots/03-espace-utilisateur.png)
-
-### 4. Subscription Plans
-
-![Subscription plans](docs/screenshots/04-abonnements.png)
-
-### 5. Lost and Found Items
-
-![Lost and found management](docs/screenshots/05-objets-perdus.png)
-
-### 6. Complaints
-
-![Complaint management](docs/screenshots/06-reclamations.png)
-
-### 7. Administrator Dashboard
-
-![Administrator dashboard](docs/screenshots/07-administration.png)
-
-> **Note:** Replace the example filenames with the actual screenshot filenames in your repository. The images must be added and committed to Git for them to appear in the README.
 
 ## 🏗️ Architecture
 
