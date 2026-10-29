@@ -1,17 +1,17 @@
-# 🚌 eBus Frontend — Application de transport Flutter
+# 🚌 eBus Frontend — Flutter Transportation Application
 
-**eBus Frontend** est l’interface utilisateur de la plateforme eBus, une application de gestion du transport développée avec **Flutter et Dart**. Elle permet aux utilisateurs de consulter les informations de transport, de gérer leurs abonnements, d’effectuer des démarches liées aux objets perdus et de soumettre des réclamations.
+**eBus Frontend** is the user interface of the eBus transportation management platform, developed using **Flutter and Dart**. It allows users to browse transportation information, manage subscriptions, report lost and found items, and submit complaints.
 
-L’application communique avec un backend **Java / Spring Boot** exposant des API REST et utilisant PostgreSQL pour la persistance des données.
+The application communicates with a **Java / Spring Boot** backend that exposes REST APIs and uses PostgreSQL for data persistence.
 
-## Technologies utilisées
+## Technologies Used
 
-### Application frontend
+### Frontend Application
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
 
-### Backend et services intégrés
+### Backend and Integrated Services
 
 ![Java](https://img.shields.io/badge/Java_17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
@@ -24,129 +24,129 @@ L’application communique avec un backend **Java / Spring Boot** exposant des A
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-000000?style=for-the-badge&logo=render&logoColor=white)
 
-## Sommaire
+## Table of Contents
 
-- [Présentation](#-présentation)
-- [Fonctionnalités](#-fonctionnalités)
-- [Interfaces de l’application](#-interfaces-de-lapplication)
+- [Overview](#-overview)
+- [Features](#-features)
+- [Application Screenshots](#-application-screenshots)
 - [Architecture](#-architecture)
-- [Prérequis](#-prérequis)
-- [Installation et lancement local](#-installation-et-lancement-local)
-- [Configuration de l’API](#-configuration-de-lapi)
-- [Compilation Web](#-compilation-web)
-- [Exécution Android](#-exécution-android)
+- [Prerequisites](#-prerequisites)
+- [Installation and Local Setup](#-installation-and-local-setup)
+- [API Configuration](#-api-configuration)
+- [Web Build](#-web-build)
+- [Android Execution](#-android-execution)
 - [Docker](#-docker)
-- [Tests et qualité logicielle](#-tests-et-qualité-logicielle)
-- [Déploiement](#-déploiement)
-- [Dépôts associés](#-dépôts-associés)
+- [Testing and Software Quality](#-testing-and-software-quality)
+- [Deployment](#-deployment)
+- [Related Repositories](#-related-repositories)
 
-## 📌 Présentation
+## 📌 Overview
 
-Le frontend eBus fournit une interface permettant aux utilisateurs et aux administrateurs d’accéder aux fonctionnalités de la plateforme selon leurs droits.
+The eBus frontend provides an interface through which users and administrators can access the platform's features according to their permissions.
 
-Développée avec Flutter, l’application vise à proposer une expérience cohérente sur le Web et Android.
+Developed with Flutter, the application aims to provide a consistent user experience across Web and Android platforms.
 
-Le frontend consomme les API REST du backend Spring Boot pour récupérer les données, transmettre les actions des utilisateurs et afficher les réponses des services métier.
+The frontend consumes REST APIs exposed by the Spring Boot backend to retrieve data, submit user actions, and display responses from business services.
 
-## 🚀 Fonctionnalités
+## 🚀 Features
 
-### 👤 Espace utilisateur
+### 👤 User Area
 
-- Connexion et accès aux fonctionnalités authentifiées.
-- Consultation des informations et des lignes de transport.
-- Consultation des offres d’abonnement.
-- Accès au parcours de paiement Stripe.
-- Déclaration et suivi des objets perdus ou trouvés.
-- Création et suivi des réclamations.
-- Consultation des informations du compte.
+- User login and access to authenticated features.
+- Browse transportation information and routes.
+- View subscription plans.
+- Access the Stripe payment process.
+- Report and track lost or found items.
+- Submit and track complaints.
+- View account information.
 
-### 🛠️ Espace administrateur
+### 🛠️ Administrator Area
 
-- Accès aux fonctionnalités autorisées pour le rôle administrateur.
-- Gestion des lignes de transport et des offres d’abonnement.
-- Consultation et traitement des réclamations.
-- Gestion des objets perdus ou trouvés.
+- Access features authorized for the administrator role.
+- Manage transportation routes and subscription plans.
+- View and process complaints.
+- Manage lost and found items.
 
-Les fonctionnalités effectivement disponibles dépendent de la version du frontend et des API exposées par le backend.
+The features actually available depend on the frontend version and the APIs exposed by the backend.
 
-## 🖥️ Interfaces de l’application
+## 🖥️ Application Screenshots
 
-Ajoute les captures d’écran dans un dossier `docs/screenshots/` à la racine du dépôt.
+Add screenshots to the `docs/screenshots/` directory at the root of the repository.
 
-### 1. Accueil et consultation des lignes
+### 1. Home Page and Transportation Routes
 
-![Accueil et lignes de transport](docs/screenshots/01-accueil-lignes.png)
+![Home page and transportation routes](docs/screenshots/01-accueil-lignes.png)
 
-### 2. Authentification
+### 2. Authentication
 
-![Interface d'authentification](docs/screenshots/02-authentification.png)
+![Authentication interface](docs/screenshots/02-authentification.png)
 
-### 3. Espace utilisateur
+### 3. User Dashboard
 
-![Espace utilisateur](docs/screenshots/03-espace-utilisateur.png)
+![User dashboard](docs/screenshots/03-espace-utilisateur.png)
 
-### 4. Offres et abonnements
+### 4. Subscription Plans
 
-![Offres et abonnements](docs/screenshots/04-abonnements.png)
+![Subscription plans](docs/screenshots/04-abonnements.png)
 
-### 5. Objets perdus et trouvés
+### 5. Lost and Found Items
 
-![Gestion des objets perdus et trouvés](docs/screenshots/05-objets-perdus.png)
+![Lost and found management](docs/screenshots/05-objets-perdus.png)
 
-### 6. Réclamations
+### 6. Complaints
 
-![Gestion des réclamations](docs/screenshots/06-reclamations.png)
+![Complaint management](docs/screenshots/06-reclamations.png)
 
-### 7. Espace administrateur
+### 7. Administrator Dashboard
 
-![Espace administrateur](docs/screenshots/07-administration.png)
+![Administrator dashboard](docs/screenshots/07-administration.png)
 
-> **Important :** remplace les noms d’exemple par les noms exacts des captures présentes dans le dépôt. Les images doivent être ajoutées et versionnées pour s’afficher dans le README.
+> **Note:** Replace the example filenames with the actual screenshot filenames in your repository. The images must be added and committed to Git for them to appear in the README.
 
 ## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
-    U[Utilisateur]
-    A[Administrateur]
-    F[Frontend Flutter]
-    API[API REST Spring Boot]
+    U[User]
+    A[Administrator]
+    F[Flutter Frontend]
+    API[Spring Boot REST API]
     DB[(PostgreSQL)]
     S[Stripe]
-    M[Service e-mail]
+    M[Email Service]
 
     U --> F
     A --> F
-    F -->|Requêtes HTTP / HTTPS| API
+    F -->|HTTP / HTTPS Requests| API
     API --> DB
     API --> S
     API --> M
 ```
 
-### Rôle du frontend
+### Frontend Responsibilities
 
-Le frontend est responsable de :
+The frontend is responsible for:
 
-- l’affichage des interfaces ;
-- la navigation entre les écrans ;
-- la saisie et la validation des données côté client ;
-- l’envoi des requêtes vers les API REST ;
-- l’affichage des réponses et des erreurs ;
-- l’expérience utilisateur sur le Web et Android.
+- Rendering application interfaces.
+- Navigating between screens.
+- Collecting and validating user input on the client side.
+- Sending requests to REST APIs.
+- Displaying responses and errors.
+- Providing a user experience across Web and Android.
 
-L’authentification, les autorisations métier et la persistance des données doivent être prises en charge et vérifiées côté backend.
+Authentication, business-level authorization, and data persistence must be enforced and verified on the backend.
 
-## 📋 Prérequis
+## 📋 Prerequisites
 
-Avant de démarrer le projet, installer :
+Before starting the project, install:
 
 - [Flutter SDK](https://docs.flutter.dev/get-started/install)
-- [Dart](https://dart.dev/get-dart) — généralement fourni avec Flutter ;
-- Git ;
-- Google Chrome pour l’exécution Web ;
-- Android Studio et un émulateur, ou un appareil Android, pour les tests mobiles.
+- [Dart SDK](https://dart.dev/get-dart) — generally included with Flutter.
+- Git.
+- Google Chrome for Web execution.
+- Android Studio and an emulator, or an Android device, for mobile testing.
 
-Vérifie l’installation :
+Verify your installation:
 
 ```powershell
 flutter --version
@@ -154,194 +154,194 @@ dart --version
 flutter doctor
 ```
 
-## ⚙️ Installation et lancement local
+## ⚙️ Installation and Local Setup
 
-### 1. Cloner le dépôt
+### 1. Clone the Repository
 
 ```powershell
 git clone https://github.com/ikraammel/eBus_frontend.git
 cd eBus_frontend
 ```
 
-### 2. Installer les dépendances
+### 2. Install Dependencies
 
 ```powershell
 flutter pub get
 ```
 
-### 3. Vérifier le projet
+### 3. Analyze the Project
 
 ```powershell
 flutter analyze
 ```
 
-### 4. Lancer l’application Web
+### 4. Run the Web Application
 
-Si le backend fonctionne sur le port `8080` et si le frontend utilise la variable `API_BASE_URL` :
+If the backend runs on port `8080` and the frontend uses the `API_BASE_URL` variable:
 
 ```powershell
 flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080
 ```
 
-Cette commande suppose que le code lit la variable avec `String.fromEnvironment('API_BASE_URL')`. Si le projet utilise une autre variable ou une configuration différente, adapte la commande au code existant.
+This command assumes the code reads the variable using `String.fromEnvironment('API_BASE_URL')`. If the project uses a different variable or configuration mechanism, adjust the command accordingly.
 
-## 🔌 Configuration de l’API
+## 🔌 API Configuration
 
-Le frontend doit cibler l’adresse du backend correspondant à l’environnement testé.
+The frontend must target the backend URL corresponding to the environment being tested.
 
-| Environnement | URL indicative |
+| Environment | Example URL |
 |---|---|
-| Backend exécuté localement | `http://localhost:8080` |
-| Backend Docker local | `http://localhost:18081` |
-| Backend déployé | `https://ebus-backend-ao2u.onrender.com` |
+| Locally running backend | `http://localhost:8080` |
+| Local Docker backend | `http://localhost:18081` |
+| Deployed backend | `https://ebus-backend-ao2u.onrender.com` |
 
-Pour lancer le frontend contre le backend Docker local :
+To run the frontend against the local Docker backend:
 
 ```powershell
 flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:18081
 ```
 
-Pour cibler le backend déployé :
+To target the deployed backend:
 
 ```powershell
 flutter run -d chrome --dart-define=API_BASE_URL=https://ebus-backend-ao2u.onrender.com
 ```
 
-**Points à vérifier :**
+**Things to verify:**
 
-- L’URL correspond à l’environnement visé.
-- Le backend est accessible.
-- La configuration CORS autorise l’origine du frontend Web.
-- Les API et les méthodes d’authentification attendues sont disponibles.
-- Les clés secrètes ne sont pas intégrées dans le code frontend.
+- The URL matches the intended environment.
+- The backend is reachable.
+- The CORS configuration allows the Web frontend's origin.
+- The required APIs and authentication mechanisms are available.
+- Secret keys are not embedded in the frontend code.
 
-Dans un navigateur, `localhost` désigne la machine sur laquelle le navigateur s’exécute. Sur un appareil Android physique, il désigne l’appareil lui-même et non le PC qui héberge le backend.
+In a browser, `localhost` refers to the machine running the browser. On a physical Android device, it refers to the device itself, not the PC hosting the backend.
 
-## 🌐 Compilation Web
+## 🌐 Web Build
 
-Pour générer une version Web optimisée :
+To generate an optimized Web release:
 
 ```powershell
 flutter build web --release --dart-define=API_BASE_URL=http://localhost:18081
 ```
 
-Les fichiers générés se trouvent dans :
+The generated files are located in:
 
 ```text
 build/web/
 ```
 
-L’URL de l’API fournie à la compilation doit être accessible depuis le navigateur des utilisateurs. Pour une mise en production, utiliser l’URL appropriée et le protocole HTTPS.
+The API URL supplied during compilation must be reachable from the users' browsers. For production, use the appropriate API URL and HTTPS.
 
-## 📱 Exécution Android
+## 📱 Android Execution
 
-Afficher les appareils disponibles :
+List available devices:
 
 ```powershell
 flutter devices
 ```
 
-Lancer l’application sur un appareil Android connecté :
+Run the application on an Android emulator:
 
 ```powershell
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
 
-`10.0.2.2` est l’adresse spéciale généralement utilisée par l’émulateur Android pour accéder au `localhost` de la machine hôte.
+`10.0.2.2` is the special address commonly used by the Android emulator to access the host machine's `localhost`.
 
-Pour un téléphone physique, remplacer cette adresse par l’adresse IP locale du PC sur le réseau, ou par une URL accessible depuis le téléphone. Le backend doit être configuré pour accepter les connexions correspondantes.
+For a physical Android device, replace this address with the PC's local network IP address or another URL reachable from the device. The backend must be configured to accept the corresponding connections.
 
 ## 🐳 Docker
 
-Le frontend Flutter Web peut être compilé puis servi dans un conteneur Docker si le dépôt contient un `Dockerfile` adapté.
+The Flutter Web frontend can be compiled and served in a Docker container if the repository contains a compatible `Dockerfile`.
 
-Depuis la racine du dépôt :
+From the repository root:
 
 ```powershell
 docker build --build-arg API_BASE_URL=http://localhost:18081 -t ebus-frontend:local .
 ```
 
-Démarrer le conteneur :
+Start the container:
 
 ```powershell
 docker run -d --name ebus-frontend-local -p 18082:80 ebus-frontend:local
 ```
 
-Accéder à l’application :
+Open the application:
 
 ```text
 http://localhost:18082
 ```
 
-Vérifier les journaux :
+Check the container logs:
 
 ```powershell
 docker logs --tail=100 ebus-frontend-local
 ```
 
-Arrêter le conteneur :
+Stop the container:
 
 ```powershell
 docker stop ebus-frontend-local
 ```
 
-Le lancement suppose que le `Dockerfile` du dépôt utilise le paramètre `API_BASE_URL` pour compiler Flutter Web et qu’un serveur Web, par exemple Nginx, sert les fichiers générés.
+This setup assumes that the frontend's `Dockerfile` uses the `API_BASE_URL` build argument when compiling Flutter Web and that a Web server, such as Nginx, serves the generated files.
 
-**Attention :** si le navigateur accède au frontend via `http://localhost:18082`, une API configurée avec `http://localhost:18081` est accessible uniquement lorsque le navigateur tourne sur la même machine que le backend. Cette configuration convient à un environnement local de démonstration, pas à une URL publique.
+**Important:** If the browser accesses the frontend at `http://localhost:18082`, an API configured as `http://localhost:18081` is reachable only when the browser runs on the same machine as the backend. This configuration is suitable for a local demonstration environment, not for a public URL.
 
-## 🧪 Tests et qualité logicielle
+## 🧪 Testing and Software Quality
 
-La qualité de l’application peut être évaluée à plusieurs niveaux.
+The application's quality can be assessed at several levels.
 
-### Analyse statique Flutter
+### Flutter Static Analysis
 
 ```powershell
 flutter analyze
 ```
 
-### Tests Flutter
+### Flutter Tests
 
-Si le dépôt contient des tests Flutter :
+If the repository contains Flutter tests:
 
 ```powershell
 flutter test
 ```
 
-### Tests API et parcours fonctionnels
+### API and Functional Testing
 
-Les tests d’intégration API, Web, Android et de performance sont maintenus dans le dépôt QA associé :
+API integration tests, Web tests, Android tests, and performance tests are maintained in the associated QA repository:
 
-- Robot Framework : tests API ;
-- Playwright : parcours Web ;
-- Appium : tests Android ;
-- Apache JMeter : tests de performance.
+- **Robot Framework:** API testing.
+- **Playwright:** Web end-to-end testing.
+- **Appium:** Android testing.
+- **Apache JMeter:** Performance testing.
 
-Dépôt QA : [eBus-qa-automation](https://github.com/FATIMA-BOUSMITI/eBus-qa-automation).
+QA repository: [eBus-qa-automation](https://github.com/FATIMA-BOUSMITI/eBus-qa-automation).
 
-Les résultats doivent être consultés dans les rapports réellement générés par les suites. La présence d’un outil dans la documentation ne signifie pas que tous les tests ont été exécutés avec succès.
+Test results should be reviewed in the reports actually generated by the test suites. Listing a tool in the documentation does not mean that all tests have been executed successfully.
 
-## 🚀 Déploiement
+## 🚀 Deployment
 
-Le frontend Web est disponible à l’adresse suivante :
+The Web frontend is available at:
 
-**[Ouvrir l’application eBus](https://ebus-frontend-1an4.onrender.com/)**
+**[Open the eBus Application](https://ebus-frontend-1an4.onrender.com/)**
 
-Le backend associé est accessible à l’adresse :
+The associated backend is available at:
 
-**[API eBus](https://ebus-backend-ao2u.onrender.com)**
+**[eBus Backend API](https://ebus-backend-ao2u.onrender.com)**
 
-La disponibilité actuelle des environnements et le bon fonctionnement des fonctionnalités doivent être vérifiés avant toute démonstration.
+The current availability of these environments and the correct operation of their features should be verified before a demonstration.
 
-## 🔗 Dépôts associés
+## 🔗 Related Repositories
 
-| Composant | Dépôt |
+| Component | Repository |
 |---|---|
-| Frontend Flutter | [eBus_frontend](https://github.com/ikraammel/eBus_frontend) |
-| Backend Spring Boot | [eBus_backend](https://github.com/ikraammel/eBus_backend) |
-| Automatisation QA | [eBus-qa-automation](https://github.com/FATIMA-BOUSMITI/eBus-qa-automation) |
+| Flutter Frontend | [eBus_frontend](https://github.com/ikraammel/eBus_frontend) |
+| Spring Boot Backend | [eBus_backend](https://github.com/ikraammel/eBus_backend) |
+| QA Automation | [eBus-qa-automation](https://github.com/FATIMA-BOUSMITI/eBus-qa-automation) |
 
+---
 
+**eBus Project — Flutter Frontend**
 
-**Projet eBus — Frontend Flutter**
-
-Interface Web et Android pour une plateforme de gestion du transport, connectée à des API REST Spring Boot et accompagnée d’une démarche d’assurance qualité logicielle.
+A Web and Android interface for a transportation management platform, integrated with Spring Boot REST APIs and supported by a software quality assurance approach.
